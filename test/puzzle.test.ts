@@ -67,6 +67,17 @@ describe('puzzle creation', () => {
   });
 });
 
+describe('performance budget', () => {
+  it('creates a puzzle, full solve included, far inside 150ms', () => {
+    const engine = createEngine(realDicts());
+    engine.createPuzzle('operands');
+    const t = performance.now();
+    engine.createPuzzle('tapestry');
+    // 150ms is the mid-range phone budget; desktop must be well under it.
+    expect(performance.now() - t).toBeLessThan(150);
+  });
+});
+
 describe('the gate', () => {
   const engine = createEngine(realDicts());
 
