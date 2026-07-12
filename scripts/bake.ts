@@ -3,10 +3,12 @@
 // from what discovery measured against, and the build must stop.
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildBakeOutputs } from './bake-lib';
+import { bakeVersion, buildBakeOutputs } from './bake-lib';
 
 const OUT = 'public/data';
-const PINS = { boundary: 430172, common: 61502, source: 6526 };
+// common is 61,411 length-filtered; discovery pinned 61,502 at the
+// pre-filter stage. Both are recorded in CLAUDE.md.
+const PINS = { boundary: 430172, common: 61411, source: 6526 };
 
 const bake = buildBakeOutputs('data/raw');
 const boundaryCount = bake.enable.length + bake.scowl95Extra.length;
@@ -35,9 +37,24 @@ for (const patch of ['patch-allow.txt', 'patch-deny.txt']) {
   if (!existsSync(join(OUT, patch))) writeFileSync(join(OUT, patch), '');
 }
 
+const manifest = {
+  version: bakeVersion(bake),
+  counts: {
+    enable: bake.enable.length,
+    scowl95Extra: bake.scowl95Extra.length,
+    common: bake.common.length,
+    source: bake.source.length,
+  },
+};
+writeFileSync(
+  join(OUT, 'manifest.json'),
+  JSON.stringify(manifest, null, 2) + '\n',
+);
+
 console.log(
   `boundary ${boundaryCount} (enable ${bake.enable.length} + extra ${bake.scowl95Extra.length})`,
 );
 console.log(`common ${bake.common.length}`);
 console.log(`source ${bake.source.length}`);
+console.log(`version ${manifest.version}`);
 console.log(`baked to ${OUT}`);

@@ -6,6 +6,7 @@
 // lowercase, keep only ^[a-z]+$. That drops possessives, hyphenations, and
 // diacritics. SCOWL bands are cumulative: size N is the union of the english
 // and american lists at every band <= N.
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -18,10 +19,11 @@ export interface BakeOutputs {
   /** SCOWL 95 words (length >= 3) that ENABLE lacks. The other half. */
   scowl95Extra: string[];
   /**
-   * Cleaned SCOWL 50, all lengths: 61,502 words, the pinned discovery count.
-   * The pin was measured before any length filter (the discovery solver
-   * applied length >= 3 internally), so the baked file matches that stage
-   * and the engine applies the minimum length when it builds indexes.
+   * SCOWL 50, length >= 3: 61,411 words. Discovery pinned 61,502 at the
+   * pre-filter cleaning stage (its solver applied length >= 3 internally);
+   * shipping length-filtered drops the 91 one and two letter words that can
+   * never be played. The engine still applies the minimum length at index
+   * build, so the change is invisible to every measured statistic.
    */
   common: string[];
   /** SCOWL 35, length 8. The raw source pool, ungated. */
@@ -61,8 +63,28 @@ export function buildBakeOutputs(rawDir: string): BakeOutputs {
   const scowl95Extra = [...scowl95]
     .filter((w) => w.length >= 3 && !enableSet.has(w))
     .sort();
-  const common = [...scowl50].sort();
+  const common = [...scowl50].filter((w) => w.length >= 3).sort();
   const source = [...scowl35].filter((w) => w.length === 8).sort();
 
   return { enable, scowl95Extra, common, source };
+}
+
+/**
+ * Content hash of the baked artifacts. This is the dictionary cache key: a
+ * re-bake changes the version, which invalidates any stale runtime cache. A
+ * stale index would silently reject valid words, the worst failure mode in
+ * the game, so the version must derive from the data and nothing else.
+ */
+export function bakeVersion(bake: BakeOutputs): string {
+  const hash = createHash('sha256');
+  for (const list of [
+    bake.enable,
+    bake.scowl95Extra,
+    bake.common,
+    bake.source,
+  ]) {
+    hash.update(list.join('\n'));
+    hash.update('\x00');
+  }
+  return hash.digest('hex');
 }

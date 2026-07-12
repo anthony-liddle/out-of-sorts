@@ -30,10 +30,21 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   `terminal-three`, `descent`. It is one predicate in
   `src/engine/rules.ts`, threaded through play legality and solver banking.
   Never branch on the rule anywhere else. Do not hardcode a rule.
-- **The bake pins are sacred.** Boundary 430,172; common 61,502 (the pure
-  cleaning stage, before the minimum length filter); source 6,526. A drift
-  means the cleaning changed and every GDD number is untrustworthy. Stop
-  and report; never adjust the pin.
+- **The bake pins are sacred.** Boundary 430,172; common 61,411 shipped;
+  source 6,526. The common pool has two true numbers: 61,502 is the
+  pre-filter cleaning stage every discovery statistic was measured against,
+  and 61,411 is what ships after dropping the 91 one and two letter words
+  that can never be played (minimum word length is 3). The engine applies
+  the length filter at index build either way, so the sweep is identical
+  under both; verify:sweep proves it. Any other drift means the cleaning
+  changed and every GDD number is untrustworthy. Stop and report; never
+  adjust the pin.
+- **The data version is the cache key.** The bake emits
+  `public/data/manifest.json` with a content hash of the baked lists. The
+  runtime dictionary cache (IndexedDB) is keyed by it, so a re-bake
+  invalidates stale caches automatically. A stale index silently rejects
+  valid words, the worst failure mode in the game; never cache the index
+  without the version check.
 - **The verification sweep must stay green.** `pnpm verify:sweep` reproduces
   the Python discovery numbers exactly, all three rules, full population.
   Any mismatch is a bug, not a rounding difference.
