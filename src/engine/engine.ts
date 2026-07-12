@@ -59,11 +59,14 @@ function hashString(s: string): number {
 }
 
 /** Scramble the rack. Turn one must not be a freebie: the display is never
- * the source word and never itself a valid boundary word. */
-function scramble(
+ * an arrangement the caller forbids (the source word, and any valid
+ * boundary word when the dictionary is available). Takes a predicate
+ * rather than the boundary itself so the rack can render before the
+ * dictionary index exists. */
+export function scrambleRack(
   sourceWord: string,
-  boundary: ReadonlySet<string>,
   seed: number,
+  isForbidden: (display: string) => boolean,
 ): string {
   const rand = mulberry32(seed);
   const letters = [...sourceWord];
@@ -73,7 +76,7 @@ function scramble(
       [letters[i], letters[j]] = [letters[j]!, letters[i]!];
     }
     const display = letters.join('');
-    if (display !== sourceWord && !boundary.has(display)) return display;
+    if (display !== sourceWord && !isForbidden(display)) return display;
   }
   return [...sourceWord].reverse().join('');
 }
@@ -105,10 +108,8 @@ export function createEngine(
       return {
         sourceWord,
         rack,
-        display: scramble(
-          sourceWord,
-          dicts.boundary,
-          seed ?? hashString(sourceWord),
+        display: scrambleRack(sourceWord, seed ?? hashString(sourceWord), (d) =>
+          dicts.boundary.has(d),
         ),
         rule: config.rule,
         valid: formable(rack, dicts.boundaryIndex),

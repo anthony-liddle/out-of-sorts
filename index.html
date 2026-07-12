@@ -3,9 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Out of Sorts</title>
+    <title>Out of Sorts: cold start instrumentation</title>
   </head>
   <body>
+    <!-- Bare instrumentation page for cold start measurement. Not the game
+         UI; that is the next build. -->
+    <h1 id="rack">........</h1>
+    <p>
+      <input id="word" autocomplete="off" autocapitalize="none" />
+      <button id="submit" type="button">submit</button>
+    </p>
+    <pre id="log"></pre>
+    <p><button id="clear-cache" type="button">clear cache and reload</button></p>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -8,6 +8,7 @@ import {
 } from '../src/engine/signature';
 import { buildDictionaries } from '../src/engine/dictionary';
 import { allowsPlay } from '../src/engine/rules';
+import { scrambleRack } from '../src/engine/engine';
 
 describe('letter values', () => {
   it('uses standard English Scrabble values', () => {
@@ -97,5 +98,22 @@ describe('endgame rule predicate', () => {
     expect(allowsPlay('descent', 4, 3)).toBe(true);
     expect(allowsPlay('descent', 5, 5)).toBe(true);
     expect(allowsPlay('descent', 8, 8)).toBe(true);
+  });
+});
+
+describe('rack scramble', () => {
+  it('is deterministic per seed and never a forbidden arrangement', () => {
+    const forbidden = new Set(['triangle', 'integral', 'relating']);
+    const a = scrambleRack('triangle', 7, (d) => forbidden.has(d));
+    const b = scrambleRack('triangle', 7, (d) => forbidden.has(d));
+    expect(a).toBe(b);
+    expect(forbidden.has(a)).toBe(false);
+    expect([...a].sort().join('')).toBe('aegilnrt');
+  });
+
+  it('needs no dictionary, so the rack can render before the index exists', () => {
+    const display = scrambleRack('sparrow', 1, (d) => d === 'sparrow');
+    expect(display).not.toBe('sparrow');
+    expect([...display].sort().join('')).toBe('aoprrsw');
   });
 });
