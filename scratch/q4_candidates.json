@@ -1,0 +1,116 @@
+{
+  "biggest_drop": [
+    {
+      "rack": "ilopsst",
+      "parA": 89,
+      "parD": 49
+    },
+    {
+      "rack": "fioprst",
+      "parA": 92,
+      "parD": 52
+    },
+    {
+      "rack": "nooprst",
+      "parA": 89,
+      "parD": 49
+    },
+    {
+      "rack": "giopsst",
+      "parA": 90,
+      "parD": 50
+    },
+    {
+      "rack": "oprsstu",
+      "parA": 106,
+      "parD": 66
+    },
+    {
+      "rack": "opprstu",
+      "parA": 99,
+      "parD": 59
+    },
+    {
+      "rack": "dioprst",
+      "parA": 100,
+      "parD": 60
+    },
+    {
+      "rack": "ooprstu",
+      "parA": 97,
+      "parD": 57
+    },
+    {
+      "rack": "hopsstu",
+      "parA": 100,
+      "parD": 60
+    },
+    {
+      "rack": "imoprst",
+      "parA": 104,
+      "parD": 65
+    }
+  ],
+  "preserved_rich": [
+    {
+      "rack": "eiprsst",
+      "parA": 120,
+      "parD": 109,
+      "full_anas": 5
+    },
+    {
+      "rack": "eeerrsv",
+      "parA": 110,
+      "parD": 103,
+      "full_anas": 4
+    },
+    {
+      "rack": "eginrss",
+      "parA": 96,
+      "parD": 92,
+      "full_anas": 4
+    },
+    {
+      "rack": "eersstt",
+      "parA": 88,
+      "parD": 84,
+      "full_anas": 4
+    },
+    {
+      "rack": "deeirsv",
+      "parA": 105,
+      "parD": 98,
+      "full_anas": 3
+    },
+    {
+      "rack": "belrstu",
+      "parA": 100,
+      "parD": 91,
+      "full_anas": 3
+    },
+    {
+      "rack": "ceikrst",
+      "parA": 96,
+      "parD": 90,
+      "full_anas": 3
+    },
+    {
+      "rack": "deiorsw",
+      "parA": 93,
+      "parD": 85,
+      "full_anas": 3
+    },
+    {
+      "rack": "ceeprst",
+      "parA": 93,
+      "parD": 89,
+      "full_anas": 3
+    },
+    {
+      "rack": "cdeinrs",
+      "parA": 92,
+      "parD": 83,
+      "full_anas": 3
+    }
+  ]
+}
