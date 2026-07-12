@@ -1,0 +1,481 @@
+{
+  "q1 7L A": {
+    "greedy_par_pct": 15.8,
+    "greedy_clean_pct": 85.9,
+    "score_pct_median": 82.8,
+    "score_pct_p25": 69.8,
+    "n": 4110
+  },
+  "q1 7L D": {
+    "greedy_par_pct": 41.1,
+    "greedy_clean_pct": 85.9,
+    "score_pct_median": 93.2,
+    "score_pct_p25": 79.5,
+    "n": 4110
+  },
+  "q1 8L A": {
+    "greedy_par_pct": 8.3,
+    "greedy_clean_pct": 80.2,
+    "score_pct_median": 76.8,
+    "score_pct_p25": 65.0,
+    "n": 3300
+  },
+  "q1 8L D": {
+    "greedy_par_pct": 23.0,
+    "greedy_clean_pct": 80.2,
+    "score_pct_median": 84.5,
+    "score_pct_p25": 72.0,
+    "n": 3300
+  },
+  "q2 removed_by_D": {
+    "n": 264,
+    "spec": {
+      "both": "13 (5%)",
+      "ends-high": "6 (2%)",
+      "mine": "82 (31%)",
+      "neither": "122 (46%)",
+      "value": "41 (16%)"
+    },
+    "path_aware": {
+      "both": "22 (8%)",
+      "ends-high": "6 (2%)",
+      "mine": "167 (63%)",
+      "neither": "37 (14%)",
+      "value": "32 (12%)"
+    }
+  },
+  "q2 kept_by_D": {
+    "n": 205,
+    "spec": {
+      "both": "20 (10%)",
+      "ends-high": "11 (5%)",
+      "mine": "76 (37%)",
+      "neither": "37 (18%)",
+      "value": "61 (30%)"
+    },
+    "path_aware": {
+      "both": "31 (15%)",
+      "ends-high": "11 (5%)",
+      "mine": "93 (45%)",
+      "neither": "20 (10%)",
+      "value": "50 (24%)"
+    }
+  },
+  "q2 created_by_D": 56,
+  "q2 examples mine": [
+    {
+      "rack": "abbeist",
+      "sources": [
+        "babiest",
+        "tabbies"
+      ],
+      "gap": 44,
+      "removed": false
+    },
+    {
+      "rack": "egimnrt",
+      "sources": [
+        "terming"
+      ],
+      "gap": 31,
+      "removed": false
+    },
+    {
+      "rack": "aenpstu",
+      "sources": [
+        "peanuts"
+      ],
+      "gap": 31,
+      "removed": false
+    }
+  ],
+  "q2 examples value": [
+    {
+      "rack": "aoprrsw",
+      "sources": [
+        "sparrow"
+      ],
+      "gap": 42,
+      "removed": false
+    },
+    {
+      "rack": "aeegllz",
+      "sources": [
+        "gazelle"
+      ],
+      "gap": 21,
+      "removed": false
+    },
+    {
+      "rack": "deeintv",
+      "sources": [
+        "evident"
+      ],
+      "gap": 21,
+      "removed": false
+    }
+  ],
+  "q2 examples both": [
+    {
+      "rack": "acllops",
+      "sources": [
+        "scallop"
+      ],
+      "gap": 34,
+      "removed": false
+    },
+    {
+      "rack": "adilpsy",
+      "sources": [
+        "display"
+      ],
+      "gap": 23,
+      "removed": false
+    },
+    {
+      "rack": "eiimnrt",
+      "sources": [
+        "termini",
+        "interim"
+      ],
+      "gap": 21,
+      "removed": false
+    }
+  ],
+  "q2 examples neither": [
+    {
+      "rack": "aceinnr",
+      "sources": [
+        "cannier"
+      ],
+      "gap": 22,
+      "removed": false
+    },
+    {
+      "rack": "ahnoprs",
+      "sources": [
+        "orphans"
+      ],
+      "gap": 22,
+      "removed": true
+    },
+    {
+      "rack": "anorrsw",
+      "sources": [
+        "narrows"
+      ],
+      "gap": 22,
+      "removed": true
+    }
+  ],
+  "q2 examples ends-high": [
+    {
+      "rack": "cefhils",
+      "sources": [
+        "filches"
+      ],
+      "gap": 11,
+      "removed": false
+    },
+    {
+      "rack": "aehknrs",
+      "sources": [
+        "hankers"
+      ],
+      "gap": 11,
+      "removed": true
+    },
+    {
+      "rack": "cefhins",
+      "sources": [
+        "finches"
+      ],
+      "gap": 8,
+      "removed": false
+    }
+  ],
+  "q3 7L A": {
+    "rungs": {
+      "7": {
+        "plays_pct": 12.0,
+        "points_pct": 18.9,
+        "mean_words": 1.19
+      },
+      "6": {
+        "plays_pct": 15.3,
+        "points_pct": 19.6,
+        "mean_words": 1.64
+      },
+      "5": {
+        "plays_pct": 24.1,
+        "points_pct": 25.2,
+        "mean_words": 2.46
+      },
+      "4": {
+        "plays_pct": 28.0,
+        "points_pct": 23.1,
+        "mean_words": 2.77
+      },
+      "3": {
+        "plays_pct": 20.6,
+        "points_pct": 13.1,
+        "mean_words": 2.04
+      }
+    },
+    "grind345_plays": 72.7,
+    "grind345_points": 61.4
+  },
+  "q3 7L D": {
+    "rungs": {
+      "7": {
+        "plays_pct": 16.6,
+        "points_pct": 23.0,
+        "mean_words": 1.19
+      },
+      "6": {
+        "plays_pct": 21.8,
+        "points_pct": 24.7,
+        "mean_words": 1.63
+      },
+      "5": {
+        "plays_pct": 33.9,
+        "points_pct": 31.5,
+        "mean_words": 2.46
+      },
+      "4": {
+        "plays_pct": 13.9,
+        "points_pct": 11.5,
+        "mean_words": 1.0
+      },
+      "3": {
+        "plays_pct": 13.9,
+        "points_pct": 9.3,
+        "mean_words": 1.0
+      }
+    },
+    "grind345_plays": 61.7,
+    "grind345_points": 52.3
+  },
+  "q3 worst rung5 7L D": [
+    {
+      "rack": "aeprstt",
+      "sources": [
+        "patters",
+        "spatter"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aceprss",
+      "sources": [
+        "parsecs",
+        "scrapes"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "adeiprs",
+      "sources": [
+        "aspired",
+        "diapers",
+        "praised",
+        "despair"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aehmprs",
+      "sources": [
+        "hampers"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "acenprs",
+      "sources": [
+        "prances"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeeprst",
+      "sources": [
+        "repeats"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aemprst",
+      "sources": [
+        "tampers"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "adehprs",
+      "sources": [
+        "sharped",
+        "phrased"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeprrss",
+      "sources": [
+        "sparser"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aepprsu",
+      "sources": [
+        "paupers"
+      ],
+      "rung5_words": 7
+    }
+  ],
+  "q3 8L A": {
+    "rungs": {
+      "8": {
+        "plays_pct": 9.0,
+        "points_pct": 15.0,
+        "mean_words": 1.11
+      },
+      "7": {
+        "plays_pct": 10.7,
+        "points_pct": 14.9,
+        "mean_words": 1.48
+      },
+      "6": {
+        "plays_pct": 15.8,
+        "points_pct": 18.4,
+        "mean_words": 2.09
+      },
+      "5": {
+        "plays_pct": 23.1,
+        "points_pct": 22.4,
+        "mean_words": 2.92
+      },
+      "4": {
+        "plays_pct": 24.3,
+        "points_pct": 19.0,
+        "mean_words": 3.01
+      },
+      "3": {
+        "plays_pct": 17.2,
+        "points_pct": 10.2,
+        "mean_words": 2.13
+      }
+    },
+    "grind345_plays": 64.5,
+    "grind345_points": 51.6
+  },
+  "q3 8L D": {
+    "rungs": {
+      "8": {
+        "plays_pct": 11.9,
+        "points_pct": 17.7,
+        "mean_words": 1.11
+      },
+      "7": {
+        "plays_pct": 14.4,
+        "points_pct": 18.0,
+        "mean_words": 1.48
+      },
+      "6": {
+        "plays_pct": 21.3,
+        "points_pct": 22.4,
+        "mean_words": 2.08
+      },
+      "5": {
+        "plays_pct": 31.2,
+        "points_pct": 27.0,
+        "mean_words": 2.96
+      },
+      "4": {
+        "plays_pct": 10.6,
+        "points_pct": 8.2,
+        "mean_words": 1.0
+      },
+      "3": {
+        "plays_pct": 10.6,
+        "points_pct": 6.7,
+        "mean_words": 1.0
+      }
+    },
+    "grind345_plays": 52.4,
+    "grind345_points": 42.0
+  },
+  "q3 worst rung5 8L D": [
+    {
+      "rack": "adeiprss",
+      "sources": [
+        "despairs"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeilprrs",
+      "sources": [
+        "reprisal"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aehprsst",
+      "sources": [
+        "sharpest"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aehnprst",
+      "sources": [
+        "panthers"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aenprstt",
+      "sources": [
+        "patterns"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "adenoprs",
+      "sources": [
+        "operands"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeprstty",
+      "sources": [
+        "tapestry"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "acceiprs",
+      "sources": [
+        "caprices"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "acemoprs",
+      "sources": [
+        "compares"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "acehoprs",
+      "sources": [
+        "poachers"
+      ],
+      "rung5_words": 7
+    }
+  ]
+}
