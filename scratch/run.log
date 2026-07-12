@@ -1,0 +1,1005 @@
+enable=172823 scowl35=39101 scowl50=61502 scowl95=425059 validation(len>=3)=430172
+done 7@35: 1.01s
+done 7@50: 1.18s
+done 8@35: 1.87s
+done 8@50: 2.4s
+{
+  "7@35": {
+    "source_words": 6720,
+    "unique_racks": 6192,
+    "gate_words": 4127,
+    "gate_words_pct": 61.4,
+    "gate_racks": 3666,
+    "gate_racks_pct": 59.2,
+    "depth": {
+      "min": 5,
+      "p25": 7,
+      "median": 9.0,
+      "p75": 11,
+      "max": 23,
+      "mean": 9.53
+    },
+    "depth_hist": {
+      "5": 101,
+      "6": 403,
+      "7": 461,
+      "8": 561,
+      "9": 515,
+      "10": 458,
+      "11": 333,
+      "12": 264,
+      "13": 246,
+      "14": 138,
+      "15": 65,
+      "16": 36,
+      "17": 32,
+      "18": 17,
+      "19": 13,
+      "20": 19,
+      "21": 3,
+      "23": 1
+    },
+    "q3_par_is_clean_pct": 88.0,
+    "q3_diverge_pct": 12.0,
+    "q3_gap_points": {
+      "min": 1,
+      "p25": 2,
+      "median": 5.0,
+      "p75": 10,
+      "max": 37,
+      "mean": 7.06
+    },
+    "q3_gap_pct_of_par": {
+      "min": 1.3,
+      "p25": 5.2,
+      "median": 9.1,
+      "p75": 17.5,
+      "max": 50.7,
+      "mean": 12.36
+    },
+    "q4_greedy_hits_par_pct": 17.3,
+    "q4_greedy_clean_pct": 83.1,
+    "q5_any_hold_pct": 99.0,
+    "q5_holds_by_pool_size": {
+      "3": 88.6,
+      "4": 95.2,
+      "5": 72.9,
+      "6": 38.8,
+      "7": 10.6
+    },
+    "q5_full_rack_hold_racks": 388,
+    "q5_full_rack_hold_pct": 10.6,
+    "q5_full_anagram_count_dist": {
+      "1": 3278,
+      "2": 325,
+      "3": 54,
+      "4": 8,
+      "5": 1
+    },
+    "q5_top_holds": [
+      {
+        "rack": "adehrst",
+        "words": [
+          "dearths",
+          "hardest",
+          "hatreds",
+          "threads",
+          "trashed"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 51
+      },
+      {
+        "rack": "acenrst",
+        "words": [
+          "canters",
+          "recants",
+          "scanter",
+          "trances"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 59
+      },
+      {
+        "rack": "adeiprs",
+        "words": [
+          "aspired",
+          "despair",
+          "diapers",
+          "praised"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 58
+      },
+      {
+        "rack": "agilnst",
+        "words": [
+          "lasting",
+          "salting",
+          "slating",
+          "staling"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 33
+      },
+      {
+        "rack": "eiprsst",
+        "words": [
+          "persist",
+          "priests",
+          "spriest",
+          "stripes"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 26
+      },
+      {
+        "rack": "adeegnr",
+        "words": [
+          "angered",
+          "derange",
+          "enraged",
+          "grenade"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 24
+      },
+      {
+        "rack": "eilnsst",
+        "words": [
+          "enlists",
+          "listens",
+          "silents",
+          "tinsels"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 22
+      },
+      {
+        "rack": "eersstt",
+        "words": [
+          "setters",
+          "streets",
+          "tersest",
+          "testers"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 9
+      },
+      {
+        "rack": "eeerrsv",
+        "words": [
+          "reserve",
+          "reveres",
+          "reverse",
+          "severer"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 7
+      },
+      {
+        "rack": "aeiprst",
+        "words": [
+          "parties",
+          "pastier",
+          "pirates"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 75
+      }
+    ],
+    "q6_par": {
+      "min": 25,
+      "p25": 50,
+      "median": 60.0,
+      "p75": 72,
+      "max": 173,
+      "mean": 62.77
+    },
+    "q6_true_gap": {
+      "min": 4,
+      "p25": 55,
+      "median": 74.0,
+      "p75": 98,
+      "max": 219,
+      "mean": 78.45
+    },
+    "q6_true_gap_gt0_pct": 100.0,
+    "combo_seconds": 1.01,
+    "ms_per_rack": 0.163,
+    "q3_examples": [
+      {
+        "rack": "aoprrsw",
+        "source": [
+          "sparrow"
+        ],
+        "par": 74,
+        "best_clean": 37
+      },
+      {
+        "rack": "acllops",
+        "source": [
+          "scallop"
+        ],
+        "par": 71,
+        "best_clean": 35
+      },
+      {
+        "rack": "aenpstu",
+        "source": [
+          "peanuts"
+        ],
+        "par": 76,
+        "best_clean": 47
+      },
+      {
+        "rack": "eimostv",
+        "source": [
+          "motives"
+        ],
+        "par": 76,
+        "best_clean": 49
+      },
+      {
+        "rack": "ahnoprs",
+        "source": [
+          "orphans"
+        ],
+        "par": 71,
+        "best_clean": 44
+      }
+    ]
+  },
+  "7@50": {
+    "source_words": 9600,
+    "unique_racks": 8693,
+    "gate_words": 6237,
+    "gate_words_pct": 65.0,
+    "gate_racks": 5425,
+    "gate_racks_pct": 62.4,
+    "depth": {
+      "min": 5,
+      "p25": 8,
+      "median": 10,
+      "p75": 12,
+      "max": 26,
+      "mean": 10.33
+    },
+    "depth_hist": {
+      "5": 83,
+      "6": 426,
+      "7": 606,
+      "8": 682,
+      "9": 732,
+      "10": 678,
+      "11": 570,
+      "12": 467,
+      "13": 401,
+      "14": 216,
+      "15": 130,
+      "16": 124,
+      "17": 76,
+      "18": 55,
+      "19": 54,
+      "20": 45,
+      "21": 29,
+      "22": 28,
+      "23": 15,
+      "24": 4,
+      "25": 3,
+      "26": 1
+    },
+    "q3_par_is_clean_pct": 87.9,
+    "q3_diverge_pct": 12.1,
+    "q3_gap_points": {
+      "min": 1,
+      "p25": 3,
+      "median": 6.0,
+      "p75": 11,
+      "max": 44,
+      "mean": 7.95
+    },
+    "q3_gap_pct_of_par": {
+      "min": 1.0,
+      "p25": 5.6,
+      "median": 10.5,
+      "p75": 18.6,
+      "max": 53.2,
+      "mean": 13.02
+    },
+    "q4_greedy_hits_par_pct": 15.7,
+    "q4_greedy_clean_pct": 86.1,
+    "q5_any_hold_pct": 99.5,
+    "q5_holds_by_pool_size": {
+      "3": 94.9,
+      "4": 96.3,
+      "5": 78.6,
+      "6": 42.9,
+      "7": 12.3
+    },
+    "q5_full_rack_hold_racks": 665,
+    "q5_full_rack_hold_pct": 12.3,
+    "q5_full_anagram_count_dist": {
+      "1": 4760,
+      "2": 548,
+      "3": 91,
+      "4": 22,
+      "5": 4
+    },
+    "q5_top_holds": [
+      {
+        "rack": "aelprsy",
+        "words": [
+          "parleys",
+          "parsley",
+          "players",
+          "replays",
+          "sparely"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 73
+      },
+      {
+        "rack": "adehrst",
+        "words": [
+          "dearths",
+          "hardest",
+          "hatreds",
+          "threads",
+          "trashed"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 65
+      },
+      {
+        "rack": "eiprsst",
+        "words": [
+          "persist",
+          "priests",
+          "spriest",
+          "sprites",
+          "stripes"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 32
+      },
+      {
+        "rack": "adeegnr",
+        "words": [
+          "angered",
+          "derange",
+          "enraged",
+          "grandee",
+          "grenade"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 27
+      },
+      {
+        "rack": "aeiprst",
+        "words": [
+          "parties",
+          "pastier",
+          "pirates",
+          "traipse"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 97
+      },
+      {
+        "rack": "acelprs",
+        "words": [
+          "carpels",
+          "parcels",
+          "placers",
+          "scalper"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 74
+      },
+      {
+        "rack": "acenrst",
+        "words": [
+          "canters",
+          "recants",
+          "scanter",
+          "trances"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 74
+      },
+      {
+        "rack": "adeiprs",
+        "words": [
+          "aspired",
+          "despair",
+          "diapers",
+          "praised"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 66
+      },
+      {
+        "rack": "aeirstt",
+        "words": [
+          "artiest",
+          "artiste",
+          "attires",
+          "tastier"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 46
+      },
+      {
+        "rack": "deiorst",
+        "words": [
+          "editors",
+          "sortied",
+          "steroid",
+          "storied"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 46
+      }
+    ],
+    "q6_par": {
+      "min": 25,
+      "p25": 54,
+      "median": 64,
+      "p75": 78,
+      "max": 187,
+      "mean": 67.87
+    },
+    "q6_true_gap": {
+      "min": 2,
+      "p25": 48,
+      "median": 67,
+      "p75": 88,
+      "max": 207,
+      "mean": 69.99
+    },
+    "q6_true_gap_gt0_pct": 100.0,
+    "combo_seconds": 1.18,
+    "ms_per_rack": 0.136,
+    "q3_examples": [
+      {
+        "rack": "abbeist",
+        "source": [
+          "babiest",
+          "tabbies"
+        ],
+        "par": 100,
+        "best_clean": 56
+      },
+      {
+        "rack": "aeilpsy",
+        "source": [
+          "paisley"
+        ],
+        "par": 92,
+        "best_clean": 48
+      },
+      {
+        "rack": "aoprrsw",
+        "source": [
+          "sparrow"
+        ],
+        "par": 79,
+        "best_clean": 37
+      },
+      {
+        "rack": "egilmst",
+        "source": [
+          "gimlets"
+        ],
+        "par": 74,
+        "best_clean": 39
+      },
+      {
+        "rack": "acllops",
+        "source": [
+          "scallop"
+        ],
+        "par": 76,
+        "best_clean": 42
+      }
+    ]
+  },
+  "8@35": {
+    "source_words": 6526,
+    "unique_racks": 6265,
+    "gate_words": 3016,
+    "gate_words_pct": 46.2,
+    "gate_racks": 2808,
+    "gate_racks_pct": 44.8,
+    "depth": {
+      "min": 6,
+      "p25": 10,
+      "median": 12.0,
+      "p75": 14,
+      "max": 24,
+      "mean": 11.91
+    },
+    "depth_hist": {
+      "6": 10,
+      "7": 176,
+      "8": 219,
+      "9": 283,
+      "10": 344,
+      "11": 347,
+      "12": 302,
+      "13": 302,
+      "14": 300,
+      "15": 198,
+      "16": 105,
+      "17": 67,
+      "18": 44,
+      "19": 34,
+      "20": 35,
+      "21": 28,
+      "22": 7,
+      "23": 1,
+      "24": 6
+    },
+    "q3_par_is_clean_pct": 81.0,
+    "q3_diverge_pct": 19.0,
+    "q3_gap_points": {
+      "min": 1,
+      "p25": 3,
+      "median": 7.0,
+      "p75": 13,
+      "max": 45,
+      "mean": 9.75
+    },
+    "q3_gap_pct_of_par": {
+      "min": 0.9,
+      "p25": 4.8,
+      "median": 10.1,
+      "p75": 17.7,
+      "max": 48.9,
+      "mean": 12.52
+    },
+    "q4_greedy_hits_par_pct": 8.8,
+    "q4_greedy_clean_pct": 75.4,
+    "q5_any_hold_pct": 99.9,
+    "q5_holds_by_pool_size": {
+      "3": 95.5,
+      "4": 99.2,
+      "5": 87.5,
+      "6": 67.3,
+      "7": 30.1,
+      "8": 6.4
+    },
+    "q5_full_rack_hold_racks": 181,
+    "q5_full_rack_hold_pct": 6.4,
+    "q5_full_anagram_count_dist": {
+      "1": 2627,
+      "2": 158,
+      "3": 20,
+      "4": 2,
+      "5": 1
+    },
+    "q5_top_holds": [
+      {
+        "rack": "aegilnrt",
+        "words": [
+          "alerting",
+          "altering",
+          "integral",
+          "relating",
+          "triangle"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 44
+      },
+      {
+        "rack": "aeinrrst",
+        "words": [
+          "restrain",
+          "strainer",
+          "terrains",
+          "trainers"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 62
+      },
+      {
+        "rack": "cenorstu",
+        "words": [
+          "construe",
+          "counters",
+          "recounts",
+          "trounces"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 55
+      },
+      {
+        "rack": "aelprstt",
+        "words": [
+          "platters",
+          "prattles",
+          "splatter"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 101
+      },
+      {
+        "rack": "deoprstu",
+        "words": [
+          "postured",
+          "proudest",
+          "sprouted"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 71
+      },
+      {
+        "rack": "deeinrst",
+        "words": [
+          "inserted",
+          "resident",
+          "trendies"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 60
+      },
+      {
+        "rack": "deeilrsv",
+        "words": [
+          "delivers",
+          "silvered",
+          "slivered"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 53
+      },
+      {
+        "rack": "aceerrst",
+        "words": [
+          "caterers",
+          "retraces",
+          "terraces"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 49
+      },
+      {
+        "rack": "deeilnst",
+        "words": [
+          "enlisted",
+          "listened",
+          "tinseled"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 47
+      },
+      {
+        "rack": "acdeenrt",
+        "words": [
+          "cantered",
+          "decanter",
+          "recanted"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 46
+      }
+    ],
+    "q6_par": {
+      "min": 39,
+      "p25": 67,
+      "median": 80.0,
+      "p75": 93,
+      "max": 184,
+      "mean": 81.93
+    },
+    "q6_true_gap": {
+      "min": 13,
+      "p25": 75,
+      "median": 102.0,
+      "p75": 132,
+      "max": 277,
+      "mean": 106.29
+    },
+    "q6_true_gap_gt0_pct": 100.0,
+    "combo_seconds": 1.87,
+    "ms_per_rack": 0.298,
+    "q3_examples": [
+      {
+        "rack": "acllopss",
+        "source": [
+          "scallops"
+        ],
+        "par": 92,
+        "best_clean": 47
+      },
+      {
+        "rack": "aaekprst",
+        "source": [
+          "partakes"
+        ],
+        "par": 114,
+        "best_clean": 71
+      },
+      {
+        "rack": "aemoostt",
+        "source": [
+          "tomatoes"
+        ],
+        "par": 94,
+        "best_clean": 52
+      },
+      {
+        "rack": "eeimrrst",
+        "source": [
+          "merriest"
+        ],
+        "par": 98,
+        "best_clean": 57
+      },
+      {
+        "rack": "ioprsttu",
+        "source": [
+          "outstrip"
+        ],
+        "par": 91,
+        "best_clean": 50
+      }
+    ]
+  },
+  "8@50": {
+    "source_words": 10138,
+    "unique_racks": 9631,
+    "gate_words": 5161,
+    "gate_words_pct": 50.9,
+    "gate_racks": 4741,
+    "gate_racks_pct": 49.2,
+    "depth": {
+      "min": 6,
+      "p25": 10,
+      "median": 13,
+      "p75": 15,
+      "max": 28,
+      "mean": 13.15
+    },
+    "depth_hist": {
+      "6": 11,
+      "7": 170,
+      "8": 282,
+      "9": 392,
+      "10": 447,
+      "11": 525,
+      "12": 483,
+      "13": 512,
+      "14": 510,
+      "15": 349,
+      "16": 227,
+      "17": 212,
+      "18": 132,
+      "19": 90,
+      "20": 74,
+      "21": 89,
+      "22": 67,
+      "23": 67,
+      "24": 48,
+      "25": 18,
+      "26": 23,
+      "27": 11,
+      "28": 2
+    },
+    "q3_par_is_clean_pct": 81.0,
+    "q3_diverge_pct": 19.0,
+    "q3_gap_points": {
+      "min": 1,
+      "p25": 4,
+      "median": 8.0,
+      "p75": 15,
+      "max": 57,
+      "mean": 10.98
+    },
+    "q3_gap_pct_of_par": {
+      "min": 0.8,
+      "p25": 5.5,
+      "median": 10.649999999999999,
+      "p75": 18.3,
+      "max": 46.2,
+      "mean": 13.06
+    },
+    "q4_greedy_hits_par_pct": 8.4,
+    "q4_greedy_clean_pct": 80.2,
+    "q5_any_hold_pct": 99.9,
+    "q5_holds_by_pool_size": {
+      "3": 98.3,
+      "4": 99.3,
+      "5": 92.3,
+      "6": 72.3,
+      "7": 34.6,
+      "8": 7.7
+    },
+    "q5_full_rack_hold_racks": 363,
+    "q5_full_rack_hold_pct": 7.7,
+    "q5_full_anagram_count_dist": {
+      "1": 4378,
+      "2": 318,
+      "3": 36,
+      "4": 6,
+      "5": 3
+    },
+    "q5_top_holds": [
+      {
+        "rack": "aeginrst",
+        "words": [
+          "angriest",
+          "gantries",
+          "ingrates",
+          "rangiest",
+          "tasering"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 116
+      },
+      {
+        "rack": "aeinrrst",
+        "words": [
+          "restrain",
+          "retrains",
+          "strainer",
+          "terrains",
+          "trainers"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 82
+      },
+      {
+        "rack": "aegilnrt",
+        "words": [
+          "alerting",
+          "altering",
+          "integral",
+          "relating",
+          "triangle"
+        ],
+        "full_anas": 5,
+        "ladder_hold_opps": 67
+      },
+      {
+        "rack": "aeinprst",
+        "words": [
+          "painters",
+          "pantries",
+          "pertains",
+          "repaints"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 159
+      },
+      {
+        "rack": "deeinrst",
+        "words": [
+          "inserted",
+          "nerdiest",
+          "resident",
+          "trendies"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 76
+      },
+      {
+        "rack": "cenorstu",
+        "words": [
+          "construe",
+          "counters",
+          "recounts",
+          "trounces"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 72
+      },
+      {
+        "rack": "adeoprrt",
+        "words": [
+          "parroted",
+          "predator",
+          "prorated",
+          "teardrop"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 58
+      },
+      {
+        "rack": "aeeirstt",
+        "words": [
+          "iterates",
+          "teariest",
+          "treaties",
+          "treatise"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 58
+      },
+      {
+        "rack": "aeelmnss",
+        "words": [
+          "lameness",
+          "maleness",
+          "nameless",
+          "salesmen"
+        ],
+        "full_anas": 4,
+        "ladder_hold_opps": 34
+      },
+      {
+        "rack": "aeiprsst",
+        "words": [
+          "pastries",
+          "raspiest",
+          "traipses"
+        ],
+        "full_anas": 3,
+        "ladder_hold_opps": 131
+      }
+    ],
+    "q6_par": {
+      "min": 40,
+      "p25": 72,
+      "median": 85,
+      "p75": 102,
+      "max": 211,
+      "mean": 89.43
+    },
+    "q6_true_gap": {
+      "min": 5,
+      "p25": 68,
+      "median": 91,
+      "p75": 118,
+      "max": 246,
+      "mean": 95.24
+    },
+    "q6_true_gap_gt0_pct": 100.0,
+    "combo_seconds": 2.4,
+    "ms_per_rack": 0.249,
+    "q3_examples": [
+      {
+        "rack": "aaekprst",
+        "source": [
+          "partakes"
+        ],
+        "par": 131,
+        "best_clean": 74
+      },
+      {
+        "rack": "aaelprsv",
+        "source": [
+          "palavers"
+        ],
+        "par": 114,
+        "best_clean": 65
+      },
+      {
+        "rack": "aeiknsst",
+        "source": [
+          "snakiest"
+        ],
+        "par": 119,
+        "best_clean": 70
+      },
+      {
+        "rack": "adeforrw",
+        "source": [
+          "farrowed"
+        ],
+        "par": 104,
+        "best_clean": 56
+      },
+      {
+        "rack": "eeimrrst",
+        "source": [
+          "merriest"
+        ],
+        "par": 114,
+        "best_clean": 66
+      }
+    ]
+  },
+  "total_seconds": 7.59
+}
