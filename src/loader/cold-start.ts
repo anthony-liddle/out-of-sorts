@@ -5,6 +5,11 @@ import type { Dictionaries } from '../engine/dictionary';
 import type { IndexCache } from './cache';
 import type { BuildTimings, WorkerBuildResult } from './worker-build';
 
+/** Bumped whenever buildDictionaries changes semantics without the data
+ * files changing (format 2: the denylist reaches the common pool). Old
+ * cached indexes must die on upgrade or the cache lies. */
+export const DICTIONARY_FORMAT = 'f2';
+
 export interface ColdStartPorts {
   fetchManifest(): Promise<{ version: string }>;
   cache: IndexCache;
@@ -38,11 +43,12 @@ export function coldStart(ports: ColdStartPorts): ColdStartResult {
   const timings = (async (): Promise<ColdStartTimings> => {
     const t0 = performance.now();
     const manifest = await ports.fetchManifest();
+    const cacheKey = `${DICTIONARY_FORMAT}:${manifest.version}`;
     const tManifest = performance.now();
     const cached = await ports.cache.get();
     const tCacheRead = performance.now();
 
-    if (cached && cached.version === manifest.version) {
+    if (cached && cached.version === cacheKey) {
       resolveDicts(cached.dicts);
       return {
         source: 'cache',
@@ -60,7 +66,7 @@ export function coldStart(ports: ColdStartPorts): ColdStartResult {
     let cacheWriteError: string | undefined;
     const tWrite0 = performance.now();
     try {
-      await ports.cache.put(manifest.version, built.dicts);
+      await ports.cache.put(cacheKey, built.dicts);
     } catch (e) {
       cacheWriteError = e instanceof Error ? e.message : String(e);
     }

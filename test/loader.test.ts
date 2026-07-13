@@ -5,7 +5,11 @@ import { buildFromTexts, parseWordList } from '../src/loader/build';
 import { runWorkerBuild } from '../src/loader/worker-build';
 import { createSubmitGate } from '../src/loader/submit-gate';
 import { openIndexCache } from '../src/loader/cache';
-import { coldStart, type ColdStartPorts } from '../src/loader/cold-start';
+import {
+  coldStart,
+  DICTIONARY_FORMAT,
+  type ColdStartPorts,
+} from '../src/loader/cold-start';
 import type { Dictionaries } from '../src/engine/dictionary';
 
 const TEXTS = {
@@ -166,7 +170,7 @@ describe('cold start orchestration', () => {
 
   it('cache hit: resolves from cache and never spawns the worker', async () => {
     const p = ports();
-    p.store = { version: 'v2', dicts: synthDicts() };
+    p.store = { version: `${DICTIONARY_FORMAT}:v2`, dicts: synthDicts() };
     const result = coldStart(p.ports);
     const dicts = await result.dictionaries;
     expect(dicts.boundary.has('tea')).toBe(true);
@@ -182,7 +186,20 @@ describe('cold start orchestration', () => {
     const timings = await result.timings;
     expect(timings.source).toBe('worker');
     expect(p.calls).toContain('worker');
-    expect(p.store?.version).toBe('v2');
+    expect(p.store?.version).toBe(`${DICTIONARY_FORMAT}:v2`);
+  });
+
+  it('a cache from an older build format is invalidated and rebuilt', async () => {
+    // The dictionary BUILD can change semantics without any data file
+    // changing (the uniform denylist did exactly that). The cache key
+    // must carry a format number so old cached indexes die on upgrade.
+    const p = ports();
+    p.store = { version: 'v2', dicts: synthDicts() }; // bare data version, old format
+    const result = coldStart(p.ports);
+    await result.dictionaries;
+    await result.timings;
+    expect(p.calls).toContain('worker');
+    expect(p.store?.version).toBe(`${DICTIONARY_FORMAT}:v2`);
   });
 
   it('a stale data version is invalidated and rebuilt', async () => {
@@ -204,7 +221,7 @@ describe('cold start orchestration', () => {
     expect(dicts.boundary.has('old')).toBe(false);
     await result.timings;
     expect(p.calls).toContain('worker');
-    expect(p.store?.version).toBe('v2');
+    expect(p.store?.version).toBe(`${DICTIONARY_FORMAT}:v2`);
     expect(p.store?.dicts.boundary.has('tea')).toBe(true);
   });
 

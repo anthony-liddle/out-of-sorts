@@ -69,6 +69,23 @@ describe('dictionary building', () => {
     expect(dicts.commonIndex.get('aet')).toEqual(['ate', 'eat']);
   });
 
+  it('applies the denylist to the common pool as well as the boundary', () => {
+    // A denied word is not a word. If the deny only reached the boundary,
+    // par could lean on a word the player cannot play and the top rank
+    // would be silently unreachable. GDD: the rule must be uniform.
+    const denied = buildDictionaries({
+      enable: ['ate', 'eat', 'tares'],
+      scowl95Extra: [],
+      allow: [],
+      deny: ['eat', 'tares'],
+      common: ['ate', 'eat', 'tares'],
+      source: [],
+    });
+    expect(denied.commonIndex.get('aet')).toEqual(['ate']);
+    expect(denied.commonIndex.has('aerst')).toBe(false);
+    expect(denied.boundary.has('eat')).toBe(false);
+  });
+
   it('indexes boundary words by signature', () => {
     expect(dicts.boundaryIndex.get('aet')).toEqual(['ate', 'eat', 'tea']);
     expect(dicts.boundaryIndex.get('aerst')).toEqual(['tares']);
