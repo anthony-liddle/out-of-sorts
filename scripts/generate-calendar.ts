@@ -21,7 +21,11 @@ import { Solver } from '../src/engine/solver';
 import type { Calendar, CalendarEntry } from '../src/calendar/types';
 
 const OUT = 'public/data/calendar.json';
-const CALENDAR_EPOCH = '2026-08-01';
+// The calendar epoch: which date entry 0 falls on. MOVABLE (unlike
+// STORAGE_EPOCH), but it must never be in the future: a future epoch makes
+// rackForDate return null every day, and the first build shipped exactly
+// that. Set it to the generation date.
+const CALENDAR_EPOCH = '2026-07-13';
 const ORDER_SEED = 20260801;
 
 if (existsSync(OUT) && !process.argv.includes('--force')) {

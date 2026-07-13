@@ -110,7 +110,18 @@ export function App({ services }: { services: GameServices }) {
       </header>
 
       <main data-ready={game.ready || undefined}>
-        {game.result && game.puzzle && game.run ? (
+        {game.mode === 'daily' && game.calendarReady && !game.entry ? (
+          <section className="no-daily" data-testid="no-daily">
+            <h2>No puzzle today.</h2>
+            <p>
+              The daily calendar has not started yet. Endless is waiting
+              whenever you are.
+            </p>
+            <button type="button" onClick={() => game.setMode('endless')}>
+              Play Endless
+            </button>
+          </section>
+        ) : game.result && game.puzzle && game.run ? (
           <EndScreen
             puzzle={game.puzzle}
             result={game.result}

@@ -90,6 +90,24 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   the sweep stays exact; the 15 racks where par leans on a denied word are
   a known, flagged tension.
 
+## Testing rules learned the hard way
+
+- **Synthetic-date tests cannot see a bad epoch. Anything derived from a
+  committed artifact must be tested against the committed artifact.** The
+  calendar shipped with an epoch a month in the future: `rackForDate`
+  correctly returned null every single day, the UI clamped it to entry 0,
+  and every daily anyone ever saw was Day 1. There were 150 tests,
+  including a full timezone matrix and a day-N-maps-to-entry-N test, and
+  not one asked the real calendar for today's rack. See
+  `test/calendar-live.test.ts`.
+- **Never substitute a plausible default for a null the engine returned
+  deliberately.** A null is a fact. Clamping, defaulting, or falling back
+  past one turns a loud failure into a game that looks fine and is wrong.
+  Surface it: throw in dev, say something true in production.
+- **jsdom has no layout engine.** Anything about size, position, wrapping,
+  or overflow must be measured in a real browser; see
+  `test/layout.test.ts`.
+
 ## Cold start rules
 
 - **The dictionary index never blocks the rack.** The rack renders with no
