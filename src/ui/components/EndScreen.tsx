@@ -95,10 +95,7 @@ export function EndScreen({
         )}
         <div className="stack-compare" data-columns={diverges ? 3 : 2}>
           <figure data-testid="your-stack-figure">
-            <figcaption>
-              <span className="column-name">Yours</span>
-              <small>{result.score} points</small>
-            </figcaption>
+            <figcaption>Yours · {result.score}</figcaption>
             {played.length === 0 ? (
               <p className="stack-empty">You spent nothing.</p>
             ) : (
@@ -110,13 +107,7 @@ export function EndScreen({
             )}
           </figure>
           <figure>
-            <figcaption>
-              <span className="column-name">Best</span>
-              <small>
-                {puzzle.par} points · the most points possible
-                {diverges ? '' : ' · also clean'}
-              </small>
-            </figcaption>
+            <figcaption>Best · {puzzle.par}</figcaption>
             <Stack
               words={toRows(puzzle.parPath)}
               rackSize={puzzle.rack.length}
@@ -125,14 +116,8 @@ export function EndScreen({
             />
           </figure>
           {diverges && puzzle.cleanPath && (
-            <figure>
-              <figcaption>
-                <span className="column-name">Clean</span>
-                <small>
-                  {puzzle.bestClean} points · the most points possible
-                  without ever losing more than one letter at a time
-                </small>
-              </figcaption>
+            <figure className="clean-figure">
+              <figcaption>Clean · {puzzle.bestClean}</figcaption>
               <Stack
                 words={toRows(puzzle.cleanPath)}
                 rackSize={puzzle.rack.length}

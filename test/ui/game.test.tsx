@@ -533,7 +533,7 @@ describe('face: the end screen explains the day', () => {
     ).toBeTruthy()
     expect(screen.queryByText(/no choice to make today/i)).toBeNull()
     expect(screen.queryByTestId('clean-stack')).toBeNull()
-    expect(screen.getByText(/^best$/i)).toBeTruthy()
+    expect(screen.getByText(/^best · \d+$/i)).toBeTruthy()
   })
 
   it('reports the engine-computed gap in plain words from the screen', () => {
@@ -569,9 +569,13 @@ describe('face: the end screen explains the day', () => {
     ).toBeTruthy()
     expect(document.body.textContent).not.toMatch(/greed|discipline/i)
     expect(screen.getByTestId('clean-stack')).toBeTruthy()
+    // definitions live in the sentence, not the headers: headers are
+    // name and number only, so the stacks share a baseline
+    expect(screen.getByText(`Best · ${puzzle.par}`)).toBeTruthy()
+    expect(screen.getByText(`Clean · ${puzzle.bestClean}`)).toBeTruthy()
     expect(
-      screen.getByText(/most points possible without ever losing/i),
-    ).toBeTruthy()
+      screen.queryByText(/most points possible/i),
+    ).toBeNull()
   })
 })
 
