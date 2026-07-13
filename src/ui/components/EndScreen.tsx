@@ -1,15 +1,23 @@
 // The end of the run. Two different facts, and the engine distinguishes
-// them: a Clean Finish (the pool is genuinely dead) or the player stopped.
-// Shows the badges, the score against par, the rank, and what was possible.
-// The eight count is revealed here and only here.
+// them: the pool genuinely dying earns the line the whole name was built
+// for, and stopping early earns a rest. Badges, rank, and what was
+// possible: the par path rendered as a ghosted stack beside the player's
+// own, so the comparison is a silhouette, not a reading exercise. The eight
+// count is revealed here and only here.
 import type { Puzzle } from '../../engine/engine'
-import type { RunResult } from '../../engine/run'
+import type { PlayedWord, RunResult } from '../../engine/run'
+import { wordScore } from '../../engine/values'
 import { rankFor } from '../../game/rank'
+import { Stack } from './Stack'
+
+function toRows(words: readonly string[]): PlayedWord[] {
+  return words.map((w) => ({ word: w, score: wordScore(w), length: w.length }))
+}
 
 export interface EndScreenProps {
   puzzle: Puzzle
   result: RunResult
-  playedWords: readonly string[]
+  played: readonly PlayedWord[]
   dayLabel: string
   onShare: () => void
   onNewEndless: (() => void) | null
@@ -18,23 +26,25 @@ export interface EndScreenProps {
 export function EndScreen({
   puzzle,
   result,
-  playedWords,
+  played,
   dayLabel,
   onShare,
   onNewEndless,
 }: EndScreenProps) {
+  const playedWords = played.map((p) => p.word)
   const rank = rankFor(result.score, puzzle.par)
   const eights = puzzle.holds.fullRackWords
   const foundEights = playedWords.filter((w) => eights.includes(w)).length
   const multiEight = eights.length >= 2
   const allEights = multiEight && foundEights === eights.length
+  const cleanDiffers =
+    puzzle.cleanPath !== null &&
+    puzzle.cleanPath.join(' ') !== puzzle.parPath.join(' ')
 
   return (
     <section className="end-screen" data-testid="end-screen">
       <h2>
-        {result.endReason === 'clean-finish'
-          ? 'Out of sorts.'
-          : 'Rested early.'}
+        {result.endReason === 'clean-finish' ? 'Out of sorts.' : 'Rested early.'}
       </h2>
       <p className="end-sub">
         {dayLabel} · {result.score} points · par {puzzle.par}
@@ -71,29 +81,44 @@ export function EndScreen({
         </li>
       </ul>
 
-      <details className="possible">
-        <summary>What was possible</summary>
-        <p>
-          Par path:{' '}
-          {puzzle.parPath.map((w) => w.toUpperCase()).join(' > ')}
-        </p>
-        {puzzle.cleanPath && (
-          <p>
-            Clean path:{' '}
-            {puzzle.cleanPath.map((w) => w.toUpperCase()).join(' > ')}
-          </p>
+      <section className="possible">
+        <h3>What was possible</h3>
+        <div className="stack-compare">
+          <figure>
+            <figcaption>Yours · {result.score}</figcaption>
+            <Stack
+              words={played}
+              rackSize={puzzle.rack.length}
+              testId="your-stack"
+            />
+          </figure>
+          <figure>
+            <figcaption>Par · {puzzle.par}</figcaption>
+            <Stack
+              words={toRows(puzzle.parPath)}
+              rackSize={puzzle.rack.length}
+              ghosted
+              testId="par-stack"
+            />
+          </figure>
+        </div>
+        {cleanDiffers && (
+          <details className="clean-toggle">
+            <summary>The clean path was different</summary>
+            <Stack
+              words={toRows(puzzle.cleanPath!)}
+              rackSize={puzzle.rack.length}
+              ghosted
+              testId="clean-stack"
+            />
+          </details>
         )}
         {multiEight && (
-          <p>
-            The eights:{' '}
-            {eights
-              .map((w) =>
-                playedWords.includes(w) ? w.toUpperCase() : w.toUpperCase(),
-              )
-              .join(', ')}
+          <p className="eights-reveal">
+            The eights: {eights.map((w) => w.toUpperCase()).join(', ')}
           </p>
         )}
-      </details>
+      </section>
 
       <div className="end-actions">
         <button type="button" onClick={onShare}>

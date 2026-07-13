@@ -7,6 +7,9 @@ import type { PlayedWord } from '../../engine/run'
 export interface StackProps {
   words: readonly PlayedWord[]
   rackSize: number
+  /** Ghosted rendering for the end screen's what-was-possible comparison. */
+  ghosted?: boolean
+  testId?: string
 }
 
 export function Stack({
@@ -36,11 +39,6 @@ export function Stack({
             data-eight={w.length === 8 || undefined}
             style={{ width: `${(w.length / rackSize) * 100}%` }}
           >
-            {notch && (
-              <span className="notch" aria-label="dropped more than one letter">
-                ▼
-              </span>
-            )}
             <span className="stack-word">{w.word.toUpperCase()}</span>
             <span className="stack-score">{w.score}</span>
           </li>

@@ -247,7 +247,7 @@ describe('the all eights badge', () => {
       <EndScreen
         puzzle={puzzle}
         result={run}
-        playedWords={['angriest']}
+        played={[{ word: 'angriest', score: 9, length: 8 }]}
         dayLabel="Day 1"
         onShare={() => {}}
         onNewEndless={null}
@@ -396,8 +396,9 @@ describe('voice and the vertical', () => {
     await playWord('tearing')
     await playWord('rating')
     await playWord('grain')
+    // four plays spend three letters: the first play spends nothing
     const ghosts = screen.getAllByTestId('ghost')
-    expect(ghosts.length).toBe(4)
+    expect(ghosts.length).toBe(3)
     const byIndex = [...ghosts].sort(
       (a, b) => Number(a.dataset.playIndex) - Number(b.dataset.playIndex),
     )

@@ -65,7 +65,7 @@ export function Pool({ letters, input, selection, onTileClick }: PoolProps) {
   const previewing = input.length >= MIN_WORD_LENGTH
   const unmatched = selection.some((i) => i === -1)
   return (
-    <div className="pool" role="group" aria-label="Letter pool">
+    <div className="pool" data-testid="pool" role="group" aria-label="Letter pool">
       {[...letters].map((letter, i) => {
         const state = used.has(i)
           ? 'used'
