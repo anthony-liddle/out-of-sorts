@@ -1,5 +1,9 @@
 # Out of Sorts
 
+The GDD is the source of truth for design and lives at
+`../vault/Projects/Out of Sorts/GDD.md`. Read it before any design-affecting
+work. Do not copy it into this repo.
+
 A daily word game about attrition. A run starts with the eight scrambled
 letters of a source word; each play's letters become the new pool; every
 letter you did not use is gone for good; no repeats; the run ends when no
