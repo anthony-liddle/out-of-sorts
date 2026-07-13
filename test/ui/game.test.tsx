@@ -79,9 +79,13 @@ async function playWord(word: string) {
 }
 
 describe('cold start in the UI', () => {
-  it('renders the rack with no dictionary, fast, with no spinner', async () => {
+  it('renders the rack with the dictionary still pending, and no spinner', async () => {
+    // The guarantee is that the rack never WAITS on the dictionary, so the
+    // test withholds it forever and the rack must appear anyway. The wall
+    // clock time to interactive is measured in the real browser
+    // (test/layout.test.ts); a millisecond budget inside jsdom measures the
+    // CI runner's mood, not the game.
     const never = new Promise<never>(() => {})
-    const t0 = performance.now()
     render(
       <App
         services={services({
@@ -90,7 +94,6 @@ describe('cold start in the UI', () => {
       />,
     )
     const tiles = await screen.findAllByTestId('pool-tile')
-    expect(performance.now() - t0).toBeLessThan(100)
     expect(tiles).toHaveLength(8)
     expect(document.body.textContent).not.toMatch(/loading/i)
     expect(document.querySelector('[role="progressbar"]')).toBeNull()

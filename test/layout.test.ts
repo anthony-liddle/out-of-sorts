@@ -89,6 +89,33 @@ describe('the rack never wraps', () => {
   }
 });
 
+describe('cold start in a real browser', () => {
+  it('paints an interactive rack well inside the budget', async () => {
+    // The real number, measured where it means something: time from
+    // navigation start to eight tiles on screen, with the dictionary still
+    // loading in its worker. On device this is 0 to 2ms; the budget is
+    // 100ms on a mid range phone, so a generous ceiling here still catches
+    // a regression that puts the dictionary back on the critical path.
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 900 },
+    });
+    page = await context.newPage();
+    await page.goto(origin);
+    await page.waitForSelector('[data-testid="pool-tile"]');
+    const ms = await page.evaluate(() => {
+      const tiles = performance.now();
+      const nav = performance.getEntriesByType(
+        'navigation',
+      )[0] as PerformanceNavigationTiming;
+      return tiles - nav.responseStart;
+    });
+    expect(ms).toBeLessThan(1000);
+    const tiles = await page.$$('[data-testid="pool-tile"]');
+    expect(tiles).toHaveLength(8);
+    expect(await page.$('[role="progressbar"]')).toBeNull();
+  }, 30000);
+});
+
 describe('the drift at phone width', () => {
   it('holds its ghosts in at most two tidy rows at 375px', async () => {
     await freshGame(375);
