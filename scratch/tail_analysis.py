@@ -36,6 +36,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import json as _json
 from ladder_analysis import load_file, scowl_upto, score, NEG, RAW
 
 VARIANTS = {
@@ -164,7 +165,10 @@ def bucket(xs):
 
 def main():
     t0 = time.time()
-    scowl = {35: scowl_upto(35), 50: scowl_upto(50)}
+    # A denied word is not a word: the common pool excludes the denylist,
+    # mirroring the engine. The reference was re-pinned with this applied.
+    _deny = set(_json.load(open('data/denylist.json'))['words'])
+    scowl = {35: scowl_upto(35) - _deny, 50: scowl_upto(50) - _deny}
     solvers = {(b, v): VSolver(scowl[b], **spec)
                for b in (35, 50) for v, spec in VARIANTS.items()}
 
