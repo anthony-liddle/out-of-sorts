@@ -28,6 +28,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import json as _json
 from ladder_analysis import scowl_upto, score, VALUES
 from tail_analysis import VSolver, VARIANTS
 
@@ -65,7 +66,10 @@ def greedy(sol, rack):
 
 
 def main():
-    s35, s50 = scowl_upto(35), scowl_upto(50)
+    # A denied word is not a word: the common pool excludes the denylist,
+    # mirroring the engine. The reference was re-pinned with this applied.
+    _deny = set(_json.load(open('data/denylist.json'))['words'])
+    s35, s50 = scowl_upto(35) - _deny, scowl_upto(50) - _deny
     sols = {v: VSolver(s50, **VARIANTS[v]) for v in ("A", "D")}
     out = {}
 

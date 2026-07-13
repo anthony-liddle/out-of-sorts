@@ -1,0 +1,390 @@
+/* Ghosts. One theme, not a theme system. One color, one job:
+   ground lilac, white tiles, plum text, violet for chrome and brand only,
+   mint for the eights only, rose for All Eights only, ghost violet for the
+   spent. Banned: Peach's palette, amber above all, serif, Fredoka. */
+:root {
+  --ground: #f4f2fb;
+  --tile: #ffffff;
+  --ink: #3c3489;
+  --violet: #7f77dd;
+  --mint: #5dcaa5;
+  --rose: #d4537e;
+  --ghost: #a9a3c9;
+  --ghost-body: #dedbf0;
+  --cold: #eceafd;
+  --cold-ink: #a49ed6;
+  font-family:
+    -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.app {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.masthead h1 {
+  color: var(--violet);
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  margin: 0;
+  flex: 1;
+}
+
+.masthead button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  color: var(--violet);
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.masthead button[aria-pressed='true'] {
+  border-color: var(--violet);
+  background: var(--tile);
+}
+
+.masthead .meta {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.streak {
+  color: var(--violet);
+  font-size: 0.85rem;
+}
+
+.day-label {
+  color: var(--ghost);
+  margin: 1.2rem 0 0.4rem;
+  font-size: 0.9rem;
+}
+
+/* The pool: the decision surface. Never waits on anything. */
+.pool {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 1rem;
+}
+
+.tile {
+  background: var(--tile);
+  color: var(--ink);
+  border: none;
+  border-radius: 0.9rem;
+  box-shadow: 0 2px 0 rgba(60, 52, 137, 0.12);
+  width: 3rem;
+  height: 3.4rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    transform 200ms ease;
+}
+
+/* The most important interaction in the game: as you type, the tiles the
+   input would discard go cold. Color is not the only signal: cold tiles
+   also sink and their aria-pressed state tracks used tiles. */
+.pool-tile[data-state='cold'] {
+  background: var(--cold);
+  color: var(--cold-ink);
+  transform: translateY(4px) scale(0.94);
+  box-shadow: none;
+}
+
+.pool-tile[data-state='used'] {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 rgba(60, 52, 137, 0.18);
+}
+
+.entry {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.entry input {
+  flex: 1;
+  font: inherit;
+  font-size: 1.2rem;
+  color: var(--ink);
+  border: 2px solid var(--violet);
+  border-radius: 0.7rem;
+  padding: 0.5rem 0.8rem;
+  background: var(--tile);
+  text-transform: uppercase;
+}
+
+.entry button {
+  font: inherit;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.5rem 1rem;
+  background: var(--violet);
+  color: var(--tile);
+  cursor: pointer;
+}
+
+.entry button[type='button'] {
+  background: none;
+  color: var(--violet);
+  border: 1px solid var(--violet);
+}
+
+.entry-error {
+  color: var(--rose);
+  font-size: 0.9rem;
+  min-height: 1.2rem;
+  margin: 0.4rem 0 0;
+}
+
+.board-lower {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  margin-top: 1.4rem;
+  align-items: start;
+}
+
+/* The stack: descending, narrowing, with landings and notches. */
+.stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.stack-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--tile);
+  border-radius: 0.6rem;
+  padding: 0.3rem 0.7rem;
+  min-width: 7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  box-shadow: 0 1px 0 rgba(60, 52, 137, 0.1);
+}
+
+.stack-row[data-eight] {
+  background: var(--mint);
+  color: #0e3d2c;
+}
+
+.stack-row[data-notch] {
+  margin-top: 0.55rem;
+}
+
+.notch {
+  color: var(--rose);
+  font-size: 0.7rem;
+}
+
+.stack-score {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* The spent row: parked, not deleted. Ghost violet, fading with age.
+   The fade is decoration; the letter always stays readable. */
+.spent-row {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  max-height: 50vh;
+  align-content: flex-start;
+}
+
+.ghost {
+  position: relative;
+  width: 2.2rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ghost-body {
+  position: absolute;
+  inset: 0;
+  background: var(--ghost-body);
+  border-radius: 1.1rem 1.1rem 0.35rem 0.35rem;
+  mask: radial-gradient(0.28rem at 25% 100%, transparent 98%, black) bottom
+    left / 33.4% 0.3rem repeat-x, linear-gradient(black, black) top / 100%
+    calc(100% - 0.28rem) no-repeat;
+}
+
+.ghost-body::before {
+  content: '';
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  width: 0.22rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: var(--ghost);
+  box-shadow: 0.65rem 0 0 var(--ghost);
+}
+
+.ghost-letter {
+  position: relative;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.ghost[data-motion='on'] {
+  animation: ghost-arrive 700ms ease-out, ghost-drift 5s ease-in-out 700ms
+    infinite alternate;
+}
+
+@keyframes ghost-arrive {
+  from {
+    transform: translateY(-1.5rem) rotate(-8deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(0.15rem) rotate(4deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes ghost-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-0.25rem);
+  }
+}
+
+.app[data-reduced-motion] * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* The end screen carries the serious part of the register. */
+.end-screen h2 {
+  color: var(--violet);
+  margin: 1.5rem 0 0.2rem;
+}
+
+.end-sub {
+  color: var(--ghost);
+  margin: 0 0 1rem;
+}
+
+.badges {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: var(--tile);
+  border-radius: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 7rem;
+  opacity: 0.65;
+}
+
+.badge[data-earned] {
+  opacity: 1;
+  box-shadow: 0 2px 0 rgba(60, 52, 137, 0.15);
+}
+
+.badge-rose[data-earned] {
+  background: var(--rose);
+  color: #fff;
+}
+
+.badge-name {
+  font-weight: 700;
+}
+
+.badge-state {
+  font-size: 0.85rem;
+}
+
+.possible {
+  margin: 1rem 0;
+  color: var(--ink);
+}
+
+.possible summary {
+  cursor: pointer;
+  color: var(--violet);
+}
+
+.end-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.end-actions button {
+  font: inherit;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.55rem 1.1rem;
+  background: var(--violet);
+  color: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 34rem) {
+  .board-lower {
+    grid-template-columns: 1fr;
+  }
+  .spent-row {
+    flex-direction: row;
+    max-height: none;
+  }
+}

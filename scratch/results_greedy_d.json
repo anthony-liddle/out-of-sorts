@@ -1,47 +1,47 @@
 {
   "q1 7L A": {
-    "greedy_par_pct": 15.8,
-    "greedy_clean_pct": 85.9,
+    "greedy_par_pct": 15.7,
+    "greedy_clean_pct": 85.8,
     "score_pct_median": 82.8,
     "score_pct_p25": 69.8,
-    "n": 4110
+    "n": 4107
   },
   "q1 7L D": {
     "greedy_par_pct": 41.1,
-    "greedy_clean_pct": 85.9,
+    "greedy_clean_pct": 85.8,
     "score_pct_median": 93.2,
     "score_pct_p25": 79.5,
-    "n": 4110
+    "n": 4107
   },
   "q1 8L A": {
     "greedy_par_pct": 8.3,
     "greedy_clean_pct": 80.2,
-    "score_pct_median": 76.8,
+    "score_pct_median": 76.7,
     "score_pct_p25": 65.0,
     "n": 3300
   },
   "q1 8L D": {
     "greedy_par_pct": 23.0,
     "greedy_clean_pct": 80.2,
-    "score_pct_median": 84.5,
-    "score_pct_p25": 72.0,
+    "score_pct_median": 84.4,
+    "score_pct_p25": 71.9,
     "n": 3300
   },
   "q2 removed_by_D": {
-    "n": 264,
+    "n": 265,
     "spec": {
       "both": "13 (5%)",
       "ends-high": "6 (2%)",
       "mine": "82 (31%)",
       "neither": "122 (46%)",
-      "value": "41 (16%)"
+      "value": "42 (16%)"
     },
     "path_aware": {
       "both": "22 (8%)",
       "ends-high": "6 (2%)",
-      "mine": "167 (63%)",
-      "neither": "37 (14%)",
-      "value": "32 (12%)"
+      "mine": "168 (63%)",
+      "neither": "36 (14%)",
+      "value": "33 (12%)"
     }
   },
   "q2 kept_by_D": {
@@ -61,7 +61,7 @@
       "value": "50 (24%)"
     }
   },
-  "q2 created_by_D": 56,
+  "q2 created_by_D": 55,
   "q2 examples mine": [
     {
       "rack": "abbeist",
@@ -152,17 +152,17 @@
       "removed": false
     },
     {
-      "rack": "ahnoprs",
+      "rack": "anorrsw",
       "sources": [
-        "orphans"
+        "narrows"
       ],
       "gap": 22,
       "removed": true
     },
     {
-      "rack": "anorrsw",
+      "rack": "ahnoprs",
       "sources": [
-        "narrows"
+        "orphans"
       ],
       "gap": 22,
       "removed": true
@@ -170,20 +170,20 @@
   ],
   "q2 examples ends-high": [
     {
-      "rack": "cefhils",
-      "sources": [
-        "filches"
-      ],
-      "gap": 11,
-      "removed": false
-    },
-    {
       "rack": "aehknrs",
       "sources": [
         "hankers"
       ],
       "gap": 11,
       "removed": true
+    },
+    {
+      "rack": "cefhils",
+      "sources": [
+        "filches"
+      ],
+      "gap": 11,
+      "removed": false
     },
     {
       "rack": "cefhins",
@@ -213,7 +213,7 @@
       },
       "4": {
         "plays_pct": 28.0,
-        "points_pct": 23.1,
+        "points_pct": 23.2,
         "mean_words": 2.77
       },
       "3": {
@@ -223,7 +223,7 @@
       }
     },
     "grind345_plays": 72.7,
-    "grind345_points": 61.4
+    "grind345_points": 61.5
   },
   "q3 7L D": {
     "rungs": {
@@ -233,14 +233,14 @@
         "mean_words": 1.19
       },
       "6": {
-        "plays_pct": 21.8,
+        "plays_pct": 21.7,
         "points_pct": 24.7,
         "mean_words": 1.63
       },
       "5": {
         "plays_pct": 33.9,
-        "points_pct": 31.5,
-        "mean_words": 2.46
+        "points_pct": 31.4,
+        "mean_words": 2.45
       },
       "4": {
         "plays_pct": 13.9,
@@ -249,7 +249,7 @@
       },
       "3": {
         "plays_pct": 13.9,
-        "points_pct": 9.3,
+        "points_pct": 9.4,
         "mean_words": 1.0
       }
     },
@@ -258,42 +258,65 @@
   },
   "q3 worst rung5 7L D": [
     {
-      "rack": "aeprstt",
+      "rack": "adeprsy",
       "sources": [
-        "patters",
-        "spatter"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aceprss",
-      "sources": [
-        "parsecs",
-        "scrapes"
+        "sprayed"
       ],
       "rung5_words": 7
     },
     {
       "rack": "adeiprs",
       "sources": [
-        "aspired",
-        "diapers",
+        "despair",
         "praised",
-        "despair"
+        "diapers",
+        "aspired"
       ],
       "rung5_words": 7
     },
     {
-      "rack": "aehmprs",
+      "rack": "aeiprst",
       "sources": [
-        "hampers"
+        "pastier",
+        "parties",
+        "pirates"
       ],
       "rung5_words": 7
     },
     {
-      "rack": "acenprs",
+      "rack": "aepprsy",
       "sources": [
-        "prances"
+        "prepays"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "adehprs",
+      "sources": [
+        "phrased",
+        "sharped"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeeprrs",
+      "sources": [
+        "reapers"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aceprss",
+      "sources": [
+        "scrapes",
+        "parsecs"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeprstu",
+      "sources": [
+        "pasture"
       ],
       "rung5_words": 7
     },
@@ -305,31 +328,9 @@
       "rung5_words": 7
     },
     {
-      "rack": "aemprst",
+      "rack": "acekprs",
       "sources": [
-        "tampers"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "adehprs",
-      "sources": [
-        "sharped",
-        "phrased"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aeprrss",
-      "sources": [
-        "sparser"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aepprsu",
-      "sources": [
-        "paupers"
+        "packers"
       ],
       "rung5_words": 7
     }
@@ -384,13 +385,13 @@
       },
       "6": {
         "plays_pct": 21.3,
-        "points_pct": 22.4,
+        "points_pct": 22.3,
         "mean_words": 2.08
       },
       "5": {
-        "plays_pct": 31.2,
+        "plays_pct": 31.1,
         "points_pct": 27.0,
-        "mean_words": 2.96
+        "mean_words": 2.95
       },
       "4": {
         "plays_pct": 10.6,
@@ -408,51 +409,16 @@
   },
   "q3 worst rung5 8L D": [
     {
-      "rack": "adeiprss",
+      "rack": "aeinpprs",
       "sources": [
-        "despairs"
+        "snappier"
       ],
       "rung5_words": 7
     },
     {
-      "rack": "aeilprrs",
+      "rack": "aenprrst",
       "sources": [
-        "reprisal"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aehprsst",
-      "sources": [
-        "sharpest"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aehnprst",
-      "sources": [
-        "panthers"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aenprstt",
-      "sources": [
-        "patterns"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "adenoprs",
-      "sources": [
-        "operands"
-      ],
-      "rung5_words": 7
-    },
-    {
-      "rack": "aeprstty",
-      "sources": [
-        "tapestry"
+        "partners"
       ],
       "rung5_words": 7
     },
@@ -464,16 +430,53 @@
       "rung5_words": 7
     },
     {
-      "rack": "acemoprs",
+      "rack": "adeinprs",
       "sources": [
-        "compares"
+        "sprained"
       ],
       "rung5_words": 7
     },
     {
-      "rack": "acehoprs",
+      "rack": "aeinprst",
       "sources": [
-        "poachers"
+        "pertains",
+        "pantries"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeprssst",
+      "sources": [
+        "sparsest",
+        "trespass"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "adeelprs",
+      "sources": [
+        "relapsed"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "adeiprst",
+      "sources": [
+        "rapidest"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aeeprstz",
+      "sources": [
+        "trapezes"
+      ],
+      "rung5_words": 7
+    },
+    {
+      "rack": "aehnprss",
+      "sources": [
+        "sharpens"
       ],
       "rung5_words": 7
     }

@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'path';
+import react from '@vitejs/plugin-react';
 import { defineConfig, type Connect } from 'vite';
 
 // Collects cold start timing reports POSTed by the instrumentation page,
@@ -34,6 +35,7 @@ export default defineConfig(({ mode }) => ({
     __ANALYTICS__: JSON.stringify(mode !== 'fdroid'),
   },
   plugins: [
+    react(),
     {
       name: 'cold-start-report',
       configureServer(server) {
@@ -45,7 +47,7 @@ export default defineConfig(({ mode }) => ({
     },
   ],
   test: {
-    include: ['test/**/*.test.ts'],
+    include: ['test/**/*.test.{ts,tsx}'],
     testTimeout: 120000,
   },
 }));

@@ -17,8 +17,10 @@ export interface Dictionaries {
   boundary: ReadonlySet<string>;
   /** Boundary indexed by signature, minimum play length applied. */
   boundaryIndex: SigIndex;
-  /** SCOWL 50 indexed by signature, minimum play length applied. This is
-   * the par dictionary. Par is common pool only, never the boundary. */
+  /** SCOWL 50 indexed by signature, minimum play length applied, denylist
+   * applied. This is the par dictionary. Par is common pool only, never
+   * the boundary. A denied word is not a word: the deny reaches this index
+   * too, so par never leans on a word the player cannot play. */
   commonIndex: SigIndex;
   /** SCOWL 35 words of length 8, ungated. */
   source: ReadonlySet<string>;
@@ -44,10 +46,13 @@ export function buildDictionaries(lists: WordLists): Dictionaries {
   for (const w of lists.allow) boundary.add(w);
   for (const w of lists.deny) boundary.delete(w);
 
+  const deny = new Set(lists.deny);
+  const common = lists.common.filter((w) => !deny.has(w));
+
   return {
     boundary,
     boundaryIndex: buildIndex(boundary),
-    commonIndex: buildIndex(lists.common),
+    commonIndex: buildIndex(common),
     source: new Set(lists.source),
   };
 }

@@ -1,9 +1,9 @@
 {
   "7L src35 common35 A": {
-    "source_words": 6720,
-    "gate_words": 4127,
+    "source_words": 6717,
+    "gate_words": 4124,
     "gate_words_pct": 61.4,
-    "gate_racks": 3666,
+    "gate_racks": 3664,
     "depth": {
       "min": 5,
       "p25": 7,
@@ -14,7 +14,7 @@
     },
     "depth_buckets": {
       "<=5": 2.8,
-      "6-8": 38.9,
+      "6-8": 38.8,
       "9-11": 35.6,
       "12-14": 17.7,
       "15+": 5.1
@@ -24,7 +24,7 @@
     "fullrack_hold_pct": 10.6,
     "par": {
       "median": 60.0,
-      "mean": 62.77
+      "mean": 62.76
     },
     "grind_plays_pct": 48.8,
     "grind_points_pct": 36.2,
@@ -57,7 +57,7 @@
         "plays_pct": 20.1,
         "points_pct": 12.9,
         "mean_words": 1.84,
-        "visited_pct": 99.4
+        "visited_pct": 99.5
       }
     },
     "seconds": 0.35,
@@ -82,7 +82,7 @@
       },
       "4": {
         "plays_pct": 30.0,
-        "points_pct": 23.5,
+        "points_pct": 23.6,
         "mean_words": 2.87,
         "visited_pct": 99.5
       },
@@ -90,15 +90,15 @@
         "plays_pct": 21.1,
         "points_pct": 12.2,
         "mean_words": 2.01,
-        "visited_pct": 99.8
+        "visited_pct": 99.9
       }
     }
   },
   "7L src35 common35 B": {
-    "source_words": 6720,
-    "gate_words": 4127,
+    "source_words": 6717,
+    "gate_words": 4124,
     "gate_words_pct": 61.4,
-    "gate_racks": 3666,
+    "gate_racks": 3664,
     "depth": {
       "min": 5,
       "p25": 7,
@@ -114,12 +114,12 @@
       "12-14": 9.5,
       "15+": 2.5
     },
-    "teeth_diverge_pct": 11.0,
-    "teeth_gap_pct_median": 9.0,
+    "teeth_diverge_pct": 10.9,
+    "teeth_gap_pct_median": 9.1,
     "fullrack_hold_pct": 10.6,
     "par": {
       "median": 57.0,
-      "mean": 59.81
+      "mean": 59.8
     },
     "grind_plays_pct": 43.1,
     "grind_points_pct": 32.6,
@@ -158,10 +158,10 @@
     "seconds": 0.26
   },
   "7L src35 common35 C": {
-    "source_words": 6720,
-    "gate_words": 4147,
+    "source_words": 6717,
+    "gate_words": 4144,
     "gate_words_pct": 61.7,
-    "gate_racks": 3686,
+    "gate_racks": 3684,
     "depth": {
       "min": 4,
       "p25": 6,
@@ -182,7 +182,7 @@
     "fullrack_hold_pct": 10.5,
     "par": {
       "median": 52.0,
-      "mean": 55.13
+      "mean": 55.12
     },
     "grind_plays_pct": 36.3,
     "grind_points_pct": 26.8,
@@ -190,12 +190,12 @@
       "7": {
         "plays_pct": 15.2,
         "points_pct": 22.1,
-        "mean_words": 1.13,
+        "mean_words": 1.12,
         "visited_pct": 100.0
       },
       "6": {
         "plays_pct": 19.2,
-        "points_pct": 22.8,
+        "points_pct": 22.7,
         "mean_words": 1.53,
         "visited_pct": 93.0
       },
@@ -215,10 +215,10 @@
     "seconds": 0.16
   },
   "7L src35 common35 D": {
-    "source_words": 6720,
-    "gate_words": 4127,
+    "source_words": 6717,
+    "gate_words": 4124,
     "gate_words_pct": 61.4,
-    "gate_racks": 3666,
+    "gate_racks": 3664,
     "depth": {
       "min": 5,
       "p25": 5,
@@ -239,7 +239,7 @@
     "fullrack_hold_pct": 10.6,
     "par": {
       "median": 50.0,
-      "mean": 52.52
+      "mean": 52.5
     },
     "grind_plays_pct": 29.4,
     "grind_points_pct": 22.0,
@@ -275,36 +275,36 @@
         "visited_pct": 99.3
       }
     },
-    "seconds": 0.25
+    "seconds": 0.26
   },
   "7L src35 common50 A": {
-    "source_words": 6720,
-    "gate_words": 4590,
+    "source_words": 6717,
+    "gate_words": 4586,
     "gate_words_pct": 68.3,
-    "gate_racks": 4110,
+    "gate_racks": 4107,
     "depth": {
       "min": 5,
       "p25": 8,
-      "median": 10.0,
+      "median": 10,
       "p75": 12,
       "max": 26,
       "mean": 10.37
     },
     "depth_buckets": {
-      "<=5": 1.6,
-      "6-8": 31.2,
+      "<=5": 1.7,
+      "6-8": 31.1,
       "9-11": 36.5,
       "12-14": 19.9,
       "15+": 10.8
     },
     "teeth_diverge_pct": 11.4,
-    "teeth_gap_pct_median": 10.2,
+    "teeth_gap_pct_median": 10.1,
     "fullrack_hold_pct": 15.1,
     "par": {
-      "median": 64.0,
-      "mean": 68.11
+      "median": 64,
+      "mean": 68.09
     },
-    "grind_plays_pct": 48.5,
+    "grind_plays_pct": 48.6,
     "grind_points_pct": 36.3,
     "rungs_par": {
       "7": {
@@ -317,7 +317,7 @@
         "plays_pct": 15.3,
         "points_pct": 19.6,
         "mean_words": 1.64,
-        "visited_pct": 91.9
+        "visited_pct": 91.8
       },
       "5": {
         "plays_pct": 24.1,
@@ -327,7 +327,7 @@
       },
       "4": {
         "plays_pct": 28.0,
-        "points_pct": 23.1,
+        "points_pct": 23.2,
         "mean_words": 2.77,
         "visited_pct": 99.6
       },
@@ -338,7 +338,7 @@
         "visited_pct": 99.5
       }
     },
-    "seconds": 0.39,
+    "seconds": 0.41,
     "rungs_longest": {
       "7": {
         "plays_pct": 11.4,
@@ -356,7 +356,7 @@
         "plays_pct": 23.6,
         "points_pct": 25.1,
         "mean_words": 2.51,
-        "visited_pct": 97.6
+        "visited_pct": 97.5
       },
       "4": {
         "plays_pct": 29.1,
@@ -373,22 +373,22 @@
     }
   },
   "7L src35 common50 B": {
-    "source_words": 6720,
-    "gate_words": 4590,
+    "source_words": 6717,
+    "gate_words": 4586,
     "gate_words_pct": 68.3,
-    "gate_racks": 4110,
+    "gate_racks": 4107,
     "depth": {
       "min": 5,
       "p25": 7,
-      "median": 9.0,
+      "median": 9,
       "p75": 11,
       "max": 23,
       "mean": 9.25
     },
     "depth_buckets": {
-      "<=5": 4.9,
-      "6-8": 42.0,
-      "9-11": 33.6,
+      "<=5": 5.0,
+      "6-8": 41.9,
+      "9-11": 33.7,
       "12-14": 14.0,
       "15+": 5.4
     },
@@ -396,10 +396,10 @@
     "teeth_gap_pct_median": 9.8,
     "fullrack_hold_pct": 15.1,
     "par": {
-      "median": 61.0,
-      "mean": 64.46
+      "median": 61,
+      "mean": 64.44
     },
-    "grind_plays_pct": 42.1,
+    "grind_plays_pct": 42.2,
     "grind_points_pct": 32.2,
     "rungs_par": {
       "7": {
@@ -409,20 +409,20 @@
         "visited_pct": 100.0
       },
       "6": {
-        "plays_pct": 17.2,
-        "points_pct": 20.9,
+        "plays_pct": 17.1,
+        "points_pct": 20.8,
         "mean_words": 1.64,
         "visited_pct": 92.4
       },
       "5": {
         "plays_pct": 27.3,
-        "points_pct": 27.0,
+        "points_pct": 26.9,
         "mean_words": 2.48,
         "visited_pct": 97.2
       },
       "4": {
         "plays_pct": 31.0,
-        "points_pct": 24.6,
+        "points_pct": 24.7,
         "mean_words": 2.75,
         "visited_pct": 99.6
       },
@@ -433,37 +433,37 @@
         "visited_pct": 98.6
       }
     },
-    "seconds": 0.28
+    "seconds": 0.29
   },
   "7L src35 common50 C": {
-    "source_words": 6720,
-    "gate_words": 4609,
+    "source_words": 6717,
+    "gate_words": 4605,
     "gate_words_pct": 68.6,
-    "gate_racks": 4129,
+    "gate_racks": 4126,
     "depth": {
       "min": 4,
       "p25": 6,
-      "median": 8,
+      "median": 8.0,
       "p75": 10,
       "max": 22,
       "mean": 8.24
     },
     "depth_buckets": {
-      "<=5": 16.2,
-      "6-8": 43.8,
-      "9-11": 28.0,
+      "<=5": 16.3,
+      "6-8": 43.7,
+      "9-11": 28.1,
       "12-14": 7.9,
       "15+": 4.0
     },
     "teeth_diverge_pct": 9.0,
-    "teeth_gap_pct_median": 10.9,
-    "fullrack_hold_pct": 15.0,
+    "teeth_gap_pct_median": 10.8,
+    "fullrack_hold_pct": 15.1,
     "par": {
-      "median": 56,
-      "mean": 59.68
+      "median": 56.0,
+      "mean": 59.65
     },
     "grind_plays_pct": 35.4,
-    "grind_points_pct": 26.6,
+    "grind_points_pct": 26.7,
     "rungs_par": {
       "7": {
         "plays_pct": 14.9,
@@ -473,19 +473,19 @@
       },
       "6": {
         "plays_pct": 19.1,
-        "points_pct": 22.6,
+        "points_pct": 22.5,
         "mean_words": 1.64,
-        "visited_pct": 92.6
+        "visited_pct": 92.7
       },
       "5": {
-        "plays_pct": 30.6,
+        "plays_pct": 30.5,
         "points_pct": 29.2,
         "mean_words": 2.48,
         "visited_pct": 97.8
       },
       "4": {
         "plays_pct": 35.4,
-        "points_pct": 26.6,
+        "points_pct": 26.7,
         "mean_words": 2.82,
         "visited_pct": 99.8
       }
@@ -493,31 +493,31 @@
     "seconds": 0.17
   },
   "7L src35 common50 D": {
-    "source_words": 6720,
-    "gate_words": 4590,
+    "source_words": 6717,
+    "gate_words": 4586,
     "gate_words_pct": 68.3,
-    "gate_racks": 4110,
+    "gate_racks": 4107,
     "depth": {
       "min": 5,
       "p25": 6,
-      "median": 7.0,
+      "median": 7,
       "p75": 8,
       "max": 19,
-      "mean": 7.33
+      "mean": 7.32
     },
     "depth_buckets": {
-      "<=5": 21.0,
-      "6-8": 55.1,
+      "<=5": 21.3,
+      "6-8": 54.7,
       "9-11": 18.1,
       "12-14": 4.5,
       "15+": 1.3
     },
-    "teeth_diverge_pct": 6.4,
+    "teeth_diverge_pct": 6.3,
     "teeth_gap_pct_median": 10.4,
     "fullrack_hold_pct": 15.1,
     "par": {
-      "median": 54.0,
-      "mean": 56.15
+      "median": 54,
+      "mean": 56.11
     },
     "grind_plays_pct": 27.8,
     "grind_points_pct": 20.9,
@@ -529,16 +529,16 @@
         "visited_pct": 100.0
       },
       "6": {
-        "plays_pct": 21.8,
+        "plays_pct": 21.7,
         "points_pct": 24.7,
         "mean_words": 1.63,
         "visited_pct": 95.2
       },
       "5": {
         "plays_pct": 33.9,
-        "points_pct": 31.5,
-        "mean_words": 2.46,
-        "visited_pct": 98.8
+        "points_pct": 31.4,
+        "mean_words": 2.45,
+        "visited_pct": 98.7
       },
       "4": {
         "plays_pct": 13.9,
@@ -548,18 +548,18 @@
       },
       "3": {
         "plays_pct": 13.9,
-        "points_pct": 9.3,
+        "points_pct": 9.4,
         "mean_words": 1.0,
         "visited_pct": 99.4
       }
     },
-    "seconds": 0.28
+    "seconds": 0.29
   },
   "7L src50 common50 A": {
-    "source_words": 9600,
-    "gate_words": 6237,
+    "source_words": 9591,
+    "gate_words": 6230,
     "gate_words_pct": 65.0,
-    "gate_racks": 5425,
+    "gate_racks": 5419,
     "depth": {
       "min": 5,
       "p25": 8,
@@ -569,10 +569,10 @@
       "mean": 10.33
     },
     "depth_buckets": {
-      "<=5": 1.5,
-      "6-8": 31.6,
+      "<=5": 1.6,
+      "6-8": 31.5,
       "9-11": 36.5,
-      "12-14": 20.0,
+      "12-14": 19.9,
       "15+": 10.4
     },
     "teeth_diverge_pct": 12.1,
@@ -580,10 +580,10 @@
     "fullrack_hold_pct": 12.3,
     "par": {
       "median": 64,
-      "mean": 67.87
+      "mean": 67.85
     },
     "grind_plays_pct": 49.0,
-    "grind_points_pct": 36.7,
+    "grind_points_pct": 36.8,
     "rungs_par": {
       "7": {
         "plays_pct": 11.7,
@@ -601,7 +601,7 @@
         "plays_pct": 24.2,
         "points_pct": 25.3,
         "mean_words": 2.46,
-        "visited_pct": 96.6
+        "visited_pct": 96.5
       },
       "4": {
         "plays_pct": 28.2,
@@ -616,7 +616,7 @@
         "visited_pct": 99.5
       }
     },
-    "seconds": 0.37,
+    "seconds": 0.38,
     "rungs_longest": {
       "7": {
         "plays_pct": 11.1,
@@ -634,7 +634,7 @@
         "plays_pct": 23.6,
         "points_pct": 25.2,
         "mean_words": 2.51,
-        "visited_pct": 97.2
+        "visited_pct": 97.1
       },
       "4": {
         "plays_pct": 29.2,
@@ -651,22 +651,22 @@
     }
   },
   "7L src50 common50 B": {
-    "source_words": 9600,
-    "gate_words": 6237,
+    "source_words": 9591,
+    "gate_words": 6230,
     "gate_words_pct": 65.0,
-    "gate_racks": 5425,
+    "gate_racks": 5419,
     "depth": {
       "min": 5,
       "p25": 7,
       "median": 9,
       "p75": 11,
       "max": 23,
-      "mean": 9.19
+      "mean": 9.18
     },
     "depth_buckets": {
       "<=5": 5.1,
-      "6-8": 42.5,
-      "9-11": 33.8,
+      "6-8": 42.3,
+      "9-11": 33.9,
       "12-14": 13.5,
       "15+": 5.1
     },
@@ -675,7 +675,7 @@
     "fullrack_hold_pct": 12.3,
     "par": {
       "median": 61,
-      "mean": 64.14
+      "mean": 64.11
     },
     "grind_plays_pct": 42.6,
     "grind_points_pct": 32.6,
@@ -695,7 +695,7 @@
       "5": {
         "plays_pct": 27.4,
         "points_pct": 27.1,
-        "mean_words": 2.48,
+        "mean_words": 2.47,
         "visited_pct": 97.0
       },
       "4": {
@@ -714,10 +714,10 @@
     "seconds": 0.22
   },
   "7L src50 common50 C": {
-    "source_words": 9600,
-    "gate_words": 6267,
+    "source_words": 9591,
+    "gate_words": 6260,
     "gate_words_pct": 65.3,
-    "gate_racks": 5454,
+    "gate_racks": 5448,
     "depth": {
       "min": 4,
       "p25": 6,
@@ -727,18 +727,18 @@
       "mean": 8.17
     },
     "depth_buckets": {
-      "<=5": 16.5,
-      "6-8": 44.0,
+      "<=5": 16.6,
+      "6-8": 43.9,
       "9-11": 28.1,
       "12-14": 7.7,
       "15+": 3.7
     },
     "teeth_diverge_pct": 9.8,
-    "teeth_gap_pct_median": 11.4,
+    "teeth_gap_pct_median": 11.1,
     "fullrack_hold_pct": 12.2,
     "par": {
       "median": 56.0,
-      "mean": 59.3
+      "mean": 59.28
     },
     "grind_plays_pct": 35.8,
     "grind_points_pct": 27.0,
@@ -759,7 +759,7 @@
         "plays_pct": 30.7,
         "points_pct": 29.4,
         "mean_words": 2.48,
-        "visited_pct": 97.6
+        "visited_pct": 97.5
       },
       "4": {
         "plays_pct": 35.8,
@@ -768,13 +768,13 @@
         "visited_pct": 99.8
       }
     },
-    "seconds": 0.13
+    "seconds": 0.14
   },
   "7L src50 common50 D": {
-    "source_words": 9600,
-    "gate_words": 6237,
+    "source_words": 9591,
+    "gate_words": 6230,
     "gate_words_pct": 65.0,
-    "gate_racks": 5425,
+    "gate_racks": 5419,
     "depth": {
       "min": 5,
       "p25": 6,
@@ -784,8 +784,8 @@
       "mean": 7.26
     },
     "depth_buckets": {
-      "<=5": 21.7,
-      "6-8": 55.3,
+      "<=5": 21.9,
+      "6-8": 55.0,
       "9-11": 17.6,
       "12-14": 4.3,
       "15+": 1.1
@@ -794,8 +794,8 @@
     "teeth_gap_pct_median": 10.9,
     "fullrack_hold_pct": 12.3,
     "par": {
-      "median": 54,
-      "mean": 55.74
+      "median": 53,
+      "mean": 55.7
     },
     "grind_plays_pct": 28.0,
     "grind_points_pct": 21.1,
@@ -809,7 +809,7 @@
       "6": {
         "plays_pct": 21.6,
         "points_pct": 24.6,
-        "mean_words": 1.62,
+        "mean_words": 1.61,
         "visited_pct": 94.8
       },
       "5": {
@@ -820,7 +820,7 @@
       },
       "4": {
         "plays_pct": 14.0,
-        "points_pct": 11.6,
+        "points_pct": 11.7,
         "mean_words": 1.0,
         "visited_pct": 99.2
       },
@@ -831,7 +831,7 @@
         "visited_pct": 99.4
       }
     },
-    "seconds": 0.22
+    "seconds": 0.24
   },
   "8L src35 common35 A": {
     "source_words": 6526,
@@ -844,21 +844,21 @@
       "median": 12.0,
       "p75": 14,
       "max": 24,
-      "mean": 11.91
+      "mean": 11.9
     },
     "depth_buckets": {
       "<=5": 0.0,
       "6-8": 14.4,
       "9-11": 34.7,
-      "12-14": 32.2,
-      "15+": 18.7
+      "12-14": 32.3,
+      "15+": 18.6
     },
     "teeth_diverge_pct": 19.0,
     "teeth_gap_pct_median": 10.1,
     "fullrack_hold_pct": 6.4,
     "par": {
       "median": 80.0,
-      "mean": 81.93
+      "mean": 81.92
     },
     "grind_plays_pct": 42.2,
     "grind_points_pct": 29.5,
@@ -900,7 +900,7 @@
         "visited_pct": 99.6
       }
     },
-    "seconds": 0.56,
+    "seconds": 0.57,
     "rungs_longest": {
       "8": {
         "plays_pct": 9.0,
@@ -917,7 +917,7 @@
       "6": {
         "plays_pct": 14.9,
         "points_pct": 18.1,
-        "mean_words": 1.93,
+        "mean_words": 1.92,
         "visited_pct": 92.0
       },
       "5": {
@@ -958,16 +958,16 @@
       "6-8": 21.5,
       "9-11": 39.1,
       "12-14": 29.6,
-      "15+": 9.9
+      "15+": 9.8
     },
-    "teeth_diverge_pct": 17.9,
-    "teeth_gap_pct_median": 10.7,
+    "teeth_diverge_pct": 17.8,
+    "teeth_gap_pct_median": 10.8,
     "fullrack_hold_pct": 6.4,
     "par": {
       "median": 77.0,
-      "mean": 78.76
+      "mean": 78.75
     },
-    "grind_plays_pct": 36.4,
+    "grind_plays_pct": 36.5,
     "grind_points_pct": 26.1,
     "rungs_par": {
       "8": {
@@ -980,13 +980,13 @@
         "plays_pct": 11.9,
         "points_pct": 15.9,
         "mean_words": 1.38,
-        "visited_pct": 90.1
+        "visited_pct": 90.2
       },
       "6": {
         "plays_pct": 16.9,
         "points_pct": 18.8,
-        "mean_words": 1.89,
-        "visited_pct": 93.3
+        "mean_words": 1.88,
+        "visited_pct": 93.4
       },
       "5": {
         "plays_pct": 24.5,
@@ -1007,7 +1007,7 @@
         "visited_pct": 99.5
       }
     },
-    "seconds": 0.39
+    "seconds": 0.4
   },
   "8L src35 common35 C": {
     "source_words": 6526,
@@ -1020,7 +1020,7 @@
       "median": 10,
       "p75": 12,
       "max": 21,
-      "mean": 9.92
+      "mean": 9.91
     },
     "depth_buckets": {
       "<=5": 1.6,
@@ -1029,12 +1029,12 @@
       "12-14": 19.8,
       "15+": 6.5
     },
-    "teeth_diverge_pct": 16.7,
-    "teeth_gap_pct_median": 10.7,
+    "teeth_diverge_pct": 16.6,
+    "teeth_gap_pct_median": 10.8,
     "fullrack_hold_pct": 6.4,
     "par": {
       "median": 72,
-      "mean": 74.19
+      "mean": 74.18
     },
     "grind_plays_pct": 30.5,
     "grind_points_pct": 21.4,
@@ -1053,9 +1053,9 @@
       },
       "6": {
         "plays_pct": 18.5,
-        "points_pct": 20.1,
+        "points_pct": 20.0,
         "mean_words": 1.89,
-        "visited_pct": 93.8
+        "visited_pct": 93.9
       },
       "5": {
         "plays_pct": 26.8,
@@ -1070,7 +1070,7 @@
         "visited_pct": 99.9
       }
     },
-    "seconds": 0.28
+    "seconds": 0.29
   },
   "8L src35 common35 D": {
     "source_words": 6526,
@@ -1087,8 +1087,8 @@
     },
     "depth_buckets": {
       "<=5": 0.0,
-      "6-8": 49.0,
-      "9-11": 37.2,
+      "6-8": 49.1,
+      "9-11": 37.1,
       "12-14": 10.4,
       "15+": 3.5
     },
@@ -1097,7 +1097,7 @@
     "fullrack_hold_pct": 6.4,
     "par": {
       "median": 68.0,
-      "mean": 70.32
+      "mean": 70.31
     },
     "grind_plays_pct": 22.8,
     "grind_points_pct": 15.9,
@@ -1139,7 +1139,7 @@
         "visited_pct": 99.5
       }
     },
-    "seconds": 0.38
+    "seconds": 0.4
   },
   "8L src35 common50 A": {
     "source_words": 6526,
@@ -1158,17 +1158,17 @@
       "<=5": 0.0,
       "6-8": 10.2,
       "9-11": 29.4,
-      "12-14": 30.7,
-      "15+": 29.7
+      "12-14": 30.8,
+      "15+": 29.6
     },
     "teeth_diverge_pct": 18.6,
     "teeth_gap_pct_median": 10.1,
     "fullrack_hold_pct": 9.8,
     "par": {
       "median": 85.0,
-      "mean": 89.35
+      "mean": 89.33
     },
-    "grind_plays_pct": 41.4,
+    "grind_plays_pct": 41.5,
     "grind_points_pct": 29.2,
     "rungs_par": {
       "8": {
@@ -1208,7 +1208,7 @@
         "visited_pct": 99.6
       }
     },
-    "seconds": 0.64,
+    "seconds": 0.65,
     "rungs_longest": {
       "8": {
         "plays_pct": 8.5,
@@ -1218,13 +1218,13 @@
       },
       "7": {
         "plays_pct": 9.6,
-        "points_pct": 14.6,
+        "points_pct": 14.7,
         "mean_words": 1.5,
         "visited_pct": 84.2
       },
       "6": {
         "plays_pct": 15.3,
-        "points_pct": 18.9,
+        "points_pct": 18.8,
         "mean_words": 2.16,
         "visited_pct": 92.8
       },
@@ -1264,18 +1264,18 @@
     "depth_buckets": {
       "<=5": 0.0,
       "6-8": 17.1,
-      "9-11": 33.0,
-      "12-14": 31.5,
+      "9-11": 33.1,
+      "12-14": 31.4,
       "15+": 18.4
     },
     "teeth_diverge_pct": 18.1,
-    "teeth_gap_pct_median": 10.0,
+    "teeth_gap_pct_median": 10.2,
     "fullrack_hold_pct": 9.8,
     "par": {
       "median": 82.0,
-      "mean": 85.42
+      "mean": 85.4
     },
-    "grind_plays_pct": 35.1,
+    "grind_plays_pct": 35.2,
     "grind_points_pct": 25.4,
     "rungs_par": {
       "8": {
@@ -1334,15 +1334,15 @@
       "<=5": 1.5,
       "6-8": 26.3,
       "9-11": 34.6,
-      "12-14": 24.3,
+      "12-14": 24.2,
       "15+": 13.3
     },
-    "teeth_diverge_pct": 16.9,
-    "teeth_gap_pct_median": 10.7,
+    "teeth_diverge_pct": 17.0,
+    "teeth_gap_pct_median": 10.8,
     "fullrack_hold_pct": 9.8,
     "par": {
       "median": 77.0,
-      "mean": 80.75
+      "mean": 80.73
     },
     "grind_plays_pct": 29.3,
     "grind_points_pct": 21.0,
@@ -1360,10 +1360,10 @@
         "visited_pct": 89.4
       },
       "6": {
-        "plays_pct": 19.1,
+        "plays_pct": 19.0,
         "points_pct": 20.6,
         "mean_words": 2.1,
-        "visited_pct": 94.1
+        "visited_pct": 94.2
       },
       "5": {
         "plays_pct": 28.2,
@@ -1395,9 +1395,9 @@
     },
     "depth_buckets": {
       "<=5": 0.0,
-      "6-8": 40.5,
-      "9-11": 36.6,
-      "12-14": 16.1,
+      "6-8": 40.6,
+      "9-11": 36.7,
+      "12-14": 16.0,
       "15+": 6.8
     },
     "teeth_diverge_pct": 13.6,
@@ -1405,10 +1405,10 @@
     "fullrack_hold_pct": 9.8,
     "par": {
       "median": 72.0,
-      "mean": 75.97
+      "mean": 75.93
     },
     "grind_plays_pct": 21.2,
-    "grind_points_pct": 14.9,
+    "grind_points_pct": 15.0,
     "rungs_par": {
       "8": {
         "plays_pct": 11.9,
@@ -1424,14 +1424,14 @@
       },
       "6": {
         "plays_pct": 21.3,
-        "points_pct": 22.4,
+        "points_pct": 22.3,
         "mean_words": 2.08,
         "visited_pct": 96.0
       },
       "5": {
-        "plays_pct": 31.2,
+        "plays_pct": 31.1,
         "points_pct": 27.0,
-        "mean_words": 2.96,
+        "mean_words": 2.95,
         "visited_pct": 98.8
       },
       "4": {
@@ -1447,17 +1447,17 @@
         "visited_pct": 99.5
       }
     },
-    "seconds": 0.45
+    "seconds": 0.47
   },
   "8L src50 common50 A": {
-    "source_words": 10138,
-    "gate_words": 5161,
+    "source_words": 10135,
+    "gate_words": 5158,
     "gate_words_pct": 50.9,
-    "gate_racks": 4741,
+    "gate_racks": 4738,
     "depth": {
       "min": 6,
       "p25": 10,
-      "median": 13,
+      "median": 13.0,
       "p75": 15,
       "max": 28,
       "mean": 13.15
@@ -1466,15 +1466,15 @@
       "<=5": 0.0,
       "6-8": 9.8,
       "9-11": 28.8,
-      "12-14": 31.7,
+      "12-14": 31.8,
       "15+": 29.7
     },
     "teeth_diverge_pct": 19.0,
     "teeth_gap_pct_median": 10.7,
     "fullrack_hold_pct": 7.7,
     "par": {
-      "median": 85,
-      "mean": 89.43
+      "median": 85.0,
+      "mean": 89.4
     },
     "grind_plays_pct": 41.8,
     "grind_points_pct": 29.6,
@@ -1492,10 +1492,10 @@
         "visited_pct": 88.4
       },
       "6": {
-        "plays_pct": 15.7,
+        "plays_pct": 15.6,
         "points_pct": 18.4,
         "mean_words": 2.08,
-        "visited_pct": 93.4
+        "visited_pct": 93.5
       },
       "5": {
         "plays_pct": 23.3,
@@ -1516,7 +1516,7 @@
         "visited_pct": 99.5
       }
     },
-    "seconds": 0.72,
+    "seconds": 0.74,
     "rungs_longest": {
       "8": {
         "plays_pct": 8.3,
@@ -1533,13 +1533,13 @@
       "6": {
         "plays_pct": 15.1,
         "points_pct": 18.7,
-        "mean_words": 2.15,
+        "mean_words": 2.14,
         "visited_pct": 92.8
       },
       "5": {
         "plays_pct": 23.0,
         "points_pct": 22.5,
-        "mean_words": 3.07,
+        "mean_words": 3.06,
         "visited_pct": 98.8
       },
       "4": {
@@ -1551,37 +1551,37 @@
       "3": {
         "plays_pct": 18.5,
         "points_pct": 10.0,
-        "mean_words": 2.44,
+        "mean_words": 2.43,
         "visited_pct": 100.0
       }
     }
   },
   "8L src50 common50 B": {
-    "source_words": 10138,
-    "gate_words": 5161,
+    "source_words": 10135,
+    "gate_words": 5158,
     "gate_words_pct": 50.9,
-    "gate_racks": 4741,
+    "gate_racks": 4738,
     "depth": {
       "min": 6,
       "p25": 9,
-      "median": 11,
+      "median": 11.0,
       "p75": 14,
       "max": 25,
-      "mean": 11.86
+      "mean": 11.85
     },
     "depth_buckets": {
       "<=5": 0.0,
-      "6-8": 16.6,
+      "6-8": 16.7,
       "9-11": 33.4,
-      "12-14": 31.5,
-      "15+": 18.5
+      "12-14": 31.4,
+      "15+": 18.4
     },
-    "teeth_diverge_pct": 18.8,
-    "teeth_gap_pct_median": 10.5,
+    "teeth_diverge_pct": 18.7,
+    "teeth_gap_pct_median": 10.6,
     "fullrack_hold_pct": 7.7,
     "par": {
-      "median": 82,
-      "mean": 85.37
+      "median": 82.0,
+      "mean": 85.34
     },
     "grind_plays_pct": 35.4,
     "grind_points_pct": 25.7,
@@ -1596,7 +1596,7 @@
         "plays_pct": 11.5,
         "points_pct": 15.4,
         "mean_words": 1.47,
-        "visited_pct": 88.5
+        "visited_pct": 88.4
       },
       "6": {
         "plays_pct": 17.3,
@@ -1620,37 +1620,37 @@
         "plays_pct": 8.8,
         "points_pct": 5.6,
         "mean_words": 1.0,
-        "visited_pct": 98.8
+        "visited_pct": 98.9
       }
     },
     "seconds": 0.44
   },
   "8L src50 common50 C": {
-    "source_words": 10138,
-    "gate_words": 5168,
+    "source_words": 10135,
+    "gate_words": 5165,
     "gate_words_pct": 51.0,
-    "gate_racks": 4748,
+    "gate_racks": 4745,
     "depth": {
       "min": 5,
       "p25": 8,
-      "median": 10.0,
+      "median": 10,
       "p75": 13,
       "max": 24,
       "mean": 10.85
     },
     "depth_buckets": {
       "<=5": 1.5,
-      "6-8": 25.8,
+      "6-8": 25.7,
       "9-11": 35.3,
-      "12-14": 24.2,
+      "12-14": 24.1,
       "15+": 13.3
     },
     "teeth_diverge_pct": 17.2,
     "teeth_gap_pct_median": 11.5,
-    "fullrack_hold_pct": 7.6,
+    "fullrack_hold_pct": 7.7,
     "par": {
-      "median": 77.0,
-      "mean": 80.68
+      "median": 77,
+      "mean": 80.65
     },
     "grind_plays_pct": 29.6,
     "grind_points_pct": 21.3,
@@ -1669,9 +1669,9 @@
       },
       "6": {
         "plays_pct": 18.9,
-        "points_pct": 20.5,
+        "points_pct": 20.6,
         "mean_words": 2.09,
-        "visited_pct": 94.2
+        "visited_pct": 94.3
       },
       "5": {
         "plays_pct": 28.5,
@@ -1686,53 +1686,53 @@
         "visited_pct": 99.9
       }
     },
-    "seconds": 0.31
+    "seconds": 0.32
   },
   "8L src50 common50 D": {
-    "source_words": 10138,
-    "gate_words": 5161,
+    "source_words": 10135,
+    "gate_words": 5158,
     "gate_words_pct": 50.9,
-    "gate_racks": 4741,
+    "gate_racks": 4738,
     "depth": {
       "min": 6,
       "p25": 7,
-      "median": 9,
+      "median": 9.0,
       "p75": 11,
       "max": 21,
-      "mean": 9.66
+      "mean": 9.65
     },
     "depth_buckets": {
       "<=5": 0.0,
       "6-8": 41.0,
-      "9-11": 36.5,
+      "9-11": 36.6,
       "12-14": 15.8,
-      "15+": 6.7
+      "15+": 6.6
     },
-    "teeth_diverge_pct": 14.3,
-    "teeth_gap_pct_median": 11.0,
+    "teeth_diverge_pct": 14.2,
+    "teeth_gap_pct_median": 11.1,
     "fullrack_hold_pct": 7.7,
     "par": {
-      "median": 72,
-      "mean": 75.69
+      "median": 72.0,
+      "mean": 75.64
     },
     "grind_plays_pct": 21.3,
     "grind_points_pct": 15.0,
     "rungs_par": {
       "8": {
-        "plays_pct": 11.6,
+        "plays_pct": 11.7,
         "points_pct": 17.4,
         "mean_words": 1.09,
         "visited_pct": 100.0
       },
       "7": {
         "plays_pct": 14.2,
-        "points_pct": 17.7,
+        "points_pct": 17.8,
         "mean_words": 1.47,
         "visited_pct": 90.3
       },
       "6": {
         "plays_pct": 21.3,
-        "points_pct": 22.4,
+        "points_pct": 22.3,
         "mean_words": 2.07,
         "visited_pct": 96.0
       },
@@ -1755,7 +1755,7 @@
         "visited_pct": 99.4
       }
     },
-    "seconds": 0.44
+    "seconds": 0.45
   },
-  "total_seconds": 9.23
+  "total_seconds": 9.48
 }
