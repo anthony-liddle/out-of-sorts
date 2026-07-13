@@ -17,6 +17,19 @@ describe('rank', () => {
     expect(rankFor(60, 85).fraction).toBeCloseTo(60 / 85);
   });
 
+  it('ascends from barely-there to at peace: faint up to at rest', () => {
+    expect(rankFor(0, 85).name).toBe('Faint');
+    expect(rankFor(85, 85).name).toBe('At Rest');
+    expect(RANK_TIERS.map((t) => t.name)).toEqual([
+      'At Rest',
+      'Haunting',
+      'Gliding',
+      'Drifting',
+      'Stirring',
+      'Faint',
+    ]);
+  });
+
   it('tiers descend monotonically', () => {
     for (let i = 1; i < RANK_TIERS.length; i++) {
       expect(RANK_TIERS[i]!.min).toBeLessThan(RANK_TIERS[i - 1]!.min);
@@ -42,7 +55,7 @@ describe('streak', () => {
 
 describe('share', () => {
   const share = buildShare({
-    title: 'Out of Sorts, Day 12',
+    title: 'Out of Sorts · Day 12',
     words: [
       { word: 'triangle', length: 8, score: 9 },
       { word: 'relating', length: 8, score: 9 },
@@ -53,9 +66,12 @@ describe('share', () => {
       { word: 'rig', length: 3, score: 4 },
     ],
     rackSize: 8,
+    spentCount: 5,
     cleanDescent: false,
     allEights: { found: 3, total: 3 },
     rank: { name: 'Haunting', fraction: 0.91 },
+    score: 49,
+    par: 54,
   });
 
   it('draws the stack shape: one row per word, width by length', () => {
@@ -65,11 +81,21 @@ describe('share', () => {
     expect(rows[4]!.replace(/[^█]/g, '')).toHaveLength(6);
   });
 
-  it('marks a notch where more than one letter dropped', () => {
+  it('draws pure blocks: the notch is the width gap, not a glyph', () => {
     const rows = share.split('\n').filter((l) => l.includes('█'));
-    // rating (6) to grin (4) drops two letters: notch
-    expect(rows[5]).toContain('▼');
-    expect(rows[4]).not.toContain('▼');
+    for (const row of rows) {
+      expect(row.replace(/█/g, '').trim()).toBe('');
+    }
+  });
+
+  it('carries one ghost per spent letter', () => {
+    const ghostLine = share.split('\n').find((l) => l.includes('👻'));
+    expect(ghostLine).toBeDefined();
+    expect([...ghostLine!].filter((c) => c === '👻')).toHaveLength(5);
+  });
+
+  it('states the score against par in the badge line', () => {
+    expect(share).toContain('49 of par 54');
   });
 
   it('is spoiler-free: no played word appears', () => {
@@ -86,14 +112,18 @@ describe('share', () => {
 
   it('omits the all eights line on a single-eight rack', () => {
     const single = buildShare({
-      title: 'Out of Sorts, Day 13',
+      title: 'Out of Sorts · Day 13',
       words: [{ word: 'sparrows', length: 8, score: 13 }],
       rackSize: 8,
+      spentCount: 0,
       cleanDescent: false,
       allEights: null,
       rank: { name: 'Faint', fraction: 0.1 },
+      score: 13,
+      par: 130,
     });
     expect(single).not.toContain('All Eights');
+    expect(single).not.toContain('👻');
   });
 });
 

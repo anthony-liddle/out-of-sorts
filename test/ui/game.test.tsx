@@ -117,6 +117,81 @@ describe('cold start in the UI', () => {
   })
 })
 
+describe('tile selection with duplicate letters', () => {
+  // Rack of DISSUADE: two S tiles, two D tiles. Clicking a specific tile
+  // must light that tile, and a one letter input must not chill the board:
+  // below three letters no playable word exists, so there is no discard
+  // set to preview yet.
+  const DUP_CALENDAR: Calendar = {
+    epoch: '2026-08-01',
+    entries: [{ rack: 'addeissu', eights: ['dissuade'] }],
+  }
+
+  function dupServices(): GameServices {
+    return services({
+      loadCalendar: async () => DUP_CALENDAR,
+      loadDictionaries: () => ({
+        dictionaries: new Promise<never>(() => {}) as never,
+      }),
+    })
+  }
+
+  it('clicking a specific duplicate tile marks that tile, not the first match', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const esses = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.textContent === 'S')
+    expect(esses).toHaveLength(2)
+    await userEvent.click(esses[1]!)
+    expect(esses[1]!.dataset.state).toBe('used')
+    expect(esses[0]!.dataset.state).toBeUndefined()
+  })
+
+  it('a one or two letter input marks used tiles but chills nothing', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'du')
+    const tiles = screen.getAllByTestId('pool-tile')
+    expect(tiles.filter((t) => t.dataset.state === 'cold')).toHaveLength(0)
+    expect(tiles.filter((t) => t.dataset.state === 'used')).toHaveLength(2)
+    await userEvent.type(input, 'e')
+    expect(
+      screen
+        .getAllByTestId('pool-tile')
+        .filter((t) => t.dataset.state === 'cold'),
+    ).toHaveLength(5)
+  })
+
+  it('typing after clicking keeps the clicked tile lit', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const esses = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.textContent === 'S')
+    await userEvent.click(esses[1]!)
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'id')
+    expect(esses[1]!.dataset.state).toBe('used')
+    // three letters typed: the preview is live and the unclicked S is cold,
+    // but the light never jumps to it
+    expect(esses[0]!.dataset.state).toBe('cold')
+  })
+
+  it('clicking a used tile does not consume a second copy', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const [a] = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.textContent === 'A')
+    await userEvent.click(a!)
+    await userEvent.click(a!)
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    expect(input.value.toLowerCase()).toBe('a')
+  })
+})
+
 describe('the cold tile preview', () => {
   it('marks exactly the letters the current input would discard', async () => {
     render(<App services={services()} />)
@@ -172,7 +247,7 @@ describe('the all eights badge', () => {
       <EndScreen
         puzzle={puzzle}
         result={run}
-        playedWords={['angriest']}
+        played={[{ word: 'angriest', score: 9, length: 8 }]}
         dayLabel="Day 1"
         onShare={() => {}}
         onNewEndless={null}
@@ -238,6 +313,117 @@ describe('daily and endless', () => {
     await userEvent.click(screen.getByRole('button', { name: /stop/i }))
     await screen.findByTestId('end-screen')
     expect(shared.storage.getItem('oos:streak')).toBeNull()
+  })
+})
+
+describe('voice and the vertical', () => {
+  it('shows the tagline and an empty drift before anything is lost', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(
+      screen.getByText(/every letter you don't use is gone/i),
+    ).toBeTruthy()
+    expect(screen.getByText(/nothing lost yet/i)).toBeTruthy()
+  })
+
+  it('the submit button says spend', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(screen.getByRole('button', { name: /spend/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^play$/i })).toBeNull()
+  })
+
+  it('lays the board out as drift above pool above stack', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('tearing')
+    const drift = screen.getByTestId('drift')
+    const pool = screen.getByTestId('pool')
+    const stack = screen.getByTestId('stack')
+    const order = drift.compareDocumentPosition(pool)
+    expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(
+      pool.compareDocumentPosition(stack) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('a clean finish says out of sorts, a stopped run says rested early', async () => {
+    const shared = services()
+    const view = render(<App services={shared} />)
+    await ready()
+    for (const w of [
+      'triangle',
+      'tearing',
+      'rating',
+      'grain',
+      'grin',
+      'ring',
+      'gin',
+    ]) {
+      await playWord(w)
+    }
+    const heading = await screen.findByRole('heading', { level: 2 })
+    expect(heading.textContent).toBe('Out of sorts.')
+    expect(screen.queryByText(/rested early/i)).toBeNull()
+    view.unmount()
+
+    const stoppedServices = services({ storage: memoryStorage() })
+    render(<App services={stoppedServices} />)
+    await ready()
+    await playWord('triangle')
+    await userEvent.click(screen.getByRole('button', { name: /stop/i }))
+    const stoppedHeading = await screen.findByRole('heading', { level: 2 })
+    expect(stoppedHeading.textContent).toBe('Rested early.')
+  })
+
+  it('renders the par path as a ghosted stack on the end screen', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await userEvent.click(screen.getByRole('button', { name: /stop/i }))
+    await screen.findByTestId('end-screen')
+    const parStack = screen.getByTestId('par-stack')
+    expect(parStack.querySelectorAll('[data-testid="stack-row"]').length)
+      .toBeGreaterThan(1)
+    expect(document.body.textContent).not.toContain(' > ')
+  })
+
+  it('the oldest ghost renders faintest, straight from the play index', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('tearing')
+    await playWord('rating')
+    await playWord('grain')
+    // four plays spend three letters: the first play spends nothing
+    const ghosts = screen.getAllByTestId('ghost')
+    expect(ghosts.length).toBe(3)
+    const byIndex = [...ghosts].sort(
+      (a, b) => Number(a.dataset.playIndex) - Number(b.dataset.playIndex),
+    )
+    const oldest = Number(byIndex[0]!.style.opacity || 1)
+    const newest = Number(byIndex[byIndex.length - 1]!.style.opacity || 1)
+    expect(oldest).toBeLessThan(newest)
+  })
+
+  it('marks no notch with an accent color, only the width gap', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('rating')
+    const rows = screen.getAllByTestId('stack-row')
+    const notchRow = rows.find((r) => r.dataset.notch)
+    expect(notchRow).toBeTruthy()
+    expect(notchRow!.querySelector('.notch')).toBeNull()
+    expect(notchRow!.style.width).toBe('75%')
+    expect(rows[0]!.style.width).toBe('100%')
+  })
+
+  it('hides the sound toggle while keeping audio behind its interface', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(screen.queryByRole('button', { name: /sound/i })).toBeNull()
   })
 })
 

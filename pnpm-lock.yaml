@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/baloo-2':
+        specifier: ^5.2.7
+        version: 5.2.7
+      '@fontsource/nunito':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(react@19.2.7)
@@ -516,6 +522,12 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@fontsource/baloo-2@5.2.7':
+    resolution: {integrity: sha512-RllEWCvjw0PqLey6hbNI2M8gdZy2CFCIHXXNIXC4V4xsRQeOgZ3OMx3uQ1u4LjJ16BGytZD6wE/VFU9st0VdDg==}
+
+  '@fontsource/nunito@5.2.7':
+    resolution: {integrity: sha512-pmtBq0H9ex9nk+RtJYEJOD9pag393iHETnl/PVKleF4i06cd0ttngK5ZCTgYb5eOqR3Xdlrjtev8m7bmgYprew==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -2267,6 +2279,10 @@ snapshots:
       levn: 0.4.1
 
   '@exodus/bytes@1.15.1': {}
+
+  '@fontsource/baloo-2@5.2.7': {}
+
+  '@fontsource/nunito@5.2.7': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
