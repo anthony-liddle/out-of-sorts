@@ -266,6 +266,7 @@ body {
 /* The stack: descending, centered and nested so the silhouette reads.
    The notch is a shape, not a color: the gap says it. */
 .stack {
+  --stack-width: 100%;
   list-style: none;
   margin: 1.3rem auto 0;
   padding: 0;
@@ -514,9 +515,25 @@ body {
   white-space: nowrap;
 }
 
+/* One shared scale. Width means word length, so the same word is the same
+   width in every column. minmax(0, 1fr) makes the cells exactly equal
+   (plain 1fr lets content widen a column), and each stack measures itself
+   against its own equal cell. Percentages inside a custom property are
+   substituted as tokens and resolve against the USER, not the definer, so
+   the unit cannot be handed down from the container. */
+.stack-compare {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.stack-compare[data-columns='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .stack-compare .stack {
+  --stack-width: 100%;
   max-height: none;
   margin-top: 0;
+  width: 100%;
 }
 
 .stack-compare .stack-row {
@@ -551,11 +568,26 @@ body {
    as its own labeled stack on narrow viewports. */
 @media (max-width: 34rem) {
   .stack-compare[data-columns='3'] {
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, 1fr), never plain 1fr: an auto minimum lets a column with
+       long rows widen itself, and unequal cells mean unequal scales. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .clean-figure {
     grid-column: 1 / -1;
     margin-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .clean-figure .stack {
+    /* Spans the row, but measures one column: it sits below, at the same
+       scale, never blown up to the viewport. Only the stack's own width is
+       set here; --stack-width stays 100%, because a percentage inside a
+       custom property re-resolves against whoever USES it (the row), not
+       whoever defines it. */
+    width: calc((100% - 1rem) / 2);
+    align-self: center;
   }
 }
