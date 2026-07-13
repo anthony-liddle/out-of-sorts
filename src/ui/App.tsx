@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { rankFor } from '../game/rank'
 import { buildShare } from '../game/share'
 import { EndScreen } from './components/EndScreen'
-import { Pool } from './components/Pool'
+import { Pool, reconcileSelection } from './components/Pool'
 import { SpentRow } from './components/SpentRow'
 import { Stack } from './components/Stack'
 import type { GameServices } from './services'
@@ -12,6 +12,7 @@ import './theme.css'
 export function App({ services }: { services: GameServices }) {
   const game = useGame(services)
   const [input, setInput] = useState('')
+  const [selection, setSelection] = useState<number[]>([])
   const [reducedMotion, setReducedMotion] = useState(
     services.reducedMotionDefault,
   )
@@ -28,7 +29,10 @@ export function App({ services }: { services: GameServices }) {
 
   const submit = () => {
     const outcome = game.submit(input)
-    if (outcome !== 'rejected') setInput('')
+    if (outcome !== 'rejected') {
+      setInput('')
+      setSelection([])
+    }
   }
 
   const share = () => {
@@ -114,7 +118,11 @@ export function App({ services }: { services: GameServices }) {
               <Pool
                 letters={game.pool}
                 input={input}
-                onTileClick={(letter) => setInput((v) => v + letter)}
+                selection={selection}
+                onTileClick={(letter, index) => {
+                  setInput((v) => v + letter)
+                  setSelection((s) => [...s, index])
+                }}
               />
             )}
             <form
@@ -133,7 +141,15 @@ export function App({ services }: { services: GameServices }) {
                 autoCapitalize="none"
                 spellCheck={false}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setSelection((s) =>
+                    game.pool
+                      ? reconcileSelection(game.pool, input, next, s)
+                      : [],
+                  )
+                  setInput(next)
+                }}
               />
               <button type="submit">Play</button>
               <button type="button" onClick={game.stop}>

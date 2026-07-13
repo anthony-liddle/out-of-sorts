@@ -117,6 +117,81 @@ describe('cold start in the UI', () => {
   })
 })
 
+describe('tile selection with duplicate letters', () => {
+  // Rack of DISSUADE: two S tiles, two D tiles. Clicking a specific tile
+  // must light that tile, and a one letter input must not chill the board:
+  // below three letters no playable word exists, so there is no discard
+  // set to preview yet.
+  const DUP_CALENDAR: Calendar = {
+    epoch: '2026-08-01',
+    entries: [{ rack: 'addeissu', eights: ['dissuade'] }],
+  }
+
+  function dupServices(): GameServices {
+    return services({
+      loadCalendar: async () => DUP_CALENDAR,
+      loadDictionaries: () => ({
+        dictionaries: new Promise<never>(() => {}) as never,
+      }),
+    })
+  }
+
+  it('clicking a specific duplicate tile marks that tile, not the first match', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const esses = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.textContent === 'S')
+    expect(esses).toHaveLength(2)
+    await userEvent.click(esses[1]!)
+    expect(esses[1]!.dataset.state).toBe('used')
+    expect(esses[0]!.dataset.state).toBeUndefined()
+  })
+
+  it('a one or two letter input marks used tiles but chills nothing', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'du')
+    const tiles = screen.getAllByTestId('pool-tile')
+    expect(tiles.filter((t) => t.dataset.state === 'cold')).toHaveLength(0)
+    expect(tiles.filter((t) => t.dataset.state === 'used')).toHaveLength(2)
+    await userEvent.type(input, 'e')
+    expect(
+      screen
+        .getAllByTestId('pool-tile')
+        .filter((t) => t.dataset.state === 'cold'),
+    ).toHaveLength(5)
+  })
+
+  it('typing after clicking keeps the clicked tile lit', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const esses = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.textContent === 'S')
+    await userEvent.click(esses[1]!)
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'id')
+    expect(esses[1]!.dataset.state).toBe('used')
+    // three letters typed: the preview is live and the unclicked S is cold,
+    // but the light never jumps to it
+    expect(esses[0]!.dataset.state).toBe('cold')
+  })
+
+  it('clicking a used tile does not consume a second copy', async () => {
+    render(<App services={dupServices()} />)
+    await screen.findAllByTestId('pool-tile')
+    const [a] = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.textContent === 'A')
+    await userEvent.click(a!)
+    await userEvent.click(a!)
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    expect(input.value.toLowerCase()).toBe('a')
+  })
+})
+
 describe('the cold tile preview', () => {
   it('marks exactly the letters the current input would discard', async () => {
     render(<App services={services()} />)
