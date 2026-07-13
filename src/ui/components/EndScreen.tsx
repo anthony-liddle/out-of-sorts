@@ -40,21 +40,6 @@ export function EndScreen({
   const diverges =
     puzzle.bestClean !== null && puzzle.par !== puzzle.bestClean;
   const gap = puzzle.bestClean === null ? 0 : puzzle.par - puzzle.bestClean;
-  // Where the best path first breaks clean: the move whose word is more
-  // than one letter shorter than the pool it was played from.
-  let firstBreak = { move: 0, dropped: 0 };
-  let poolSize = puzzle.rack.length;
-  for (let i = 0; i < puzzle.parPath.length; i++) {
-    const len = puzzle.parPath[i]!.length;
-    if (len < poolSize - 1) {
-      firstBreak = { move: i + 1, dropped: poolSize - len };
-      break;
-    }
-    poolSize = len;
-  }
-  const droppedWord =
-    ['zero', 'one', 'two', 'three', 'four', 'five'][firstBreak.dropped] ??
-    String(firstBreak.dropped);
 
   return (
     <section className="end-screen" data-testid="end-screen">
@@ -97,31 +82,32 @@ export function EndScreen({
       </ul>
 
       <section className="possible">
-        <h3>What was possible</h3>
+        <h3>How it could have gone</h3>
         {diverges ? (
           <p className="day-shape">
-            <strong>Today, greed and discipline pulled apart.</strong> The
-            best path drops {droppedWord} letters{' '}
-            {firstBreak.move === 1 ? 'right away' : `on move ${firstBreak.move}`}
-            . Staying clean costs you {gap} points.
+            <strong>Clean Descent wasn't on the best path today.</strong>{' '}
+            Staying clean would have cost you {gap} of {puzzle.par} points.
           </p>
         ) : (
           <p className="day-shape">
-            <strong>The best path was also a clean one.</strong> No choice to
-            make today.
+            <strong>The best path was also a clean one.</strong>
           </p>
         )}
         <div className="stack-compare" data-columns={diverges ? 3 : 2}>
-          <figure>
+          <figure data-testid="your-stack-figure">
             <figcaption>
               <span className="column-name">Yours</span>
               <small>{result.score} points</small>
             </figcaption>
-            <Stack
-              words={played}
-              rackSize={puzzle.rack.length}
-              testId="your-stack"
-            />
+            {played.length === 0 ? (
+              <p className="stack-empty">You spent nothing.</p>
+            ) : (
+              <Stack
+                words={played}
+                rackSize={puzzle.rack.length}
+                testId="your-stack"
+              />
+            )}
           </figure>
           <figure>
             <figcaption>

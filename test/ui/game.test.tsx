@@ -531,12 +531,12 @@ describe('face: the end screen explains the day', () => {
     expect(
       screen.getByText(/the best path was also a clean one/i),
     ).toBeTruthy()
-    expect(screen.getByText(/no choice to make today/i)).toBeTruthy()
+    expect(screen.queryByText(/no choice to make today/i)).toBeNull()
     expect(screen.queryByTestId('clean-stack')).toBeNull()
     expect(screen.getByText(/^best$/i)).toBeTruthy()
   })
 
-  it('reports the real gap when greed and discipline pull apart', () => {
+  it('reports the engine-computed gap in plain words from the screen', () => {
     const dicts = realDicts()
     const engine = createEngine(dicts)
     const puzzle = engine.createPuzzle('addeissu')
@@ -560,13 +560,48 @@ describe('face: the end screen explains the day', () => {
       />,
     )
     expect(
-      screen.getByText(/greed and discipline pulled apart/i),
+      screen.getByText(/clean descent wasn't on the best path today/i),
     ).toBeTruthy()
     expect(
-      screen.getByText(new RegExp(`costs you ${gap} points`)),
+      screen.getByText(
+        new RegExp(`would have cost you ${gap} of ${puzzle.par} points`),
+      ),
     ).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/greed|discipline/i)
     expect(screen.getByTestId('clean-stack')).toBeTruthy()
-    expect(screen.getByText(/most points possible without ever losing/i)).toBeTruthy()
+    expect(
+      screen.getByText(/most points possible without ever losing/i),
+    ).toBeTruthy()
+  })
+})
+
+describe('the empty yours column', () => {
+  it('renders a sentence, not a blank, when nothing was spent', () => {
+    const dicts = realDicts()
+    const engine = createEngine(dicts)
+    const puzzle = engine.createPuzzle('addeissu')
+    render(
+      <EndScreen
+        puzzle={puzzle}
+        result={{
+          score: 0,
+          words: [],
+          endReason: 'stopped',
+          finalPoolSize: 8,
+          isCleanDescent: false,
+        }}
+        played={[]}
+        dayLabel="Day 1"
+        onShare={() => {}}
+        onNewEndless={null}
+      />,
+    )
+    expect(screen.getByText(/you spent nothing/i)).toBeTruthy()
+    expect(
+      screen
+        .getByTestId('your-stack-figure')
+        .querySelectorAll('[data-testid="stack-row"]'),
+    ).toHaveLength(0)
   })
 })
 
