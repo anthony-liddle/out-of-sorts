@@ -12,11 +12,23 @@ import './theme.css'
 export function App({ services }: { services: GameServices }) {
   const game = useGame(services)
   const [input, setInput] = useState('')
-  const [selection, setSelection] = useState<number[]>([])
+  // Tile lights are stored against the pool arrangement they were made on.
+  // A shuffle rearranges the tiles, so a stale selection is re-derived by
+  // first-unused-match instead of pointing at the wrong letters.
+  const [sel, setSel] = useState<{ pool: string; indexes: number[] }>({
+    pool: '',
+    indexes: [],
+  })
   const [reducedMotion, setReducedMotion] = useState(
     services.reducedMotionDefault,
   )
   const [copied, setCopied] = useState(false)
+
+  const selection = useMemo(() => {
+    if (!game.pool) return []
+    if (sel.pool === game.pool) return sel.indexes
+    return reconcileSelection(game.pool, '', input, [])
+  }, [game.pool, sel, input])
 
   const dayLabel = useMemo(
     () =>
@@ -26,12 +38,14 @@ export function App({ services }: { services: GameServices }) {
     [game.mode, game.dayNumber, game.endlessSeed],
   )
 
+  const setEntry = (nextInput: string, nextIndexes: number[]) => {
+    setInput(nextInput)
+    setSel({ pool: game.pool ?? '', indexes: nextIndexes })
+  }
+
   const submit = () => {
     const outcome = game.submit(input)
-    if (outcome !== 'rejected') {
-      setInput('')
-      setSelection([])
-    }
+    if (outcome !== 'rejected') setEntry('', [])
   }
 
   const share = () => {
@@ -46,8 +60,7 @@ export function App({ services }: { services: GameServices }) {
       rackSize: game.entry.rack.length,
       spentCount: game.run.spent.length,
       cleanDescent: game.result.isCleanDescent,
-      allEights:
-        eights.length >= 2 ? { found, total: eights.length } : null,
+      allEights: eights.length >= 2 ? { found, total: eights.length } : null,
       rank: rankFor(game.result.score, game.puzzle.par),
       score: game.result.score,
       par: game.puzzle.par,
@@ -119,10 +132,9 @@ export function App({ services }: { services: GameServices }) {
                 letters={game.pool}
                 input={input}
                 selection={selection}
-                onTileClick={(letter, index) => {
-                  setInput((v) => v + letter)
-                  setSelection((s) => [...s, index])
-                }}
+                onTileClick={(letter, index) =>
+                  setEntry(input + letter, [...selection, index])
+                }
               />
             )}
             <form
@@ -143,18 +155,47 @@ export function App({ services }: { services: GameServices }) {
                 value={input}
                 onChange={(e) => {
                   const next = e.target.value
-                  setSelection((s) =>
+                  setEntry(
+                    next,
                     game.pool
-                      ? reconcileSelection(game.pool, input, next, s)
+                      ? reconcileSelection(game.pool, input, next, selection)
                       : [],
                   )
-                  setInput(next)
                 }}
               />
-              <button type="submit">Spend</button>
-              <button type="button" onClick={game.stop}>
-                Stop
-              </button>
+              <div className="control-row" data-testid="control-row">
+                <button
+                  type="button"
+                  onClick={() => game.shuffle()}
+                >
+                  Shuffle
+                </button>
+                <button type="button" onClick={() => setEntry('', [])}>
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  aria-label="Delete last letter"
+                  onClick={() =>
+                    setEntry(
+                      input.slice(0, -1),
+                      game.pool
+                        ? reconcileSelection(
+                            game.pool,
+                            input,
+                            input.slice(0, -1),
+                            selection,
+                          )
+                        : [],
+                    )
+                  }
+                >
+                  ⌫
+                </button>
+                <button type="submit" className="spend">
+                  Spend
+                </button>
+              </div>
             </form>
             {game.error && (
               <p className="entry-error" role="alert">
@@ -167,6 +208,15 @@ export function App({ services }: { services: GameServices }) {
                 rackSize={game.entry.rack.length}
               />
             )}
+            <div className="rest-row">
+              <button
+                type="button"
+                className="stop-button"
+                onClick={game.stop}
+              >
+                Stop
+              </button>
+            </div>
           </>
         )}
         {copied && <p role="status">Copied.</p>}
