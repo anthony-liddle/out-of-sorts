@@ -37,9 +37,24 @@ export function EndScreen({
   const foundEights = playedWords.filter((w) => eights.includes(w)).length
   const multiEight = eights.length >= 2
   const allEights = multiEight && foundEights === eights.length
-  const cleanDiffers =
-    puzzle.cleanPath !== null &&
-    puzzle.cleanPath.join(' ') !== puzzle.parPath.join(' ')
+  const diverges =
+    puzzle.bestClean !== null && puzzle.par !== puzzle.bestClean;
+  const gap = puzzle.bestClean === null ? 0 : puzzle.par - puzzle.bestClean;
+  // Where the best path first breaks clean: the move whose word is more
+  // than one letter shorter than the pool it was played from.
+  let firstBreak = { move: 0, dropped: 0 };
+  let poolSize = puzzle.rack.length;
+  for (let i = 0; i < puzzle.parPath.length; i++) {
+    const len = puzzle.parPath[i]!.length;
+    if (len < poolSize - 1) {
+      firstBreak = { move: i + 1, dropped: poolSize - len };
+      break;
+    }
+    poolSize = len;
+  }
+  const droppedWord =
+    ['zero', 'one', 'two', 'three', 'four', 'five'][firstBreak.dropped] ??
+    String(firstBreak.dropped);
 
   return (
     <section className="end-screen" data-testid="end-screen">
@@ -83,9 +98,25 @@ export function EndScreen({
 
       <section className="possible">
         <h3>What was possible</h3>
-        <div className="stack-compare">
+        {diverges ? (
+          <p className="day-shape">
+            <strong>Today, greed and discipline pulled apart.</strong> The
+            best path drops {droppedWord} letters{' '}
+            {firstBreak.move === 1 ? 'right away' : `on move ${firstBreak.move}`}
+            . Staying clean costs you {gap} points.
+          </p>
+        ) : (
+          <p className="day-shape">
+            <strong>The best path was also a clean one.</strong> No choice to
+            make today.
+          </p>
+        )}
+        <div className="stack-compare" data-columns={diverges ? 3 : 2}>
           <figure>
-            <figcaption>Yours · {result.score}</figcaption>
+            <figcaption>
+              <span className="column-name">Yours</span>
+              <small>{result.score} points</small>
+            </figcaption>
             <Stack
               words={played}
               rackSize={puzzle.rack.length}
@@ -93,7 +124,13 @@ export function EndScreen({
             />
           </figure>
           <figure>
-            <figcaption>Par · {puzzle.par}</figcaption>
+            <figcaption>
+              <span className="column-name">Best</span>
+              <small>
+                {puzzle.par} points · the most points possible
+                {diverges ? '' : ' · also clean'}
+              </small>
+            </figcaption>
             <Stack
               words={toRows(puzzle.parPath)}
               rackSize={puzzle.rack.length}
@@ -101,18 +138,24 @@ export function EndScreen({
               testId="par-stack"
             />
           </figure>
+          {diverges && puzzle.cleanPath && (
+            <figure>
+              <figcaption>
+                <span className="column-name">Clean</span>
+                <small>
+                  {puzzle.bestClean} points · the most points possible
+                  without ever losing more than one letter at a time
+                </small>
+              </figcaption>
+              <Stack
+                words={toRows(puzzle.cleanPath)}
+                rackSize={puzzle.rack.length}
+                ghosted
+                testId="clean-stack"
+              />
+            </figure>
+          )}
         </div>
-        {cleanDiffers && (
-          <details className="clean-toggle">
-            <summary>The clean path was different</summary>
-            <Stack
-              words={toRows(puzzle.cleanPath!)}
-              rackSize={puzzle.rack.length}
-              ghosted
-              testId="clean-stack"
-            />
-          </details>
-        )}
         {multiEight && (
           <p className="eights-reveal">
             The eights: {eights.map((w) => w.toUpperCase()).join(', ')}
