@@ -1,0 +1,358 @@
+// The game orchestration hook. The engine is the single source of truth:
+// this hook never computes a score, a legality, a hold, or a par. It keeps
+// only the played words per mode; every piece of engine state (run, score,
+// spent letters, end detection, result) is DERIVED by replaying those words
+// through the engine. Daily and Endless each keep a slot; switching modes
+// is a view change and never resets either.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { entryForDayIndex } from '../calendar/day';
+import { endlessEntry } from '../calendar/endless';
+import {
+  dailyRunKey,
+  ENDLESS_RUN_KEY,
+  localDaysBetween,
+  storageDayIndex,
+} from '../calendar/epochs';
+import type { Calendar, CalendarEntry } from '../calendar/types';
+import {
+  createEngine,
+  scrambleRack,
+  type Engine,
+  type Puzzle,
+} from '../engine/engine';
+import { hashString } from '../engine/prng';
+import {
+  applyPlay,
+  createRun,
+  finishRun,
+  isLegalPlay,
+  type RunResult,
+  type RunState,
+} from '../engine/run';
+import {
+  loadJson,
+  loadRunSnapshot,
+  saveJson,
+  saveRunSnapshot,
+} from '../game/persistence';
+import { advanceStreak, type Streak } from '../game/streak';
+import type { GameServices } from './services';
+
+export type Mode = 'daily' | 'endless';
+export type SubmitOutcome = 'played' | 'queued' | 'rejected';
+
+interface ModeProgress {
+  words: string[];
+  stopped: boolean;
+  /** Rack the words belong to, from the restored snapshot. Words are only
+   * replayed when it matches the entry, so a re-anchored calendar can never
+   * replay one rack's words into another. */
+  rack: string | null;
+  seed: number;
+}
+
+type Progress = Record<Mode, ModeProgress>;
+
+function restoreProgress(services: GameServices): Progress {
+  const daily = loadRunSnapshot(services.storage, dailyRunKey(services.now()));
+  const endless = loadRunSnapshot(services.storage, ENDLESS_RUN_KEY);
+  return {
+    daily: {
+      words: daily?.words ?? [],
+      stopped: daily?.stopped ?? false,
+      rack: daily?.rack ?? null,
+      seed: 0,
+    },
+    endless: {
+      words: endless?.words ?? [],
+      stopped: endless?.stopped ?? false,
+      rack: endless?.rack ?? null,
+      seed: endless?.endlessSeed ?? 0,
+    },
+  };
+}
+
+function entryFor(
+  calendar: Calendar,
+  mode: Mode,
+  now: Date,
+  seed: number,
+): { entry: CalendarEntry; dayNumber: number | null } {
+  if (mode === 'daily') {
+    const dayIndex = Math.max(0, localDaysBetween(calendar.epoch, now));
+    return {
+      entry: entryForDayIndex(calendar, dayIndex),
+      dayNumber: dayIndex + 1,
+    };
+  }
+  return { entry: endlessEntry(calendar, seed), dayNumber: null };
+}
+
+/** Replay words through the engine. Illegal words (a changed dictionary,
+ * a corrupt snapshot) are skipped rather than crashing the run. */
+function replay(puzzle: Puzzle, words: readonly string[]): RunState {
+  let run = createRun(puzzle);
+  for (const word of words) {
+    if (isLegalPlay(puzzle, run, word)) run = applyPlay(puzzle, run, word);
+  }
+  return run;
+}
+
+function initialDisplay(entry: CalendarEntry, seed: number): string {
+  return scrambleRack(entry.rack, hashString(entry.rack) + seed, (d) =>
+    entry.eights.includes(d),
+  );
+}
+
+export function useGame(services: GameServices) {
+  const [mode, setMode] = useState<Mode>('daily');
+  const [calendar, setCalendar] = useState<Calendar | null>(null);
+  const [engine, setEngine] = useState<Engine | null>(null);
+  const [progress, setProgress] = useState<Progress>(() =>
+    restoreProgress(services),
+  );
+  const [announcement, setAnnouncement] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const queueRef = useRef<{ mode: Mode; word: string }[]>([]);
+  const endedKeysRef = useRef<Set<string>>(new Set());
+
+  // External systems arrive through promise callbacks, never effect bodies.
+  useEffect(() => {
+    let alive = true;
+    void services.loadCalendar().then((c) => {
+      if (alive) setCalendar(c);
+    });
+    void services.loadDictionaries().dictionaries.then(async (dicts) => {
+      const cal = await services.loadCalendar();
+      if (!alive) return;
+      const eng = createEngine(dicts);
+      setEngine(eng);
+      const queued = queueRef.current;
+      queueRef.current = [];
+      if (queued.length > 0) {
+        setProgress((prev) => flushQueue(prev, cal, eng, queued, services));
+      }
+    });
+    return () => {
+      alive = false;
+    };
+  }, [services]);
+
+  const now = services.now();
+  const active = useMemo(
+    () =>
+      calendar ? entryFor(calendar, mode, now, progress[mode].seed) : null,
+    // now is derived from services and stable enough per render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [calendar, mode, progress],
+  );
+
+  const puzzle = useMemo(
+    () => (engine && active ? engine.createPuzzle(active.entry.rack) : null),
+    [engine, active],
+  );
+
+  const words = useMemo(() => {
+    const p = progress[mode];
+    if (!active) return [];
+    return p.rack === null || p.rack === active.entry.rack ? p.words : [];
+  }, [progress, mode, active]);
+
+  const run = useMemo(
+    () => (puzzle ? replay(puzzle, words) : null),
+    [puzzle, words],
+  );
+
+  const stopped = progress[mode].stopped;
+  const result: RunResult | null = useMemo(
+    () =>
+      puzzle && run && (run.ended || stopped) ? finishRun(puzzle, run) : null,
+    [puzzle, run, stopped],
+  );
+
+  const pool = useMemo(() => {
+    if (!active) return null;
+    if (!run || run.played.length === 0) {
+      return initialDisplay(active.entry, progress[mode].seed);
+    }
+    const lastWord = run.played[run.played.length - 1]!.word;
+    // After a play the pool is the played word's letters; rescramble so the
+    // board does not sit there spelling the word back at the player.
+    return scrambleRack(
+      lastWord,
+      hashString(active.entry.rack) + run.played.length,
+      (d) => d === lastWord || active.entry.eights.includes(d),
+    );
+  }, [active, run, progress, mode]);
+
+  // Persist to local storage: syncing React state out to an external
+  // system, which is exactly what effects are for.
+  useEffect(() => {
+    if (!calendar) return;
+    for (const m of ['daily', 'endless'] as const) {
+      const p = progress[m];
+      const { entry } = entryFor(calendar, m, services.now(), p.seed);
+      saveRunSnapshot(
+        services.storage,
+        m === 'daily' ? dailyRunKey(services.now()) : ENDLESS_RUN_KEY,
+        {
+          rack: p.rack ?? entry.rack,
+          words: p.words,
+          stopped: p.stopped,
+          ...(m === 'endless' ? { endlessSeed: p.seed } : {}),
+        },
+      );
+    }
+  }, [progress, calendar, services]);
+
+  // The end of a daily advances the streak, once per run.
+  useEffect(() => {
+    if (!result || mode !== 'daily' || !active) return;
+    const key = `daily-${active.entry.rack}`;
+    if (endedKeysRef.current.has(key)) return;
+    endedKeysRef.current.add(key);
+    const streak = advanceStreak(
+      loadJson<Streak>(services.storage, 'streak') ?? undefined,
+      storageDayIndex(services.now()),
+    );
+    saveJson(services.storage, 'streak', streak);
+  }, [result, mode, active, services]);
+
+  const submit = useCallback(
+    (rawWord: string): SubmitOutcome => {
+      const word = rawWord.trim().toLowerCase();
+      if (!word || !active) return 'rejected';
+      if (!puzzle || !run) {
+        queueRef.current.push({ mode, word });
+        return 'queued';
+      }
+      if (result) return 'rejected';
+      if (!isLegalPlay(puzzle, run, word)) {
+        const reason = run.played.some((p) => p.word === word)
+          ? `${word.toUpperCase()} is already on the stack.`
+          : word.length < 3
+            ? 'Words need at least three letters.'
+            : `${word.toUpperCase()} is not a word this pool can make.`;
+        setError(reason);
+        setAnnouncement(reason);
+        return 'rejected';
+      }
+      const before = run.pool.length;
+      const next = applyPlay(puzzle, run, word);
+      const played = next.played[next.played.length - 1]!;
+      const dropped = next.spent.slice(run.spent.length).map((s) => s.letter);
+      playSound(services, puzzle, next, word, before);
+      setAnnouncement(
+        `Played ${word.toUpperCase()} for ${played.score} points.` +
+          (dropped.length > 0
+            ? ` Dropped ${dropped.map((l) => l.toUpperCase()).join(', ')}.`
+            : ' Held every letter.') +
+          (next.ended ? ' The pool is out of sorts.' : ''),
+      );
+      if (next.ended) services.audio.play('end');
+      setError(null);
+      setProgress((prev) => ({
+        ...prev,
+        [mode]: {
+          ...prev[mode],
+          rack: active.entry.rack,
+          words: [...prev[mode].words, word],
+        },
+      }));
+      return 'played';
+    },
+    [active, puzzle, run, result, mode, services],
+  );
+
+  const stop = useCallback(() => {
+    if (!puzzle || !run || result) return;
+    services.audio.play('end');
+    setAnnouncement('Run stopped.');
+    setProgress((prev) => ({
+      ...prev,
+      [mode]: { ...prev[mode], stopped: true },
+    }));
+  }, [puzzle, run, result, mode, services]);
+
+  const newEndless = useCallback(() => {
+    setProgress((prev) => ({
+      ...prev,
+      endless: {
+        words: [],
+        stopped: false,
+        rack: null,
+        seed: prev.endless.seed + 1,
+      },
+    }));
+  }, []);
+
+  return {
+    mode,
+    setMode,
+    entry: active?.entry ?? null,
+    dayNumber: active?.dayNumber ?? null,
+    endlessSeed: progress.endless.seed,
+    puzzle,
+    run,
+    result,
+    pool,
+    ready: !!puzzle,
+    streak: loadJson<Streak>(services.storage, 'streak')?.length ?? 0,
+    announcement,
+    error,
+    submit,
+    stop,
+    newEndless,
+  };
+}
+
+function playSound(
+  services: GameServices,
+  puzzle: Puzzle,
+  next: RunState,
+  word: string,
+  poolBefore: number,
+) {
+  const eights = puzzle.holds.fullRackWords;
+  const found = next.played.filter((p) => eights.includes(p.word)).length;
+  if (word.length === 8 && eights.length >= 2 && found === eights.length) {
+    services.audio.play('all-eights');
+  } else if (word.length === 8) {
+    services.audio.play('eight');
+  } else if (poolBefore === word.length) {
+    services.audio.play('hold');
+  } else {
+    services.audio.play('drop');
+  }
+}
+
+/** Validate and apply words that were submitted before the dictionary
+ * landed. Pure over the previous progress; called from the dictionary
+ * promise callback. A queued word that turns out illegal is dropped. */
+function flushQueue(
+  prev: Progress,
+  calendar: Calendar,
+  engine: Engine,
+  queued: readonly { mode: Mode; word: string }[],
+  services: GameServices,
+): Progress {
+  const next: Progress = { ...prev };
+  for (const m of ['daily', 'endless'] as const) {
+    const items = queued.filter((q) => q.mode === m);
+    if (items.length === 0) continue;
+    const { entry } = entryFor(calendar, m, services.now(), prev[m].seed);
+    const puzzle = engine.createPuzzle(entry.rack);
+    const base =
+      prev[m].rack === null || prev[m].rack === entry.rack ? prev[m].words : [];
+    let run = replay(puzzle, base);
+    const words = [...base];
+    for (const { word } of items) {
+      if (isLegalPlay(puzzle, run, word)) {
+        run = applyPlay(puzzle, run, word);
+        words.push(word);
+      }
+    }
+    next[m] = { ...next[m], rack: entry.rack, words };
+  }
+  return next;
+}
