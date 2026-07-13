@@ -431,8 +431,12 @@ describe('voice and the vertical', () => {
     const notchRow = rows.find((r) => r.dataset.notch)
     expect(notchRow).toBeTruthy()
     expect(notchRow!.querySelector('.notch')).toBeNull()
-    expect(notchRow!.style.width).toBe('75%')
-    expect(rows[0]!.style.width).toBe('100%')
+    // Width is a pure function of word length in every stack: one shared
+    // unit per letter, so the same word is the same width in every column.
+    // The real pixel widths are measured in test/layout.test.ts, because
+    // jsdom has no layout engine.
+    expect(notchRow!.style.width).toBe('calc(6 * var(--stack-unit))')
+    expect(rows[0]!.style.width).toBe('calc(8 * var(--stack-unit))')
   })
 
   it('hides the sound toggle while keeping audio behind its interface', async () => {
