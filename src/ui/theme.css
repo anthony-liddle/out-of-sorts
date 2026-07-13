@@ -493,6 +493,12 @@ body {
   color: var(--ink);
 }
 
+.stack-empty {
+  color: var(--ghost);
+  font-size: 0.85rem;
+  margin: 0.6rem 0;
+}
+
 .stack-compare figcaption small {
   display: block;
   color: var(--ghost);
