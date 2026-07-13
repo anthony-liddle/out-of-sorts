@@ -1,4 +1,5 @@
 import type { Dictionaries } from './dictionary';
+import { hashString, mulberry32 } from './prng';
 import { subSignatures, toSignature } from './signature';
 import { Solver, type HoldInventory } from './solver';
 import {
@@ -36,26 +37,6 @@ export interface Engine {
    * for its rack using common pool words only. Every daily is perfectible.
    * Not configurable, and invariant across endgame rules. */
   isEligible(sourceWord: string): boolean;
-}
-
-/** Deterministic PRNG so a day's scramble is stable for a given seed. */
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function hashString(s: string): number {
-  let h = 2166136261;
-  for (const c of s) {
-    h ^= c.charCodeAt(0);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
 }
 
 /** Scramble the rack. Turn one must not be a freebie: the display is never

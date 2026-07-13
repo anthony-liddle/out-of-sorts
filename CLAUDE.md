@@ -62,6 +62,30 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
 - Any future Android wrap must bundle the game locally (PWA or Capacitor),
   never a WebView pointed at the hosted site.
 
+## Calendar rules
+
+- **The committed calendar is APPEND-ONLY. Never reorder, never remove.**
+  Day N is the entry at position N; changing an existing entry re-dates
+  every day after it. New racks go on the end, forever. The generation
+  script refuses to overwrite an existing calendar without --force, and
+  --force means re-anchoring the calendar epoch (Peach's "genuine last
+  reshuffle" is the cautionary tale).
+- **A calendar entry is a rack, not a word.** The design (The Cut, GDD
+  v0.4) removed the source word: anagram seeds are the same day, and the
+  baked eights list exists so the scramble can avoid displaying a valid
+  word before any dictionary loads.
+- **The two epochs are decoupled.** STORAGE_EPOCH (src/calendar/epochs.ts)
+  keys progress and streaks and NEVER MOVES; the calendar epoch lives in
+  calendar.json and may be re-anchored by regeneration. Rollover is local
+  midnight.
+- **The gate goes through the engine's solver, never reimplemented.**
+  Every calendar rack passes it (pinned by a test that walks the whole
+  artifact), and Endless draws from the same pool.
+- The denylist (data/denylist.json) flows into patch-deny.txt and the
+  manifest hash. It affects the boundary only, never the common pool, so
+  the sweep stays exact; the 15 racks where par leans on a denied word are
+  a known, flagged tension.
+
 ## Cold start rules
 
 - **The dictionary index never blocks the rack.** The rack renders with no

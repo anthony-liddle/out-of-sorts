@@ -57,7 +57,22 @@ describe('data bake', () => {
       common: bake.common.length,
       source: bake.source.length,
     });
-    expect(manifest.version).toBe(bakeVersion(bake));
+    expect(manifest.version).toBe(
+      bakeVersion(
+        bake,
+        loadBaked('patch-allow.txt'),
+        loadBaked('patch-deny.txt'),
+      ),
+    );
+  });
+
+  it('patch layer changes move the version, so caches invalidate', () => {
+    // The dictionary cache is keyed by this version. If the denylist grows
+    // and the version does not move, a stale cached boundary keeps
+    // accepting denied words. The patches must be part of the hash.
+    const base = bakeVersion(bake, [], []);
+    expect(bakeVersion(bake, [], ['zyzzyvas'])).not.toBe(base);
+    expect(bakeVersion(bake, ['zyzzyvas'], [])).not.toBe(base);
   });
 
   it('matches the committed baked files exactly', () => {
@@ -67,8 +82,11 @@ describe('data bake', () => {
     expect(loadBaked('source-pool.txt')).toEqual(bake.source);
   });
 
-  it('ships empty but present patch layer files', () => {
+  it('ships the patch layer: allow empty, deny mirrors the denylist', () => {
     expect(loadBaked('patch-allow.txt')).toEqual([]);
-    expect(loadBaked('patch-deny.txt')).toEqual([]);
+    const denylist = JSON.parse(readFileSync('data/denylist.json', 'utf8')) as {
+      words: string[];
+    };
+    expect(loadBaked('patch-deny.txt')).toEqual([...denylist.words].sort());
   });
 });
