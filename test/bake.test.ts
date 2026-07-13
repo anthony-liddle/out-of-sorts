@@ -1,13 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { buildBakeOutputs } from '../scripts/bake-lib';
+import { bakeVersion, buildBakeOutputs } from '../scripts/bake-lib';
 
 // The three pinned counts. Discovery measured every design number against
 // lists cleaned exactly this way. If any of these changes, the cleaning has
 // drifted and every number in the GDD is untrustworthy. Do not adjust the
 // expectations; find the drift.
 const BOUNDARY_COUNT = 430172;
-const COMMON_COUNT = 61502;
+// 61,502 is the pre-filter cleaning stage every discovery statistic was
+// measured against; 61,411 is what ships after dropping the 91 words of
+// length one and two that can never be played.
+const COMMON_COUNT = 61411;
 const SOURCE_COUNT = 6526;
 
 function loadBaked(name: string): string[] {
@@ -36,14 +39,25 @@ describe('data bake', () => {
     expect(bake.scowl95Extra.some((w) => enable.has(w))).toBe(false);
   });
 
-  it('cleans the way discovery did: lowercase a-z only', () => {
-    for (const list of [bake.enable, bake.scowl95Extra]) {
+  it('cleans the way discovery did: lowercase a-z only, length 3 or more', () => {
+    for (const list of [bake.enable, bake.scowl95Extra, bake.common]) {
       expect(list.every((w) => /^[a-z]{3,}$/.test(w))).toBe(true);
     }
-    // The common pool file is the pure cleaning stage, before the minimum
-    // length filter, because that is where the 61,502 pin was measured.
-    expect(bake.common.every((w) => /^[a-z]+$/.test(w))).toBe(true);
     expect(bake.source.every((w) => /^[a-z]{8}$/.test(w))).toBe(true);
+  });
+
+  it('emits a manifest whose version hashes the baked artifacts', () => {
+    const manifest = JSON.parse(
+      readFileSync('public/data/manifest.json', 'utf8'),
+    );
+    expect(manifest.version).toMatch(/^[0-9a-f]{64}$/);
+    expect(manifest.counts).toEqual({
+      enable: bake.enable.length,
+      scowl95Extra: bake.scowl95Extra.length,
+      common: bake.common.length,
+      source: bake.source.length,
+    });
+    expect(manifest.version).toBe(bakeVersion(bake));
   });
 
   it('matches the committed baked files exactly', () => {

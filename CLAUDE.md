@@ -30,10 +30,21 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   `terminal-three`, `descent`. It is one predicate in
   `src/engine/rules.ts`, threaded through play legality and solver banking.
   Never branch on the rule anywhere else. Do not hardcode a rule.
-- **The bake pins are sacred.** Boundary 430,172; common 61,502 (the pure
-  cleaning stage, before the minimum length filter); source 6,526. A drift
-  means the cleaning changed and every GDD number is untrustworthy. Stop
-  and report; never adjust the pin.
+- **The bake pins are sacred.** Boundary 430,172; common 61,411 shipped;
+  source 6,526. The common pool has two true numbers: 61,502 is the
+  pre-filter cleaning stage every discovery statistic was measured against,
+  and 61,411 is what ships after dropping the 91 one and two letter words
+  that can never be played (minimum word length is 3). The engine applies
+  the length filter at index build either way, so the sweep is identical
+  under both; verify:sweep proves it. Any other drift means the cleaning
+  changed and every GDD number is untrustworthy. Stop and report; never
+  adjust the pin.
+- **The data version is the cache key.** The bake emits
+  `public/data/manifest.json` with a content hash of the baked lists. The
+  runtime dictionary cache (IndexedDB) is keyed by it, so a re-bake
+  invalidates stale caches automatically. A stale index silently rejects
+  valid words, the worst failure mode in the game; never cache the index
+  without the version check.
 - **The verification sweep must stay green.** `pnpm verify:sweep` reproduces
   the Python discovery numbers exactly, all three rules, full population.
   Any mismatch is a bug, not a rounding difference.
@@ -50,6 +61,21 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   a constraint on the dependency tree, not just a policy.
 - Any future Android wrap must bundle the game locally (PWA or Capacitor),
   never a WebView pointed at the hosted site.
+
+## Cold start rules
+
+- **The dictionary index never blocks the rack.** The rack renders with no
+  dictionary (`scrambleRack` takes a predicate, not the boundary). The index
+  builds in a Web Worker (`src/loader/worker.ts`), lands whenever it lands,
+  and the submit gate (`src/loader/submit-gate.ts`) queues any submit made
+  before it is ready. Never reject a word because the dictionary was still
+  loading, and never add a loading spinner that blocks play.
+- The built index is cached in IndexedDB keyed by the bake manifest version;
+  see the data version rule above. The cache stores the dictionary index
+  only; game progress is a later prompt.
+- One build implementation: `buildFromTexts` in `src/loader/build.ts` is
+  shared by the worker, any main thread fallback, and the Node loader. Do
+  not fork it.
 
 ## Working conventions
 
