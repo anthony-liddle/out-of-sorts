@@ -35,7 +35,7 @@
     "@vercel/analytics": "^2.0.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@eslint/js": "^9.30.0",
     "@types/node": "^22.15.0",
