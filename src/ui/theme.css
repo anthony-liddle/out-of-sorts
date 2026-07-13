@@ -172,19 +172,17 @@ body {
   cursor: default;
 }
 
-/* Cold: sunk, drained, already halfway to being a ghost. The scalloped
-   bottom is the ghost's own hem: a preview of death. Never the only
-   signal: the sink and the drain travel together. */
+/* Cold: at risk, not gone. A ghost means the letter is gone; a cold tile
+   means it is about to be, and they must never look the same: the ghost
+   silhouette is reserved for the drift, the way each accent color is
+   reserved for one job. So the cold tile stays a tile and carries two
+   signals only: a dim and a small sink. A shadow, not a cliff. It stays
+   tappable, and tapping it un-chills it. */
 .pool-tile[data-state='cold'] {
-  background: var(--ghost-body);
-  color: var(--cold-ink);
-  transform: translateY(7px) scale(0.93);
-  box-shadow: none;
-  border-radius: 1.4rem 1.4rem 0.3rem 0.3rem;
-  mask:
-    radial-gradient(0.34rem at 25% 100%, transparent 98%, black) bottom left /
-      33.4% 0.35rem repeat-x,
-    linear-gradient(black, black) top / 100% calc(100% - 0.33rem) no-repeat;
+  background: #efedf9;
+  color: #8d87c0;
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(60, 52, 137, 0.08);
 }
 
 .entry {

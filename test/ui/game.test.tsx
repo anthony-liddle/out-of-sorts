@@ -193,6 +193,21 @@ describe('tile selection with duplicate letters', () => {
 })
 
 describe('the cold tile preview', () => {
+  it('a cold tile is still tappable: tapping un-chills it and spends it', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'tea')
+    const cold = screen
+      .getAllByTestId('pool-tile')
+      .find((t) => t.dataset.state === 'cold' && t.textContent === 'L')
+    expect(cold).toBeTruthy()
+    await userEvent.click(cold!)
+    expect(input.value.toLowerCase()).toBe('teal')
+    expect(cold!.dataset.state).toBe('used')
+  })
+
+
   it('marks exactly the letters the current input would discard', async () => {
     render(<App services={services()} />)
     await ready()
