@@ -1,0 +1,471 @@
+{
+  "population": {
+    "n": 3300,
+    "rungs": {
+      "3": {
+        "playsPct": 17.2,
+        "pointsPct": 10.2,
+        "meanWords": 2.13
+      },
+      "4": {
+        "playsPct": 24.3,
+        "pointsPct": 19,
+        "meanWords": 3.01
+      },
+      "5": {
+        "playsPct": 23.1,
+        "pointsPct": 22.4,
+        "meanWords": 2.92
+      },
+      "6": {
+        "playsPct": 15.8,
+        "pointsPct": 18.4,
+        "meanWords": 2.09
+      },
+      "7": {
+        "playsPct": 10.7,
+        "pointsPct": 14.9,
+        "meanWords": 1.48
+      },
+      "8": {
+        "playsPct": 9,
+        "pointsPct": 15,
+        "meanWords": 1.11
+      }
+    },
+    "grindPlaysPct": 41.4,
+    "grindPointsPct": 29.2,
+    "rung5Mean": 2.92,
+    "medianDepth": 13,
+    "fullHoldPct": 9.8,
+    "classDist": {
+      "1": 2977,
+      "2": 279,
+      "3": 35,
+      "4": 6,
+      "5": 3
+    }
+  },
+  "kept": {
+    "n": 751,
+    "rungs": {
+      "3": {
+        "playsPct": 18,
+        "pointsPct": 10.6,
+        "meanWords": 2.25
+      },
+      "4": {
+        "playsPct": 24.8,
+        "pointsPct": 19.6,
+        "meanWords": 3.09
+      },
+      "5": {
+        "playsPct": 23.2,
+        "pointsPct": 22.9,
+        "meanWords": 2.97
+      },
+      "6": {
+        "playsPct": 15.3,
+        "pointsPct": 18.2,
+        "meanWords": 2.04
+      },
+      "7": {
+        "playsPct": 9.6,
+        "pointsPct": 13.6,
+        "meanWords": 1.37
+      },
+      "8": {
+        "playsPct": 9.1,
+        "pointsPct": 15.2,
+        "meanWords": 1.14
+      }
+    },
+    "grindPlaysPct": 42.8,
+    "grindPointsPct": 30.2,
+    "rung5Mean": 2.97,
+    "medianDepth": 13,
+    "fullHoldPct": 10.7,
+    "classDist": {
+      "1": 671,
+      "2": 65,
+      "3": 8,
+      "4": 5,
+      "5": 2
+    }
+  },
+  "removed": {
+    "n": 2549,
+    "rungs": {
+      "3": {
+        "playsPct": 16.9,
+        "pointsPct": 10.1,
+        "meanWords": 2.1
+      },
+      "4": {
+        "playsPct": 24.1,
+        "pointsPct": 18.8,
+        "meanWords": 2.98
+      },
+      "5": {
+        "playsPct": 23.1,
+        "pointsPct": 22.3,
+        "meanWords": 2.9
+      },
+      "6": {
+        "playsPct": 15.9,
+        "pointsPct": 18.5,
+        "meanWords": 2.11
+      },
+      "7": {
+        "playsPct": 11,
+        "pointsPct": 15.3,
+        "meanWords": 1.51
+      },
+      "8": {
+        "playsPct": 9,
+        "pointsPct": 15,
+        "meanWords": 1.11
+      }
+    },
+    "grindPlaysPct": 41,
+    "grindPointsPct": 28.9,
+    "rung5Mean": 2.9,
+    "medianDepth": 13,
+    "fullHoldPct": 9.5,
+    "classDist": {
+      "1": 2306,
+      "2": 214,
+      "3": 27,
+      "4": 1,
+      "5": 1
+    }
+  },
+  "withS": {
+    "n": 2210,
+    "rungs": {
+      "3": {
+        "playsPct": 16.4,
+        "pointsPct": 9.8,
+        "meanWords": 2.23
+      },
+      "4": {
+        "playsPct": 24.6,
+        "pointsPct": 19.2,
+        "meanWords": 3.32
+      },
+      "5": {
+        "playsPct": 24.3,
+        "pointsPct": 23.7,
+        "meanWords": 3.31
+      },
+      "6": {
+        "playsPct": 16.1,
+        "pointsPct": 18.8,
+        "meanWords": 2.3
+      },
+      "7": {
+        "playsPct": 10.2,
+        "pointsPct": 14.3,
+        "meanWords": 1.54
+      },
+      "8": {
+        "playsPct": 8.4,
+        "pointsPct": 14.1,
+        "meanWords": 1.13
+      }
+    },
+    "grindPlaysPct": 41,
+    "grindPointsPct": 29.1,
+    "rung5Mean": 3.31,
+    "medianDepth": 14,
+    "fullHoldPct": 11.3,
+    "classDist": {
+      "1": 1960,
+      "2": 213,
+      "3": 30,
+      "4": 5,
+      "5": 2
+    }
+  },
+  "withoutS": {
+    "n": 1090,
+    "rungs": {
+      "3": {
+        "playsPct": 19.1,
+        "pointsPct": 11.3,
+        "meanWords": 1.94
+      },
+      "4": {
+        "playsPct": 23.4,
+        "pointsPct": 18.3,
+        "meanWords": 2.38
+      },
+      "5": {
+        "playsPct": 19.8,
+        "pointsPct": 19.3,
+        "meanWords": 2.1
+      },
+      "6": {
+        "playsPct": 15,
+        "pointsPct": 17.4,
+        "meanWords": 1.66
+      },
+      "7": {
+        "playsPct": 12,
+        "pointsPct": 16.4,
+        "meanWords": 1.36
+      },
+      "8": {
+        "playsPct": 10.6,
+        "pointsPct": 17.3,
+        "meanWords": 1.08
+      }
+    },
+    "grindPlaysPct": 42.6,
+    "grindPointsPct": 29.5,
+    "rung5Mean": 2.1,
+    "medianDepth": 10,
+    "fullHoldPct": 6.7,
+    "classDist": {
+      "1": 1017,
+      "2": 66,
+      "3": 5,
+      "4": 1,
+      "5": 1
+    }
+  },
+  "q2": {
+    "holdRacks": 323,
+    "rescued": 80,
+    "lost": 243,
+    "lostBigClasses": [
+      {
+        "rack": "aeginrst",
+        "classWords": [
+          "angriest",
+          "gantries",
+          "ingrates",
+          "rangiest",
+          "tasering"
+        ],
+        "sourceWords": [
+          "angriest"
+        ]
+      },
+      {
+        "rack": "aeinprst",
+        "classWords": [
+          "painters",
+          "pantries",
+          "pertains",
+          "repaints"
+        ],
+        "sourceWords": [
+          "pantries",
+          "pertains"
+        ]
+      }
+    ],
+    "rescuedBigClasses": [
+      {
+        "rack": "aegilnrt",
+        "crowns": [
+          "integral",
+          "triangle"
+        ],
+        "classWords": [
+          "alerting",
+          "altering",
+          "integral",
+          "relating",
+          "triangle"
+        ]
+      },
+      {
+        "rack": "cenorstu",
+        "crowns": [
+          "construe"
+        ],
+        "classWords": [
+          "construe",
+          "counters",
+          "recounts",
+          "trounces"
+        ]
+      },
+      {
+        "rack": "deeinrst",
+        "crowns": [
+          "resident"
+        ],
+        "classWords": [
+          "inserted",
+          "nerdiest",
+          "resident",
+          "trendies"
+        ]
+      },
+      {
+        "rack": "aeelmnss",
+        "crowns": [
+          "nameless",
+          "salesmen"
+        ],
+        "classWords": [
+          "lameness",
+          "maleness",
+          "nameless",
+          "salesmen"
+        ]
+      },
+      {
+        "rack": "adeoprrt",
+        "crowns": [
+          "predator",
+          "teardrop"
+        ],
+        "classWords": [
+          "parroted",
+          "predator",
+          "prorated",
+          "teardrop"
+        ]
+      },
+      {
+        "rack": "aeinrrst",
+        "crowns": [
+          "restrain"
+        ],
+        "classWords": [
+          "restrain",
+          "retrains",
+          "strainer",
+          "terrains",
+          "trainers"
+        ]
+      },
+      {
+        "rack": "aeeirstt",
+        "crowns": [
+          "treatise"
+        ],
+        "classWords": [
+          "iterates",
+          "teariest",
+          "treaties",
+          "treatise"
+        ]
+      }
+    ]
+  },
+  "q4": {
+    "mill": {
+      "greedyParPct": 8.7,
+      "teethPct": 20.4,
+      "medianPar": 84,
+      "grindPlaysPct": 42.8,
+      "grindPointsPct": 30.2
+    },
+    "terminal-three": {
+      "greedyParPct": 12.5,
+      "teethPct": 19.8,
+      "medianPar": 80,
+      "grindPlaysPct": 36.3,
+      "grindPointsPct": 26.5
+    },
+    "descent": {
+      "greedyParPct": 26.5,
+      "teethPct": 15.7,
+      "medianPar": 70,
+      "grindPlaysPct": 21.7,
+      "grindPointsPct": 15.4
+    }
+  },
+  "terminalThreeGreedyPopulationPct": 10.7,
+  "q5": {
+    "heuristic": {
+      "words": 767,
+      "racks": 751,
+      "yearsOfDailies": 2.1
+    },
+    "strictSuffix": {
+      "words": 631,
+      "racks": 616,
+      "yearsOfDailies": 1.73
+    },
+    "rawGate": {
+      "words": 3521,
+      "racks": 3300,
+      "yearsOfDailies": 9.64
+    }
+  },
+  "topTenClassification": {
+    "despairs": "inflected",
+    "reprisal": "clean",
+    "sharpest": "inflected",
+    "panthers": "inflected",
+    "patterns": "inflected",
+    "operands": "inflected",
+    "tapestry": "clean",
+    "caprices": "inflected",
+    "compares": "inflected",
+    "poachers": "inflected"
+  },
+  "flaggedCounts": {
+    "flaggedWords": 4397,
+    "cleanWords": 2129,
+    "flaggedPct": 67.4
+  },
+  "handCheckSample": [
+    "abacuses",
+    "alleging",
+    "assureds",
+    "bedtimes",
+    "bloodied",
+    "brigades",
+    "cankered",
+    "chastest",
+    "cleaving",
+    "complies",
+    "counters",
+    "crustier",
+    "deformed",
+    "dictated",
+    "dreamers",
+    "embosses",
+    "eulogies",
+    "fatigues",
+    "flirting",
+    "frothier",
+    "gnashing",
+    "guttered",
+    "hoodlums",
+    "indulges",
+    "jaywalks",
+    "leashing",
+    "manacles",
+    "miseries",
+    "neutrals",
+    "outdoing",
+    "pathways",
+    "placated",
+    "prefixed",
+    "pulsated",
+    "rattling",
+    "relapses",
+    "retarded",
+    "rustiest",
+    "scrubbed",
+    "shiniest",
+    "slanting",
+    "snubbing",
+    "sprawled",
+    "stiffing",
+    "sufficed",
+    "tainting",
+    "tightest",
+    "tripping",
+    "unsaying",
+    "wallowed"
+  ]
+}
