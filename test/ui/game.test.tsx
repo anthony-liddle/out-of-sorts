@@ -427,6 +427,149 @@ describe('voice and the vertical', () => {
   })
 })
 
+describe('hands: the control row', () => {
+  it('offers shuffle, clear, backspace, and spend under the pool', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const row = screen.getByTestId('control-row')
+    const labels = [...row.querySelectorAll('button')].map(
+      (b) => b.getAttribute('aria-label') ?? b.textContent,
+    )
+    expect(labels).toEqual(['Shuffle', 'Clear', 'Delete last letter', 'Spend'])
+  })
+
+  it('keeps stop away from spend', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const spend = screen.getByRole('button', { name: /spend/i })
+    const stop = screen.getByRole('button', { name: /stop/i })
+    expect(stop.parentElement).not.toBe(spend.parentElement)
+    // spend must come first in DOM order, with distance between them
+    expect(
+      spend.compareDocumentPosition(stop) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('backspace and clear keep the input and tile states in sync', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'rating')
+    expect(
+      screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
+    ).toHaveLength(6)
+    await userEvent.click(
+      screen.getByRole('button', { name: /delete last letter/i }),
+    )
+    expect(input.value.toLowerCase()).toBe('ratin')
+    expect(
+      screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
+    ).toHaveLength(5)
+    await userEvent.click(screen.getByRole('button', { name: /clear/i }))
+    expect(input.value).toBe('')
+    expect(
+      screen.getAllByTestId('pool-tile').every((t) => !t.dataset.state),
+    ).toBe(true)
+  })
+
+  it('shuffle rearranges the pool without ever spelling a valid word', async () => {
+    render(<App services={services()} />)
+    await ready()
+    // descend to the four letter pool of GRIN, where RING also lurks
+    for (const w of ['triangle', 'tearing', 'rating', 'grain', 'grin']) {
+      await playWord(w)
+    }
+    for (let i = 0; i < 20; i++) {
+      const display = screen
+        .getAllByTestId('pool-tile')
+        .map((t) => t.textContent)
+        .join('')
+        .toLowerCase()
+      expect(['grin', 'ring']).not.toContain(display)
+      await userEvent.click(screen.getByRole('button', { name: /shuffle/i }))
+    }
+  })
+
+  it('the pool after a drop never spells a valid word', async () => {
+    // The live bug this build fixes: the redisplay guard only knew the
+    // just played word and the baked eights. GIN's pool letters can spell
+    // nothing here, but GRIN's can spell RING, and the display must not.
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('rating')
+    await playWord('grain')
+    await playWord('ring')
+    const display = screen
+      .getAllByTestId('pool-tile')
+      .map((t) => t.textContent)
+      .join('')
+      .toLowerCase()
+    expect(['ring', 'grin']).not.toContain(display)
+  })
+
+  it('shuffle keeps the typed input and remaps the tile lights', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
+    await userEvent.type(input, 'grin')
+    await userEvent.click(screen.getByRole('button', { name: /shuffle/i }))
+    expect(input.value.toLowerCase()).toBe('grin')
+    expect(
+      screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
+    ).toHaveLength(4)
+  })
+})
+
+describe('face: the end screen explains the day', () => {
+  it('says there was no choice on a rack whose best path is clean, with no toggle', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await userEvent.click(screen.getByRole('button', { name: /stop/i }))
+    await screen.findByTestId('end-screen')
+    expect(
+      screen.getByText(/the best path was also a clean one/i),
+    ).toBeTruthy()
+    expect(screen.getByText(/no choice to make today/i)).toBeTruthy()
+    expect(screen.queryByTestId('clean-stack')).toBeNull()
+    expect(screen.getByText(/^best$/i)).toBeTruthy()
+  })
+
+  it('reports the real gap when greed and discipline pull apart', () => {
+    const dicts = realDicts()
+    const engine = createEngine(dicts)
+    const puzzle = engine.createPuzzle('addeissu')
+    expect(puzzle.bestClean).not.toBeNull()
+    expect(puzzle.par).not.toBe(puzzle.bestClean)
+    const gap = puzzle.par - puzzle.bestClean!
+    render(
+      <EndScreen
+        puzzle={puzzle}
+        result={{
+          score: 20,
+          words: [],
+          endReason: 'stopped',
+          finalPoolSize: 4,
+          isCleanDescent: false,
+        }}
+        played={[{ word: 'dissuade', score: 10, length: 8 }]}
+        dayLabel="Day 1"
+        onShare={() => {}}
+        onNewEndless={null}
+      />,
+    )
+    expect(
+      screen.getByText(/greed and discipline pulled apart/i),
+    ).toBeTruthy()
+    expect(
+      screen.getByText(new RegExp(`costs you ${gap} points`)),
+    ).toBeTruthy()
+    expect(screen.getByTestId('clean-stack')).toBeTruthy()
+    expect(screen.getByText(/most points possible without ever losing/i)).toBeTruthy()
+  })
+})
+
 describe('reduced motion', () => {
   it('suppresses drift and decay while the spent row stays readable', async () => {
     render(<App services={services({ reducedMotionDefault: true })} />)
