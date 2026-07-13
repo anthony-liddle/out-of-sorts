@@ -7,7 +7,7 @@
 // diacritics. SCOWL bands are cumulative: size N is the union of the english
 // and american lists at every band <= N.
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SCOWL_BANDS = [10, 20, 35, 40, 50, 55, 60, 70, 80, 95];
@@ -75,16 +75,57 @@ export function buildBakeOutputs(rawDir: string): BakeOutputs {
  * stale index would silently reject valid words, the worst failure mode in
  * the game, so the version must derive from the data and nothing else.
  */
-export function bakeVersion(bake: BakeOutputs): string {
+export function bakeVersion(
+  bake: BakeOutputs,
+  allow: readonly string[],
+  deny: readonly string[],
+): string {
   const hash = createHash('sha256');
   for (const list of [
     bake.enable,
     bake.scowl95Extra,
     bake.common,
     bake.source,
+    allow,
+    deny,
   ]) {
     hash.update(list.join('\n'));
     hash.update('\x00');
   }
   return hash.digest('hex');
+}
+
+/** Rewrites manifest.json from the bake outputs plus the patch files
+ * currently on disk. Called by the bake and by anything that edits the
+ * patch layer (the calendar generator), so the version always reflects
+ * what the runtime will actually load. */
+export function writeManifest(bake: BakeOutputs, outDir: string): string {
+  const readPatch = (name: string): string[] => {
+    try {
+      return readFileSync(join(outDir, name), 'utf8')
+        .split('\n')
+        .filter((w) => w.length > 0);
+    } catch {
+      return [];
+    }
+  };
+  const version = bakeVersion(
+    bake,
+    readPatch('patch-allow.txt'),
+    readPatch('patch-deny.txt'),
+  );
+  const manifest = {
+    version,
+    counts: {
+      enable: bake.enable.length,
+      scowl95Extra: bake.scowl95Extra.length,
+      common: bake.common.length,
+      source: bake.source.length,
+    },
+  };
+  writeFileSync(
+    join(outDir, 'manifest.json'),
+    JSON.stringify(manifest, null, 2) + '\n',
+  );
+  return version;
 }

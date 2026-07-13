@@ -3,7 +3,7 @@
 // from what discovery measured against, and the build must stop.
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { bakeVersion, buildBakeOutputs } from './bake-lib';
+import { buildBakeOutputs, writeManifest } from './bake-lib';
 
 const OUT = 'public/data';
 // common is 61,411 length-filtered; discovery pinned 61,502 at the
@@ -37,24 +37,12 @@ for (const patch of ['patch-allow.txt', 'patch-deny.txt']) {
   if (!existsSync(join(OUT, patch))) writeFileSync(join(OUT, patch), '');
 }
 
-const manifest = {
-  version: bakeVersion(bake),
-  counts: {
-    enable: bake.enable.length,
-    scowl95Extra: bake.scowl95Extra.length,
-    common: bake.common.length,
-    source: bake.source.length,
-  },
-};
-writeFileSync(
-  join(OUT, 'manifest.json'),
-  JSON.stringify(manifest, null, 2) + '\n',
-);
+const version = writeManifest(bake, OUT);
 
 console.log(
   `boundary ${boundaryCount} (enable ${bake.enable.length} + extra ${bake.scowl95Extra.length})`,
 );
 console.log(`common ${bake.common.length}`);
 console.log(`source ${bake.source.length}`);
-console.log(`version ${manifest.version}`);
+console.log(`version ${version}`);
 console.log(`baked to ${OUT}`);
