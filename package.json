@@ -20,7 +20,8 @@
     "bake": "tsx scripts/bake.ts",
     "verify:sweep": "tsx scripts/verify-sweep.ts",
     "bench": "tsx scripts/bench.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "generate:calendar": "tsx scripts/generate-calendar.ts"
   },
   "lint-staged": {
     "*.{ts,js}": [
