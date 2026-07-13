@@ -113,14 +113,15 @@ body {
 /* The drift: what you lost, rising and fading above the pool. Oldest at
    the top, nearly gone. */
 .drift {
-  min-height: 6.5rem;
+  /* Enough reserve that the first ghost causes no layout jump, no more. */
+  min-height: 4.3rem;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-content: flex-end;
   align-items: flex-end;
-  gap: 0.4rem 0.55rem;
-  padding: 0.8rem 0.5rem 1.1rem;
+  gap: 0.3rem 0.4rem;
+  padding: 0.4rem 0.25rem 0.8rem;
 }
 
 .drift-empty {
@@ -133,8 +134,10 @@ body {
 /* The pool: the decision surface. Never waits on anything. */
 .pool {
   display: flex;
-  gap: 0.45rem;
-  flex-wrap: wrap;
+  /* Eight letters in one row is the premise. The rack never wraps: tiles
+     and gaps shrink to fit the narrowest supported phone instead. */
+  flex-wrap: nowrap;
+  gap: clamp(0.15rem, 1.2vw, 0.45rem);
   justify-content: center;
   margin: 0 0 1rem;
 }
@@ -145,9 +148,10 @@ body {
   border: none;
   border-radius: 0.9rem;
   box-shadow: 0 3px 0 rgba(60, 52, 137, 0.14);
-  width: 3rem;
-  height: 3.4rem;
-  font-size: 1.5rem;
+  width: clamp(2rem, 10.2vw, 3rem);
+  height: clamp(2.5rem, 12vw, 3.4rem);
+  font-size: clamp(1.05rem, 4.8vw, 1.5rem);
+  flex-shrink: 0;
   font-weight: 700;
   font-family: var(--font-display);
   cursor: pointer;
@@ -299,6 +303,13 @@ body {
   margin-top: 0.7rem;
 }
 
+/* A notch gap marks a skip between rows; a stack's first row has nothing
+   above it to skip from, and the gap would break the shared baseline of
+   the end screen comparison. */
+.stack-row[data-notch]:first-child {
+  margin-top: 0;
+}
+
 .stack-score {
   font-family: var(--font-body);
   font-size: 0.78rem;
@@ -321,8 +332,8 @@ body {
    arrival, then a slow rise. The letter always stays readable. */
 .ghost {
   position: relative;
-  width: 2.1rem;
-  height: 2.4rem;
+  width: clamp(1.7rem, 8.4vw, 2.1rem);
+  height: clamp(2rem, 9.8vw, 2.4rem);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -486,25 +497,10 @@ body {
   font-family: var(--font-display);
 }
 
-.column-name {
-  display: block;
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--ink);
-}
-
 .stack-empty {
   color: var(--ghost);
   font-size: 0.85rem;
   margin: 0.6rem 0;
-}
-
-.stack-compare figcaption small {
-  display: block;
-  color: var(--ghost);
-  font-size: 0.72rem;
-  line-height: 1.3;
-  min-height: 2rem;
 }
 
 .stack-compare figure {
@@ -512,9 +508,12 @@ body {
 }
 
 .stack-compare figcaption {
-  color: var(--ghost);
-  font-size: 0.85rem;
-  margin-bottom: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
 }
 
 .stack-compare .stack {
@@ -525,17 +524,6 @@ body {
 .stack-compare .stack-row {
   padding: 0.18rem 0.5rem;
   font-size: 0.8rem;
-}
-
-.clean-toggle {
-  margin: 0.8rem auto;
-  max-width: 20rem;
-}
-
-.clean-toggle summary {
-  cursor: pointer;
-  color: var(--violet);
-  font-size: 0.9rem;
 }
 
 .eights-reveal {
@@ -558,4 +546,18 @@ body {
   background: var(--violet);
   color: #fff;
   cursor: pointer;
+}
+
+/* Three columns is too many on a phone. Yours vs Best is the comparison
+   that must stay side by side at every width; Clean drops below the row
+   as its own labeled stack on narrow viewports. */
+@media (max-width: 34rem) {
+  .stack-compare[data-columns='3'] {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .clean-figure {
+    grid-column: 1 / -1;
+    margin-top: 1.2rem;
+  }
 }
