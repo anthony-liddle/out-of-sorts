@@ -1,6 +1,7 @@
-// The stack: words played, descending and narrowing. Landings where a whole
-// anagram class was mined, a visible notch where two or more letters were
-// dropped at once. Not a clean pyramid, and it scrolls.
+// The stack: words played, descending, centered and nested so the
+// silhouette reads. Landings where a whole anagram class was mined; a notch
+// where two or more letters dropped at once. The notch is a shape, not a
+// color: the gap says it, and no accent color may mark it.
 import type { PlayedWord } from '../../engine/run'
 
 export interface StackProps {
@@ -8,9 +9,19 @@ export interface StackProps {
   rackSize: number
 }
 
-export function Stack({ words, rackSize }: StackProps) {
+export function Stack({
+  words,
+  rackSize,
+  ghosted = false,
+  testId,
+}: StackProps) {
   return (
-    <ol className="stack" aria-label="Words played">
+    <ol
+      className="stack"
+      data-testid={testId ?? 'stack'}
+      data-ghosted={ghosted || undefined}
+      aria-label={ghosted ? 'A possible run' : 'Words played'}
+    >
       {words.map((w, i) => {
         const poolBefore = i === 0 ? rackSize : words[i - 1]!.length
         const notch = w.length < poolBefore - 1

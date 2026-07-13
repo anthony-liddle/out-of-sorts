@@ -316,6 +316,116 @@ describe('daily and endless', () => {
   })
 })
 
+describe('voice and the vertical', () => {
+  it('shows the tagline and an empty drift before anything is lost', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(
+      screen.getByText(/every letter you don't use is gone/i),
+    ).toBeTruthy()
+    expect(screen.getByText(/nothing lost yet/i)).toBeTruthy()
+  })
+
+  it('the submit button says spend', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(screen.getByRole('button', { name: /spend/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^play$/i })).toBeNull()
+  })
+
+  it('lays the board out as drift above pool above stack', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('tearing')
+    const drift = screen.getByTestId('drift')
+    const pool = screen.getByTestId('pool')
+    const stack = screen.getByTestId('stack')
+    const order = drift.compareDocumentPosition(pool)
+    expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(
+      pool.compareDocumentPosition(stack) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('a clean finish says out of sorts, a stopped run says rested early', async () => {
+    const shared = services()
+    const view = render(<App services={shared} />)
+    await ready()
+    for (const w of [
+      'triangle',
+      'tearing',
+      'rating',
+      'grain',
+      'grin',
+      'ring',
+      'gin',
+    ]) {
+      await playWord(w)
+    }
+    const heading = await screen.findByRole('heading', { level: 2 })
+    expect(heading.textContent).toBe('Out of sorts.')
+    expect(screen.queryByText(/rested early/i)).toBeNull()
+    view.unmount()
+
+    const stoppedServices = services({ storage: memoryStorage() })
+    render(<App services={stoppedServices} />)
+    await ready()
+    await playWord('triangle')
+    await userEvent.click(screen.getByRole('button', { name: /stop/i }))
+    const stoppedHeading = await screen.findByRole('heading', { level: 2 })
+    expect(stoppedHeading.textContent).toBe('Rested early.')
+  })
+
+  it('renders the par path as a ghosted stack on the end screen', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await userEvent.click(screen.getByRole('button', { name: /stop/i }))
+    await screen.findByTestId('end-screen')
+    const parStack = screen.getByTestId('par-stack')
+    expect(parStack.querySelectorAll('[data-testid="stack-row"]').length)
+      .toBeGreaterThan(1)
+    expect(document.body.textContent).not.toContain(' > ')
+  })
+
+  it('the oldest ghost renders faintest, straight from the play index', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('tearing')
+    await playWord('rating')
+    await playWord('grain')
+    const ghosts = screen.getAllByTestId('ghost')
+    expect(ghosts.length).toBe(4)
+    const byIndex = [...ghosts].sort(
+      (a, b) => Number(a.dataset.playIndex) - Number(b.dataset.playIndex),
+    )
+    const oldest = Number(byIndex[0]!.style.opacity || 1)
+    const newest = Number(byIndex[byIndex.length - 1]!.style.opacity || 1)
+    expect(oldest).toBeLessThan(newest)
+  })
+
+  it('marks no notch with an accent color, only the width gap', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('rating')
+    const rows = screen.getAllByTestId('stack-row')
+    const notchRow = rows.find((r) => r.dataset.notch)
+    expect(notchRow).toBeTruthy()
+    expect(notchRow!.querySelector('.notch')).toBeNull()
+    expect(notchRow!.style.width).toBe('75%')
+    expect(rows[0]!.style.width).toBe('100%')
+  })
+
+  it('hides the sound toggle while keeping audio behind its interface', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(screen.queryByRole('button', { name: /sound/i })).toBeNull()
+  })
+})
+
 describe('reduced motion', () => {
   it('suppresses drift and decay while the spent row stays readable', async () => {
     render(<App services={services({ reducedMotionDefault: true })} />)
