@@ -39,16 +39,23 @@ export interface Engine {
   isEligible(sourceWord: string): boolean;
 }
 
-/** Scramble the rack. Turn one must not be a freebie: the display is never
- * an arrangement the caller forbids (the source word, and any valid
- * boundary word when the dictionary is available). Takes a predicate
- * rather than the boundary itself so the rack can render before the
- * dictionary index exists. */
+/** Arrange letters for display. THE POOL DISPLAY MUST NEVER SPELL A VALID
+ * WORD, AT ANY SIZE: at eight it hands over an opener, below eight it hands
+ * over a hold on the rungs where holds are densest. Takes a forbidden
+ * predicate rather than the boundary itself so the opening rack can render
+ * before the dictionary index exists (the calendar bakes that list).
+ *
+ * Random attempts first; if the pool is so word-dense that they all miss,
+ * a systematic walk of every permutation guarantees termination and finds
+ * an allowed arrangement whenever one exists. If literally every
+ * arrangement is forbidden, the sorted signature is returned rather than
+ * looping: that case does not occur in real dictionaries. */
 export function scrambleRack(
   sourceWord: string,
   seed: number,
   isForbidden: (display: string) => boolean,
 ): string {
+  const allowed = (d: string) => d !== sourceWord && !isForbidden(d);
   const rand = mulberry32(seed);
   const letters = [...sourceWord];
   for (let attempt = 0; attempt < 100; attempt++) {
@@ -57,9 +64,29 @@ export function scrambleRack(
       [letters[i], letters[j]] = [letters[j]!, letters[i]!];
     }
     const display = letters.join('');
-    if (display !== sourceWord && !isForbidden(display)) return display;
+    if (allowed(display)) return display;
   }
-  return [...sourceWord].reverse().join('');
+  for (const candidate of permutations([...sourceWord].sort())) {
+    if (allowed(candidate)) return candidate;
+  }
+  return [...sourceWord].sort().join('');
+}
+
+/** Every distinct permutation, lazily. Worst case 8! = 40320, and the
+ * systematic fallback only runs when 100 random draws all hit words. */
+function* permutations(letters: readonly string[]): Generator<string> {
+  if (letters.length <= 1) {
+    yield letters.join('');
+    return;
+  }
+  const seen = new Set<string>();
+  for (let i = 0; i < letters.length; i++) {
+    const head = letters[i]!;
+    if (seen.has(head)) continue;
+    seen.add(head);
+    const rest = [...letters.slice(0, i), ...letters.slice(i + 1)];
+    for (const tail of permutations(rest)) yield head + tail;
+  }
 }
 
 /** Every word in the index formable from the rack, via its sub-multisets.

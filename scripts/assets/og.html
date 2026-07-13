@@ -1,0 +1,93 @@
+<!doctype html>
+<!-- Source for public/og.png (1200x630). A composed picture of the
+     vertical, not a screenshot. Regenerate with any headless browser at
+     1200x630; fonts resolve from node_modules, so render from the repo. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {
+    font-family: 'Baloo 2';
+    font-weight: 700;
+    src: url('../../node_modules/@fontsource/baloo-2/files/baloo-2-latin-700-normal.woff2') format('woff2');
+  }
+  @font-face {
+    font-family: 'Nunito';
+    font-weight: 600;
+    src: url('../../node_modules/@fontsource/nunito/files/nunito-latin-600-normal.woff2') format('woff2');
+  }
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; background: #F4F2FB;
+    font-family: 'Nunito', sans-serif; color: #3C3489;
+    display: flex; align-items: center; justify-content: center; gap: 90px;
+    overflow: hidden;
+  }
+  .left { max-width: 520px; }
+  h1 { font-family: 'Baloo 2', sans-serif; font-size: 88px; color: #7F77DD; line-height: 1; }
+  .tagline { font-size: 30px; color: #A9A3C9; margin-top: 18px; }
+  .board { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .ghosts { display: flex; gap: 18px; align-items: flex-end; }
+  .ghost {
+    width: 54px; height: 62px; background: #DEDBF0; position: relative;
+    border-radius: 27px 27px 8px 8px; display: flex; align-items: center;
+    justify-content: center; font-family: 'Baloo 2', sans-serif;
+    font-size: 24px; color: #3C3489; font-weight: 700;
+    mask: radial-gradient(7px at 25% 100%, transparent 98%, black) bottom left / 33.4% 7px repeat-x,
+      linear-gradient(black, black) top / 100% calc(100% - 6px) no-repeat;
+  }
+  .ghost::before {
+    content: ''; position: absolute; top: 13px; left: 13px; width: 5px;
+    height: 7px; border-radius: 50%; background: #A9A3C9;
+    box-shadow: 15px 0 0 #A9A3C9;
+  }
+  .ghost span { margin-top: 12px; }
+  .g1 { opacity: .35; transform: translateY(-26px) rotate(-6deg); }
+  .g2 { opacity: .55; transform: translateY(-10px) rotate(4deg); }
+  .g3 { opacity: .75; transform: translateY(-18px) rotate(-3deg); }
+  .g4 { opacity: .95; transform: rotate(5deg); }
+  .pool { display: flex; gap: 10px; }
+  .tile {
+    width: 58px; height: 66px; background: #fff; border-radius: 16px;
+    box-shadow: 0 5px 0 rgba(60,52,137,.14); display: flex;
+    align-items: center; justify-content: center;
+    font-family: 'Baloo 2', sans-serif; font-size: 30px; font-weight: 700;
+  }
+  .stack { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .row { height: 26px; background: #fff; border-radius: 9px;
+    box-shadow: 0 2px 0 rgba(60,52,137,.1); }
+  .r8 { width: 380px; background: #5DCAA5; }
+  .r7 { width: 332px; }
+  .r6 { width: 285px; }
+  .r5a, .r5b { width: 238px; }
+  .r3 { width: 143px; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="left">
+    <h1>Out of Sorts</h1>
+    <p class="tagline">Every letter you don't use is gone.</p>
+  </div>
+  <div class="board">
+    <div class="ghosts">
+      <div class="ghost g1"><span>G</span></div>
+      <div class="ghost g2"><span>O</span></div>
+      <div class="ghost g3"><span>N</span></div>
+      <div class="ghost g4"><span>E</span></div>
+    </div>
+    <div class="pool">
+      <div class="tile">S</div><div class="tile">S</div><div class="tile">I</div>
+      <div class="tile">U</div><div class="tile">A</div><div class="tile">D</div>
+      <div class="tile">E</div><div class="tile">D</div>
+    </div>
+    <div class="stack">
+      <div class="row r8"></div>
+      <div class="row r7"></div>
+      <div class="row r6"></div>
+      <div class="row r5a"></div>
+      <div class="row r5b"></div>
+      <div class="row r3"></div>
+    </div>
+  </div>
+</body>
+</html>

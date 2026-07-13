@@ -98,12 +98,6 @@ function replay(puzzle: Puzzle, words: readonly string[]): RunState {
   return run;
 }
 
-function initialDisplay(entry: CalendarEntry, seed: number): string {
-  return scrambleRack(entry.rack, hashString(entry.rack) + seed, (d) =>
-    entry.eights.includes(d),
-  );
-}
-
 export function useGame(services: GameServices) {
   const [mode, setMode] = useState<Mode>('daily');
   const [calendar, setCalendar] = useState<Calendar | null>(null);
@@ -112,6 +106,7 @@ export function useGame(services: GameServices) {
     restoreProgress(services),
   );
   const [announcement, setAnnouncement] = useState('');
+  const [shuffleSalt, setShuffleSalt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const queueRef = useRef<{ mode: Mode; word: string }[]>([]);
   const endedKeysRef = useRef<Set<string>>(new Set());
@@ -172,18 +167,32 @@ export function useGame(services: GameServices) {
 
   const pool = useMemo(() => {
     if (!active) return null;
+    // THE POOL DISPLAY MUST NEVER SPELL A VALID WORD, AT ANY SIZE. Before
+    // the dictionary lands only the opening eight can render, and the
+    // calendar's baked list guards it. From then on the puzzle's formable
+    // boundary set guards every redisplay and every shuffle: any word an
+    // arrangement of this pool could spell is formable from the rack, so
+    // membership in puzzle.valid is the exact hazard set.
+    const forbidden = puzzle
+      ? (d: string) => puzzle.valid.has(d)
+      : (d: string) => active.entry.eights.includes(d);
+    const salt = progress[mode].seed + shuffleSalt * 7919;
     if (!run || run.played.length === 0) {
-      return initialDisplay(active.entry, progress[mode].seed);
+      return scrambleRack(
+        active.entry.rack,
+        hashString(active.entry.rack) + salt,
+        forbidden,
+      );
     }
     const lastWord = run.played[run.played.length - 1]!.word;
-    // After a play the pool is the played word's letters; rescramble so the
-    // board does not sit there spelling the word back at the player.
     return scrambleRack(
       lastWord,
-      hashString(active.entry.rack) + run.played.length,
-      (d) => d === lastWord || active.entry.eights.includes(d),
+      hashString(active.entry.rack) + run.played.length + salt,
+      forbidden,
     );
-  }, [active, run, progress, mode]);
+  }, [active, puzzle, run, progress, mode, shuffleSalt]);
+
+  const shuffle = useCallback(() => setShuffleSalt((v) => v + 1), []);
 
   // Persist to local storage: syncing React state out to an external
   // system, which is exactly what effects are for.
@@ -302,6 +311,7 @@ export function useGame(services: GameServices) {
     error,
     submit,
     stop,
+    shuffle,
     newEndless,
   };
 }

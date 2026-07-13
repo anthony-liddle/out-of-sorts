@@ -185,8 +185,53 @@ body {
 
 .entry {
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+/* The control row: Peach's shape, thumb-sized targets. Stop lives
+   elsewhere: it must never sit one fat finger from Spend. */
+.control-row {
+  display: flex;
   gap: 0.5rem;
+}
+
+.control-row button {
+  flex: 1;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  border: 1px solid var(--violet);
+  border-radius: 0.8rem;
+  background: none;
+  color: var(--violet);
+  cursor: pointer;
+}
+
+.control-row button.spend,
+.control-row button[type='submit'] {
+  flex: 1.4;
+  background: var(--violet);
+  color: var(--tile);
+  border: none;
+}
+
+.rest-row {
+  display: flex;
   justify-content: center;
+  margin-top: 1.6rem;
+}
+
+.stop-button {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  background: none;
+  border: none;
+  color: var(--ghost);
+  cursor: pointer;
+  text-decoration: underline;
+  min-height: 44px;
+  padding: 0 1rem;
 }
 
 .entry input {
@@ -206,23 +251,6 @@ body {
 .entry input:focus-visible {
   outline: 3px solid var(--violet);
   outline-offset: 2px;
-}
-
-.entry button {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  border: none;
-  border-radius: 0.8rem;
-  padding: 0.45rem 1.1rem;
-  background: var(--violet);
-  color: var(--tile);
-  cursor: pointer;
-}
-
-.entry button[type='button'] {
-  background: none;
-  color: var(--violet);
-  border: 1px solid var(--violet);
 }
 
 .entry-error {
@@ -441,6 +469,36 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: start;
+}
+
+.stack-compare[data-columns='3'] {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.day-shape {
+  max-width: 26rem;
+  margin: 0 auto 1rem;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.day-shape strong {
+  font-family: var(--font-display);
+}
+
+.column-name {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.stack-compare figcaption small {
+  display: block;
+  color: var(--ghost);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  min-height: 2rem;
 }
 
 .stack-compare figure {
