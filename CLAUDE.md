@@ -62,6 +62,21 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
 - Any future Android wrap must bundle the game locally (PWA or Capacitor),
   never a WebView pointed at the hosted site.
 
+## Cold start rules
+
+- **The dictionary index never blocks the rack.** The rack renders with no
+  dictionary (`scrambleRack` takes a predicate, not the boundary). The index
+  builds in a Web Worker (`src/loader/worker.ts`), lands whenever it lands,
+  and the submit gate (`src/loader/submit-gate.ts`) queues any submit made
+  before it is ready. Never reject a word because the dictionary was still
+  loading, and never add a loading spinner that blocks play.
+- The built index is cached in IndexedDB keyed by the bake manifest version;
+  see the data version rule above. The cache stores the dictionary index
+  only; game progress is a later prompt.
+- One build implementation: `buildFromTexts` in `src/loader/build.ts` is
+  shared by the worker, any main thread fallback, and the Node loader. Do
+  not fork it.
+
 ## Working conventions
 
 - pnpm. TypeScript strict. Vite and Vitest. TDD: failing test first.
