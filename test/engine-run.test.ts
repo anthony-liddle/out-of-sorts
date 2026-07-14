@@ -13,7 +13,10 @@ import {
 //   5 letters: tares, tears, stare, rates (holds at the full rack)
 //   4 letters: east, eats, seat (sig aest), ears (sig aers)
 //   3 letters: ate, eat, tea (sig aet)
-const VALID = new Set([
+// This language is the common pool: the ladder, and what decides when the run
+// is over. The boundary is the same words plus obscurities, which are
+// playable but never keep a run alive. See test/ending.test.ts.
+const COMMON = new Set([
   'tares',
   'tears',
   'stare',
@@ -26,9 +29,10 @@ const VALID = new Set([
   'eat',
   'tea',
 ]);
+const VALID = new Set([...COMMON, 'tae']);
 
 function ctx(rule: RunContext['rule']): RunContext {
-  return { rack: 'aerst', valid: VALID, rule };
+  return { rack: 'aerst', valid: VALID, common: COMMON, rule };
 }
 
 function playAll(c: RunContext, words: string[]): RunState {
@@ -112,10 +116,11 @@ describe('run state', () => {
 });
 
 describe('end detection', () => {
-  it('ends when and only when no legal unplayed valid word can be formed', () => {
+  it('ends when and only when no legal unplayed common word can be formed', () => {
     const c: RunContext = {
       rack: 'aerst',
       valid: new Set(['tares', 'east', 'ate']),
+      common: new Set(['tares', 'east', 'ate']),
       rule: 'mill',
     };
     let state = createRun(c);
@@ -132,6 +137,7 @@ describe('end detection', () => {
     const c: RunContext = {
       rack: 'aerst',
       valid: new Set(['tares', 'east', 'ate']),
+      common: new Set(['tares', 'east', 'ate']),
       rule: 'mill',
     };
     const stoppedEarly = finishRun(c, playAll(c, ['tares', 'east']));
