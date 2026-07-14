@@ -174,6 +174,8 @@ describe('the haunting', () => {
     '[data-testid="stack"]',
     // the footer is furniture, not margin: the dead keep off the credits
     '.footer',
+    // and the marque is a title page, not a haunt zone
+    '.masthead',
   ];
 
   async function boxes(selector: string) {
@@ -395,6 +397,75 @@ describe('the trim', () => {
       (el) => el.getBoundingClientRect().top,
     );
     expect(marqueTop).toBeLessThan(titleTop);
+  }, 30000);
+});
+
+describe('the marque', () => {
+  // A title page, not a toolbar: the masthead centers with the board at
+  // every width, the subtitle carries visible flanking rules, and a
+  // hairline separates the title zone from the play zone.
+  for (const width of [320, 375, 768, 1440]) {
+    it(`centers the masthead at ${width}px`, async () => {
+      await fixedRack(width);
+      const centers = await page.evaluate(() => {
+        const mid = (r: DOMRect) => r.left + r.width / 2;
+        const brand = document.querySelector('.brand')!.getBoundingClientRect();
+        const title = document
+          .querySelector('.masthead h1')!
+          .getBoundingClientRect();
+        const header = document
+          .querySelector('.masthead')!
+          .getBoundingClientRect();
+        return {
+          brand: mid(brand),
+          title: mid(title),
+          header: mid(header),
+          brandWidth: brand.width,
+          headerWidth: header.width,
+          viewport: window.innerWidth / 2,
+        };
+      });
+      // centered as a block: the brand hugs its text and sits mid page
+      expect(centers.brandWidth).toBeLessThan(centers.headerWidth - 20);
+      expect(Math.abs(centers.brand - centers.viewport)).toBeLessThanOrEqual(2);
+      expect(Math.abs(centers.title - centers.viewport)).toBeLessThanOrEqual(2);
+
+      // the eyebrow holds one line even at the narrowest phone: a wrapped
+      // eyebrow reads as a paragraph, not a marque
+      const marque = await page.$eval('[data-testid="marque"]', (el) => {
+        const cs = getComputedStyle(el);
+        return {
+          height: el.getBoundingClientRect().height,
+          lineHeight:
+            parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.6,
+        };
+      });
+      expect(marque.height).toBeLessThan(marque.lineHeight * 1.5);
+    }, 30000);
+  }
+
+  it('flanks the subtitle with rules and closes the title zone with one', async () => {
+    await fixedRack(375);
+    const subtitle = await page.$eval('[data-testid="subtitle"]', (el) => {
+      const before = getComputedStyle(el, '::before');
+      const after = getComputedStyle(el, '::after');
+      return {
+        before: parseFloat(before.width),
+        after: parseFloat(after.width),
+      };
+    });
+    expect(subtitle.before).toBeGreaterThan(8);
+    expect(subtitle.after).toBeGreaterThan(8);
+    const divider = await page.$eval(
+      '[data-testid="masthead-divider"]',
+      (el) => {
+        const r = el.getBoundingClientRect();
+        const masthead = el.closest('.masthead')!.getBoundingClientRect();
+        return { width: r.width, headerWidth: masthead.width };
+      },
+    );
+    // the hairline spans the title block
+    expect(divider.width).toBeGreaterThan(divider.headerWidth * 0.9);
   }, 30000);
 });
 

@@ -424,15 +424,27 @@ describe('voice and the vertical', () => {
     expect(screen.getByText(/nothing lost yet/i)).toBeTruthy();
   });
 
-  it('sets the masthead in three registers, so it reads as a marque', async () => {
-    // Caps eyebrow, display title, body tagline. Two registers read as a
-    // heading; three read as a wordmark.
+  it('builds the marque: eyebrow, title, subtitle, divider, in order', async () => {
+    // A title page, not a toolbar: letterspaced caps eyebrow, the title,
+    // a rule flanked subtitle, then a hairline before the game begins.
+    // The copy in the eyebrow and subtitle is Antoine's call; the tests
+    // pin the structure, not the words.
     render(<App services={services()} />);
     await ready();
     const marque = screen.getByTestId('marque');
-    expect(marque.textContent).toMatch(/daily word game/i);
     const masthead = marque.closest('.masthead')!;
-    expect(masthead.querySelector('h1')).toBeTruthy();
+    const title = masthead.querySelector('h1')!;
+    const subtitle = screen.getByTestId('subtitle');
+    const divider = screen.getByTestId('masthead-divider');
+    expect(marque.textContent!.trim().length).toBeGreaterThan(0);
+    expect(subtitle.textContent!.trim().length).toBeGreaterThan(0);
+    const follows = (a: Element, b: Element) =>
+      !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(follows(marque, title)).toBe(true);
+    expect(follows(title, subtitle)).toBe(true);
+    expect(follows(subtitle, divider)).toBe(true);
+    // the best line in the game still renders while its final home is
+    // being chosen
     expect(masthead.textContent).toMatch(/every letter you don't use is gone/i);
   });
 
