@@ -2,6 +2,7 @@
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
+import { resolveOrigin } from './scripts/site-origin';
 import { defineConfig, type Connect } from 'vite';
 
 // Collects cold start timing reports POSTed by the instrumentation page,
@@ -25,24 +26,6 @@ const reportMiddleware: Connect.NextHandleFunction = (req, res, next) => {
 // false so the @vercel/analytics import is dead code and never enters the
 // bundle. F-Droid forbids proprietary analytics dependencies outright; the
 // package must be absent, not disabled at runtime.
-/**
- * The site origin, from one source. Absolute OG urls are required (scrapers
- * do not resolve a relative og:image), and hardcoding the origin twice is
- * how it rotted the first time.
- *
- * VERCEL_PROJECT_PRODUCTION_URL is the stable production host on Vercel, on
- * every environment including previews, so a preview build still advertises
- * a real, resolvable image. SITE_ORIGIN overrides it for anyone else.
- */
-function siteOrigin(env: Record<string, string>): string {
-  const explicit = env.SITE_ORIGIN ?? process.env.SITE_ORIGIN;
-  if (explicit) return explicit.replace(/\/$/, '');
-  const vercel =
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
-  if (vercel) return `https://${vercel}`;
-  return 'https://out-of-sorts.vercel.app';
-}
-
 export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
@@ -61,7 +44,7 @@ export default defineConfig(({ mode }) => ({
       // resolved here, never hardcoded in the html.
       name: 'site-origin',
       transformIndexHtml(html) {
-        return html.replaceAll('%SITE_ORIGIN%', siteOrigin({}));
+        return resolveOrigin(html);
       },
     },
     {

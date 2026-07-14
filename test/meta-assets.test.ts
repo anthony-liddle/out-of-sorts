@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { resolveOrigin, siteOrigin } from '../scripts/site-origin';
 
 // The game's face outside itself: favicon, PWA manifest, open graph.
 // Everything self-hosted: this ships on F-Droid and no asset may come from
@@ -12,7 +13,10 @@ describe('favicon, manifest, and open graph', () => {
   // downscaled a 192 into a 16px smudge, and a ghost that filled a third
   // of its own canvas. Committed-and-served was never the question.
   const html = readFileSync('index.html', 'utf8');
-  const built = readFileSync('dist/index.html', 'utf8');
+  // Resolved exactly as the build resolves it, so the test needs no dist:
+  // a test that reads build output only passes when a build ran first, and
+  // CI tests before it builds.
+  const built = resolveOrigin(html);
 
   it('ships the whole icon set', () => {
     for (const f of [
@@ -79,6 +83,16 @@ describe('favicon, manifest, and open graph', () => {
   it('stays legible on a dark tab', () => {
     const svg = readFileSync('public/favicon.svg', 'utf8');
     expect(svg).toContain('prefers-color-scheme: dark');
+  });
+
+  it('resolves one origin for every environment', () => {
+    expect(siteOrigin({ SITE_ORIGIN: 'https://example.com/' })).toBe(
+      'https://example.com',
+    );
+    expect(
+      siteOrigin({ VERCEL_PROJECT_PRODUCTION_URL: 'out-of-sorts.vercel.app' }),
+    ).toBe('https://out-of-sorts.vercel.app');
+    expect(siteOrigin({})).toMatch(/^https:\/\//);
   });
 
   it('makes the open graph urls absolute at build time', () => {
