@@ -161,51 +161,58 @@ export function App({ services }: { services: GameServices }) {
   return (
     <div className="app" data-reduced-motion={reducedMotion || undefined}>
       <header className="masthead">
+        {/* A title page, not a toolbar: eyebrow, title, rule flanked
+            subtitle, then a hairline before the game begins. Centered,
+            like everything the game owns. The copy is Antoine's pick. */}
         <div className="brand">
-          {/* Three registers: caps eyebrow, display title, body tagline.
-              Two read as a heading; three read as a marque. */}
           <p className="marque" data-testid="marque">
-            A daily word game
+            A game of what you can bear to lose
           </p>
           <h1>Out of Sorts</h1>
-          <p className="tagline">Every letter you don't use is gone.</p>
+          <p className="subtitle" data-testid="subtitle">
+            Spend the type
+          </p>
         </div>
-        <nav className="modes" aria-label="Game mode">
-          <button
-            type="button"
-            aria-pressed={game.mode === 'daily'}
-            onClick={() => game.setMode('daily')}
-          >
-            Daily
-          </button>
-          <button
-            type="button"
-            aria-pressed={game.mode === 'endless'}
-            onClick={() => game.setMode('endless')}
-          >
-            Endless
-          </button>
-        </nav>
-        <div className="meta">
-          {game.mode === 'daily' && game.streak > 1 && (
-            <span className="streak" title="Daily streak">
-              {game.streak} days
-            </span>
-          )}
-          {game.run && !game.result && (
-            /* The running total: quiet, always visible, and it climbs.
-               Score only. Rank and par stay the end screen's reveal,
-               because rank is a fraction of par. The key remounts the
-               number so each climb gets its small rise, which reduced
-               motion suppresses wholesale. */
-            <span
-              className="running-score"
-              data-testid="running-score"
-              key={game.run.score}
+        <hr className="masthead-rule" data-testid="masthead-divider" />
+        <p className="tagline">Every letter you don't use is gone.</p>
+        <div className="masthead-row">
+          <nav className="modes" aria-label="Game mode">
+            <button
+              type="button"
+              aria-pressed={game.mode === 'daily'}
+              onClick={() => game.setMode('daily')}
             >
-              {game.run.score} points
-            </span>
-          )}
+              Daily
+            </button>
+            <button
+              type="button"
+              aria-pressed={game.mode === 'endless'}
+              onClick={() => game.setMode('endless')}
+            >
+              Endless
+            </button>
+          </nav>
+          <div className="meta">
+            {game.mode === 'daily' && game.streak > 1 && (
+              <span className="streak" title="Daily streak">
+                {game.streak} days
+              </span>
+            )}
+            {game.run && !game.result && (
+              /* The running total: quiet, always visible, and it climbs.
+                 Score only. Rank and par stay the end screen's reveal,
+                 because rank is a fraction of par. The key remounts the
+                 number so each climb gets its small rise, which reduced
+                 motion suppresses wholesale. */
+              <span
+                className="running-score"
+                data-testid="running-score"
+                key={game.run.score}
+              >
+                {game.run.score} points
+              </span>
+            )}
+          </div>
         </div>
       </header>
 

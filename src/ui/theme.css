@@ -50,41 +50,89 @@ body {
   white-space: nowrap;
 }
 
-/* Masthead: violet is chrome and brand, nothing else. */
+/* The masthead is a marque: a centered title page, not a toolbar.
+   Eyebrow, title, rule flanked subtitle, hairline, then the play chrome.
+   Violet is chrome and brand, nothing else. */
 .masthead {
   display: flex;
-  align-items: baseline;
-  gap: 0.8rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0.6rem;
 }
 
 .brand {
-  flex: 1 1 100%;
+  width: fit-content;
+  text-align: center;
 }
 
 .masthead h1 {
   font-family: var(--font-display);
   color: var(--violet);
-  font-size: 1.7rem;
+  font-size: 1.9rem;
   font-weight: 700;
   letter-spacing: 0.01em;
   margin: 0;
 }
 
-/* The marque's top register: caps, spaced, quiet. */
+/* The marque's top register: caps, spaced, quiet. Fluid size so the
+   chosen line holds a single line down to the narrowest phone; a wrapped
+   eyebrow reads as a paragraph, not a marque. */
 .marque {
-  margin: 0 0 0.15rem;
+  margin: 0 0 0.2rem;
   color: var(--ghost);
-  font-size: 0.68rem;
+  font-size: clamp(0.56rem, 2.1vw, 0.68rem);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+
+/* The third register: a short line held between two hairlines. This is
+   the detail that turns a heading into a marque. */
+.subtitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 0.45rem 0 0;
+  color: var(--ghost);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+}
+
+.subtitle::before,
+.subtitle::after {
+  content: '';
+  height: 1px;
+  width: 2.4rem;
+  background: var(--ghost);
+  opacity: 0.55;
+}
+
+/* The hairline that ends the title zone and starts the game. */
+.masthead-rule {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--ghost-body);
+  margin: 1rem 0 0.8rem;
 }
 
 .tagline {
-  margin: 0.1rem 0 0;
+  margin: 0 0 0.6rem;
   color: var(--ghost);
   font-size: 0.9rem;
+  text-align: center;
+}
+
+.masthead-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
 }
 
 .masthead button {
@@ -104,7 +152,6 @@ body {
 }
 
 .masthead .meta {
-  margin-left: auto;
   display: flex;
   gap: 0.4rem;
   align-items: center;
