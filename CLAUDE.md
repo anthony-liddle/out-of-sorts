@@ -163,7 +163,24 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   function of word length and rack size, shared by every stack on screen.
   Scores live in a fixed gutter beside the stack. Never widen a pill to fit
   its contents: that lies about word length, and the silhouette is the whole
-  basis of the comparison and the share.
+  basis of the comparison and the share. **No decoration may enter the width
+  basis.** A ring, a dash, an inset or a padding that changes what a letter
+  is worth in pixels breaks every column at once. Pinned by
+  `test/scale.test.ts`, which asserts width over length is one number for
+  the whole screen. Suspected twice, measured false twice: an outline is
+  painted outside the border box and cannot move layout, and a white pill
+  with a drop shadow merely LOOKS wider than a flat grey one of equal width.
+  **Measure before you believe it. A screenshot is not a measurement.**
+- **One mint, one job, one grammar.** Mint is the eights. In the stacks the
+  eights are marked by an inset mint ring, the same ring in every column,
+  and the fill and letter color are held constant: the fill already carries
+  yours versus possible. This is the tiles' grammar (the ring carries the
+  status, marked by addition) and it is now the stack's. The reveal chip
+  keeps a mint fill because it is a different kind of object. A solid mint
+  bar was the loudest thing on the end screen, louder than the headline. If
+  the ring ever reads as too quiet, the fix is a heavier ring or a second
+  mark, **never a return to the fill.** The ring is inset, so it can never
+  be clipped and can never touch the width basis.
 - **Never raise the OS keyboard.** The word display is a display, not an
   input; typing is captured globally, and on a phone the tiles are the
   keyboard.

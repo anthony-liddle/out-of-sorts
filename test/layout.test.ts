@@ -1095,15 +1095,15 @@ function styleOf(selector: string, props: string[]) {
   );
 }
 
-describe('the dashed outline on the eights is not clipped', () => {
-  it('no ancestor of the paired eight rows clips them', async () => {
+describe('the mint mark on the eights is not clipped', () => {
+  it('the end screen stacks never inherit the play stack scroll clip', async () => {
     await allEightsRun();
     // The stack is a scroll container during play (max-height, overflow-y
-    // auto). On the end screen it has no max-height, but the overflow was
-    // inherited, so the 1.5px dashed outline of the FIRST row (an eight, on
-    // the par path) was drawn outside the pill's box and clipped away at the
-    // container's top edge. An outline is painted outside the border box, so
-    // any clipping ancestor eats it.
+    // auto), and the end screen inherited the overflow while dropping the
+    // max-height. It clipped the eights' mark at the container's top edge.
+    // The mark is now an inset ring, painted INSIDE the pill, so it cannot
+    // be cut at all; this guard stays anyway, because the next decoration
+    // added here will not necessarily be an inset one.
     const stack = await styleOf('[data-testid="par-stack"]', [
       'overflow-x',
       'overflow-y',
@@ -1111,14 +1111,15 @@ describe('the dashed outline on the eights is not clipped', () => {
     expect(stack['overflow-x']).toBe('visible');
     expect(stack['overflow-y']).toBe('visible');
 
-    // And the outline is really there, on the eight rows, in mint.
-    const outline = await styleOf(
+    // And the mark is really there, on the eight rows, in mint. Same ring in
+    // every column: see test/scale.test.ts for the grammar it belongs to.
+    const pill = await styleOf(
       '[data-testid="par-stack"] [data-eight] .stack-pill',
-      ['outline-style', 'outline-color', 'outline-width'],
+      ['box-shadow', 'outline-style'],
     );
-    expect(outline['outline-style']).toBe('dashed');
-    expect(outline['outline-color']).toBe('rgb(93, 202, 165)');
-    expect(parseFloat(outline['outline-width']!)).toBeGreaterThanOrEqual(1);
+    expect(pill['box-shadow']).toContain('rgb(93, 202, 165)');
+    expect(pill['box-shadow']).toContain('inset');
+    expect(pill['outline-style']).toBe('none');
   }, 30000);
 
   it('nothing cuts the outline on any edge, at any width', async () => {
