@@ -236,23 +236,41 @@ body {
   padding: 0 1rem;
 }
 
-.entry input {
-  flex: 1;
-  min-width: 0;
+/* The word display. Not an input: a real field needs focus (so you could
+   not just start typing) and raises the OS keyboard over the very tiles
+   that exist so no OS keyboard is needed. */
+.word-display {
+  margin: 0;
+  /* A fixed height, never a minimum: the board must not jump under the
+     player's thumb when the first letter lands. The display font's line box
+     outgrows a min-height the moment there is a word in it, so the height
+     is set outright and the line box is pinned. */
+  height: 3.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 700;
   color: var(--ink);
   border: 2px solid var(--violet);
   border-radius: 0.8rem;
-  padding: 0.45rem 0.8rem;
+  padding: 0.4rem 0.8rem;
   background: var(--tile);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
 }
 
-.entry input:focus-visible {
-  outline: 3px solid var(--violet);
-  outline-offset: 2px;
+.word-hint {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ghost);
+  text-transform: none;
 }
 
 .entry-error {

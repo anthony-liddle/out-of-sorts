@@ -73,9 +73,14 @@ async function ready() {
 }
 
 async function playWord(word: string) {
-  const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-  await userEvent.clear(input)
-  await userEvent.type(input, `${word}{Enter}`)
+  await userEvent.keyboard('{Escape}')
+  await userEvent.keyboard(`${word}{Enter}`)
+}
+
+/** What the player has built so far, as the display shows it. */
+function currentWord(): string {
+  const text = screen.getByTestId('word-display').textContent ?? ''
+  return /^[A-Z]+$/.test(text) ? text : ''
 }
 
 describe('cold start in the UI', () => {
@@ -154,12 +159,11 @@ describe('tile selection with duplicate letters', () => {
   it('a one or two letter input marks used tiles but chills nothing', async () => {
     render(<App services={dupServices()} />)
     await screen.findAllByTestId('pool-tile')
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    await userEvent.type(input, 'du')
+    await userEvent.keyboard('du')
     const tiles = screen.getAllByTestId('pool-tile')
     expect(tiles.filter((t) => t.dataset.state === 'cold')).toHaveLength(0)
     expect(tiles.filter((t) => t.dataset.state === 'used')).toHaveLength(2)
-    await userEvent.type(input, 'e')
+    await userEvent.keyboard('e')
     expect(
       screen
         .getAllByTestId('pool-tile')
@@ -174,8 +178,7 @@ describe('tile selection with duplicate letters', () => {
       .getAllByTestId('pool-tile')
       .filter((t) => t.textContent === 'S')
     await userEvent.click(esses[1]!)
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    await userEvent.type(input, 'id')
+    await userEvent.keyboard('id')
     expect(esses[1]!.dataset.state).toBe('used')
     // three letters typed: the preview is live and the unclicked S is cold,
     // but the light never jumps to it
@@ -190,8 +193,7 @@ describe('tile selection with duplicate letters', () => {
       .filter((t) => t.textContent === 'A')
     await userEvent.click(a!)
     await userEvent.click(a!)
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    expect(input.value.toLowerCase()).toBe('a')
+    expect(currentWord()).toBe('A')
   })
 })
 
@@ -199,14 +201,13 @@ describe('the cold tile preview', () => {
   it('a cold tile is still tappable: tapping un-chills it and spends it', async () => {
     render(<App services={services()} />)
     await ready()
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    await userEvent.type(input, 'tea')
+    await userEvent.keyboard('tea')
     const cold = screen
       .getAllByTestId('pool-tile')
       .find((t) => t.dataset.state === 'cold' && t.textContent === 'L')
     expect(cold).toBeTruthy()
     await userEvent.click(cold!)
-    expect(input.value.toLowerCase()).toBe('teal')
+    expect(currentWord()).toBe('TEAL')
     expect(cold!.dataset.state).toBe('used')
   })
 
@@ -214,15 +215,14 @@ describe('the cold tile preview', () => {
   it('marks exactly the letters the current input would discard', async () => {
     render(<App services={services()} />)
     await ready()
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    await userEvent.type(input, 'tearing')
+    await userEvent.keyboard('tearing')
     const tiles = screen.getAllByTestId('pool-tile')
     const cold = tiles.filter((t) => t.dataset.state === 'cold')
     expect(cold.map((t) => t.textContent)).toEqual(['L'])
     expect(
       tiles.filter((t) => t.dataset.state === 'used'),
     ).toHaveLength(7)
-    await userEvent.clear(input)
+    await userEvent.keyboard('{Escape}')
     expect(
       screen.getAllByTestId('pool-tile').every((t) => !t.dataset.state),
     ).toBe(true)
@@ -449,6 +449,116 @@ describe('voice and the vertical', () => {
   })
 })
 
+describe('you open the game and type', () => {
+  it('appends a letter with nothing focused and no click anywhere', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(document.activeElement).toBe(document.body)
+    await userEvent.keyboard('t')
+    expect(screen.getByTestId('word-display').textContent).toContain('T')
+    expect(
+      screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
+    ).toHaveLength(1)
+  })
+
+  it('never raises the os keyboard: no text input in the play surface', async () => {
+    render(<App services={services()} />)
+    await ready()
+    expect(document.querySelector('input')).toBeNull()
+    expect(document.querySelector('textarea')).toBeNull()
+    expect(document.querySelector('[contenteditable="true"]')).toBeNull()
+    expect(document.querySelector('[inputmode]')).toBeNull()
+  })
+
+  it('enter spends, backspace deletes one, escape clears', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('trianglex')
+    expect(currentWord()).toBe('TRIANGLE')
+    await userEvent.keyboard('{Backspace}')
+    expect(currentWord()).toBe('TRIANGL')
+    await userEvent.keyboard('e{Enter}')
+    expect(screen.getAllByTestId('stack-row')).toHaveLength(1)
+    expect(currentWord()).toBe('')
+
+    await userEvent.keyboard('tea')
+    expect(currentWord()).toBe('TEA')
+    await userEvent.keyboard('{Escape}')
+    expect(
+      screen.getAllByTestId('pool-tile').every((t) => !t.dataset.state),
+    ).toBe(true)
+  })
+
+  it('ignores a letter the pool cannot supply', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('tzz')
+    expect(currentWord()).toBe('T')
+    expect(
+      screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
+    ).toHaveLength(1)
+  })
+
+  it('mixes tapped tiles and typed letters, keeping the lights right', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const tiles = screen.getAllByTestId('pool-tile')
+    const secondT = tiles.filter((t) => t.textContent === 'T')[0]!
+    await userEvent.click(secondT)
+    await userEvent.keyboard('ea')
+    expect(screen.getByTestId('word-display').textContent).toContain('TEA')
+    expect(secondT.dataset.state).toBe('used')
+    expect(
+      screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
+    ).toHaveLength(3)
+  })
+
+  it('prompts without assuming a keyboard, since the phone has none', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const hint = screen.getByTestId('word-display').textContent ?? ''
+    expect(hint).not.toMatch(/type/i)
+    expect(hint).toMatch(/letters/i)
+  })
+
+  it('announces the word it is building to assistive technology', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const display = screen.getByTestId('word-display')
+    expect(display.getAttribute('role')).toBe('status')
+    expect(display.getAttribute('aria-live')).toBe('polite')
+    expect(display.getAttribute('aria-label')).toMatch(/word/i)
+    await userEvent.keyboard('tea')
+    expect(display.textContent).toContain('TEA')
+  })
+
+  it('completes a whole run from the keyboard alone', async () => {
+    render(<App services={services()} />)
+    await ready()
+    for (const w of ['triangle', 'tearing', 'rating', 'grain', 'grin', 'ring', 'gin']) {
+      await userEvent.keyboard(`${w}{Enter}`)
+    }
+    expect(await screen.findByTestId('end-screen')).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
+      'Out of sorts.',
+    )
+  })
+
+  it('leaves keystrokes alone when something focusable is being used', async () => {
+    // Nothing else focusable exists today, but a future modal or settings
+    // field must not have its typing silently eaten by the global capture.
+    render(<App services={services()} />)
+    await ready()
+    const probe = document.createElement('input')
+    document.body.appendChild(probe)
+    probe.focus()
+    await userEvent.keyboard('tea')
+    expect(probe.value).toBe('tea')
+    expect(screen.getByTestId('word-display').textContent).not.toContain('TEA')
+    probe.remove()
+  })
+})
+
 describe('hands: the control row', () => {
   it('offers shuffle, clear, backspace, and spend under the pool', async () => {
     render(<App services={services()} />)
@@ -475,20 +585,19 @@ describe('hands: the control row', () => {
   it('backspace and clear keep the input and tile states in sync', async () => {
     render(<App services={services()} />)
     await ready()
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    await userEvent.type(input, 'rating')
+    await userEvent.keyboard('rating')
     expect(
       screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
     ).toHaveLength(6)
     await userEvent.click(
       screen.getByRole('button', { name: /delete last letter/i }),
     )
-    expect(input.value.toLowerCase()).toBe('ratin')
+    expect(currentWord()).toBe('RATIN')
     expect(
       screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
     ).toHaveLength(5)
     await userEvent.click(screen.getByRole('button', { name: /clear/i }))
-    expect(input.value).toBe('')
+    expect(currentWord()).toBe('')
     expect(
       screen.getAllByTestId('pool-tile').every((t) => !t.dataset.state),
     ).toBe(true)
@@ -533,10 +642,9 @@ describe('hands: the control row', () => {
   it('shuffle keeps the typed input and remaps the tile lights', async () => {
     render(<App services={services()} />)
     await ready()
-    const input = screen.getByLabelText<HTMLInputElement>(/type a word/i)
-    await userEvent.type(input, 'grin')
+    await userEvent.keyboard('grin')
     await userEvent.click(screen.getByRole('button', { name: /shuffle/i }))
-    expect(input.value.toLowerCase()).toBe('grin')
+    expect(currentWord()).toBe('GRIN')
     expect(
       screen.getAllByTestId('pool-tile').filter((t) => t.dataset.state === 'used'),
     ).toHaveLength(4)
