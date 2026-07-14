@@ -201,7 +201,7 @@ describe('the haunting', () => {
     await page.waitForTimeout(1600);
   }
 
-  for (const width of [320, 375, 768, 1440]) {
+  for (const width of [320, 375, 768, 1024, 1440]) {
     it(`scatters a full run around the board, never on it, at ${width}px`, async () => {
       await fullHaunt(width);
       const ghosts = await boxes('[data-testid="ghost"]');
@@ -570,6 +570,117 @@ describe('a page, not a strip', () => {
       expect(Math.abs(stackMid - controlsMid)).toBeLessThanOrEqual(2);
     }, 40000);
   }
+});
+
+describe('the empty table', () => {
+  // The two column desktop layout was designed for a run in progress and
+  // fell apart before the first word: the board centered on its COLUMN
+  // while the masthead centered on the PAGE, and the two disagreed by half
+  // a stack column. The board and the masthead share one center line, in
+  // every layout, at every width, with a stack or without one.
+  async function centers() {
+    return page.evaluate(() => {
+      const mid = (sel: string) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return r.left + r.width / 2;
+      };
+      return {
+        title: mid('.masthead h1')!,
+        pool: mid('[data-testid="pool"]')!,
+        controls: mid('[data-testid="control-row"]')!,
+        dayLabel: mid('.day-label')!,
+      };
+    });
+  }
+
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    it(`board and masthead share a center on a fresh rack at ${width}px`, async () => {
+      await fixedRack(width);
+      const c = await centers();
+      expect(
+        Math.abs(c.pool - c.title),
+        `pool off by ${c.pool - c.title}`,
+      ).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(c.controls - c.title),
+        `controls off by ${c.controls - c.title}`,
+      ).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(c.dayLabel - c.title),
+        `day label off by ${c.dayLabel - c.title}`,
+      ).toBeLessThanOrEqual(2);
+    }, 40000);
+
+    it(`and keeps it with a full stack at ${width}px`, async () => {
+      await fixedRack(width);
+      for (const w of FIXED.words.slice(0, 3)) await play(w);
+      const c = await centers();
+      expect(Math.abs(c.pool - c.title)).toBeLessThanOrEqual(2);
+      expect(Math.abs(c.controls - c.title)).toBeLessThanOrEqual(2);
+      expect(Math.abs(c.dayLabel - c.title)).toBeLessThanOrEqual(2);
+    }, 40000);
+  }
+
+  it('the board does not move when the first word lands', async () => {
+    // The empty column is reserved, not collapsed: a board that jumps
+    // sideways on the first Spend is worse than a quiet empty column.
+    await fixedRack(1440);
+    const before = (await centers()).pool;
+    await play(FIXED.words[0]!);
+    const after = (await centers()).pool;
+    expect(Math.abs(after - before)).toBeLessThanOrEqual(1);
+  }, 40000);
+
+  it('reserves the empty column in voice on a wide fresh rack', async () => {
+    await fixedRack(1440);
+    const line = await page.$eval('[data-testid="stack-waiting"]', (el) => ({
+      text: el.textContent!.trim(),
+      display: getComputedStyle(el).display,
+    }));
+    expect(line.text).toBe('Nothing spent yet.');
+    expect(line.display).not.toBe('none');
+  }, 40000);
+
+  it('keeps the phone free of the reserved line', async () => {
+    // On the phone the column does not exist, and the drift already says
+    // "Nothing lost yet."; a second empty line stacked under it is clutter.
+    await fixedRack(375);
+    const display = await page.$eval(
+      '[data-testid="stack-waiting"]',
+      (el) => getComputedStyle(el).display,
+    );
+    expect(display).toBe('none');
+  }, 40000);
+
+  it('stop sits under the board, never alone in an empty region', async () => {
+    await fixedRack(1440);
+    const stop = await page.$eval('.stop-button', (e) => {
+      const r = e.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top };
+    });
+    const controls = await page.$eval('[data-testid="control-row"]', (e) => {
+      const r = e.getBoundingClientRect();
+      return { left: r.left, right: r.right, bottom: r.bottom };
+    });
+    // under the controls, on the board's center line, with air below Spend
+    expect(stop.top).toBeGreaterThanOrEqual(controls.bottom + 16);
+    const stopMid = (stop.left + stop.right) / 2;
+    const controlsMid = (controls.left + controls.right) / 2;
+    expect(Math.abs(stopMid - controlsMid)).toBeLessThanOrEqual(2);
+  }, 40000);
+
+  it('the footer meets the bottom of a short page', async () => {
+    // No dead field of lilac: on a page shorter than the viewport the
+    // footer sits at the bottom of the window, not the bottom of the text.
+    await fixedRack(1440);
+    const gap = await page.evaluate(() => {
+      const footer = document.querySelector('.footer')!.getBoundingClientRect();
+      return window.innerHeight - footer.bottom;
+    });
+    expect(gap).toBeLessThanOrEqual(80);
+  }, 40000);
 });
 
 describe('the word display holds its size', () => {

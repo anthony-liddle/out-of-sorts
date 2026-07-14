@@ -415,13 +415,29 @@ describe('daily and endless', () => {
 });
 
 describe('voice and the vertical', () => {
-  it('shows the tagline and an empty drift before anything is lost', async () => {
+  it('keeps one voice above the board: the drift line, and no tagline', async () => {
+    // The eyebrow already says what you can bear to lose, and How it works
+    // carries the rule in bold. A second tagline below the divider said the
+    // same thing twice, so it is gone, replaced by nothing.
     render(<App services={services()} />);
     await ready();
     expect(
-      screen.getByText(/every letter you don't use is gone/i),
-    ).toBeTruthy();
+      screen.queryByText(/every letter you don't use is gone/i),
+    ).toBeNull();
     expect(screen.getByText(/nothing lost yet/i)).toBeTruthy();
+  });
+
+  it('the empty stack column speaks until something is spent', async () => {
+    // Reserved, not collapsed: the board never moves when the first word
+    // lands, and the waiting column says so in voice, mirroring the drift.
+    render(<App services={services()} />);
+    await ready();
+    expect(screen.getByTestId('stack-waiting').textContent).toBe(
+      'Nothing spent yet.',
+    );
+    await playWord('triangle');
+    expect(screen.queryByTestId('stack-waiting')).toBeNull();
+    expect(screen.getByTestId('stack')).toBeTruthy();
   });
 
   it('builds the marque: eyebrow, title, subtitle, divider, in order', async () => {
@@ -443,9 +459,12 @@ describe('voice and the vertical', () => {
     expect(follows(marque, title)).toBe(true);
     expect(follows(title, subtitle)).toBe(true);
     expect(follows(subtitle, divider)).toBe(true);
-    // the best line in the game still renders while its final home is
-    // being chosen
-    expect(masthead.textContent).toMatch(/every letter you don't use is gone/i);
+    // The best line in the game found its home: the eyebrow carries the
+    // feeling, How it works carries the rule, the OG description carries
+    // it for anyone not yet arrived. The masthead no longer repeats it.
+    expect(masthead.textContent).not.toMatch(
+      /every letter you don't use is gone/i,
+    );
   });
 
   it('the submit button says spend', async () => {
@@ -784,6 +803,23 @@ describe('hands: the control row', () => {
     expect(
       spend.compareDocumentPosition(stop) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    // and stop must never be DOM adjacent to the row that holds spend
+    const controlRow = screen.getByTestId('control-row');
+    expect(stop.parentElement!.previousElementSibling).not.toBe(controlRow);
+  });
+
+  it('stop belongs to the board, never alone in an empty region', async () => {
+    // A run control floating by itself in an empty stack column read as a
+    // page with pieces missing. Stop lives with the board now, and its
+    // region always holds more than stop.
+    render(<App services={services()} />);
+    await ready();
+    const stop = screen.getByRole('button', { name: /stop/i });
+    expect(stop.closest('.stack-col')).toBeNull();
+    const region = stop.closest('.board-col')!;
+    expect(region).toBeTruthy();
+    expect(region.querySelector('[data-testid="control-row"]')).toBeTruthy();
+    expect(region.querySelector('[data-testid="pool"]')).toBeTruthy();
   });
 
   it('backspace and clear keep the input and tile states in sync', async () => {
