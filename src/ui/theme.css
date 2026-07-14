@@ -826,6 +826,85 @@ main {
   }
 }
 
+/* The footer: quiet, and there. Its absence read as unfinished. */
+.footer {
+  margin-top: 4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--ghost-body);
+  text-align: center;
+  color: var(--ghost);
+  font-size: 0.8rem;
+}
+
+.footer a {
+  color: var(--violet);
+  text-decoration: none;
+}
+
+.footer a:hover,
+.footer a:focus-visible {
+  text-decoration: underline;
+}
+
+.footer-nav {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+
+.footer-credit {
+  margin: 0;
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dedication {
+  margin: 0.5rem 0 0;
+  font-style: italic;
+}
+
+/* How it works: the rules, told once, in the voice. */
+.how {
+  max-width: 26rem;
+  margin: 1.5rem auto 0;
+}
+
+.how h2 {
+  font-family: var(--font-display);
+  color: var(--violet);
+  font-size: 1.6rem;
+  margin: 0 0 0.8rem;
+}
+
+.how-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.how-daily {
+  color: var(--ghost);
+  font-size: 0.9rem;
+  margin: 1.2rem 0 1.6rem;
+}
+
+.how-back {
+  display: inline-block;
+  font-family: var(--font-display);
+  color: var(--violet);
+  text-decoration: none;
+  border: 1px solid var(--violet);
+  border-radius: 0.8rem;
+  padding: 0.5rem 1.1rem;
+}
+
 /* A daily that does not exist says so. It never renders a plausible board. */
 .no-daily {
   text-align: center;

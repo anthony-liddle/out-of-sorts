@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { rankFor } from '../game/rank'
 import { buildShare } from '../game/share'
 import { GHOST_WIDTH } from './haunt-layout'
 import { Haunt, type HauntBirths } from './components/Haunt'
 import { EndScreen } from './components/EndScreen'
+import { Footer } from './components/Footer'
+import { HowItWorks } from './components/HowItWorks'
 import { Pool, reconcileSelection } from './components/Pool'
 import { WordDisplay } from './components/WordDisplay'
 import { Stack } from './components/Stack'
@@ -31,6 +33,16 @@ export function App({ services }: { services: GameServices }) {
   // Session only, and overwritten on every submit: a reload has no births
   // and the settled dead do not re-rise.
   const [births, setBirths] = useState<HauntBirths | null>(null)
+  // The only route in the game: #how shows the rules instead of the
+  // board. A hash, not a router, so the back button and a plain anchor
+  // both just work.
+  const [route, setRoute] = useState(() => window.location.hash)
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash)
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  const showingHow = route === '#how'
 
   const selection = useMemo(() => {
     if (!game.pool) return []
@@ -125,7 +137,7 @@ export function App({ services }: { services: GameServices }) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [input, selection, game.pool, game.submit],
     ),
-    !game.result,
+    !game.result && !showingHow,
   )
 
   const share = () => {
@@ -197,7 +209,9 @@ export function App({ services }: { services: GameServices }) {
       </header>
 
       <main data-ready={game.ready || undefined}>
-        {game.mode === 'daily' && game.calendarReady && !game.entry ? (
+        {showingHow ? (
+          <HowItWorks />
+        ) : game.mode === 'daily' && game.calendarReady && !game.entry ? (
           <section className="no-daily" data-testid="no-daily">
             <h2>No puzzle today.</h2>
             <p>
@@ -292,6 +306,8 @@ export function App({ services }: { services: GameServices }) {
         )}
         {copied && <p role="status">Copied.</p>}
       </main>
+
+      <Footer />
 
       <div aria-live="polite" className="visually-hidden">
         {game.announcement}
