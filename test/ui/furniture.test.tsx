@@ -109,8 +109,6 @@ describe('how it works', () => {
     window.location.hash = '';
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     await waitFor(() => expect(screen.queryByTestId('pool')).toBeTruthy());
-    expect(screen.getByTestId('word-display').textContent).not.toContain(
-      'TAN',
-    );
+    expect(screen.getByTestId('word-display').textContent).not.toContain('TAN');
   });
 });

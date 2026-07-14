@@ -15,19 +15,18 @@ export function HowItWorks() {
           <strong>Every letter you don't use is gone.</strong> For good.
         </li>
         <li>
-          No word twice. When nothing playable remains, the run is over: you
-          are out of sorts.
+          No word twice. When nothing playable remains, the run is over: you are
+          out of sorts.
         </li>
         <li>
-          Every word scores its letters. A letter you keep scores again in
-          each word it survives, so the letters you protect are the score
-          you build.
+          Every word scores its letters. A letter you keep scores again in each
+          word it survives, so the letters you protect are the score you build.
         </li>
         <li>You can stop whenever you like, and rest early.</li>
       </ul>
       <p className="how-daily">
-        One puzzle a day, the same eight letters for everyone. Endless is
-        there for when one is not enough.
+        One puzzle a day, the same eight letters for everyone. Endless is there
+        for when one is not enough.
       </p>
       <a className="how-back" href="#">
         Back to the game

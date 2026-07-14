@@ -4,23 +4,23 @@
 // possible: the par path rendered as a ghosted stack beside the player's
 // own, so the comparison is a silhouette, not a reading exercise. The eight
 // count is revealed here and only here.
-import type { Puzzle } from '../../engine/engine'
-import type { PlayedWord, RunResult } from '../../engine/run'
-import { wordScore } from '../../engine/values'
-import { rankFor } from '../../game/rank'
-import { Stack } from './Stack'
+import type { Puzzle } from '../../engine/engine';
+import type { PlayedWord, RunResult } from '../../engine/run';
+import { wordScore } from '../../engine/values';
+import { rankFor } from '../../game/rank';
+import { Stack } from './Stack';
 
 function toRows(words: readonly string[]): PlayedWord[] {
-  return words.map((w) => ({ word: w, score: wordScore(w), length: w.length }))
+  return words.map((w) => ({ word: w, score: wordScore(w), length: w.length }));
 }
 
 export interface EndScreenProps {
-  puzzle: Puzzle
-  result: RunResult
-  played: readonly PlayedWord[]
-  dayLabel: string
-  onShare: () => void
-  onNewEndless: (() => void) | null
+  puzzle: Puzzle;
+  result: RunResult;
+  played: readonly PlayedWord[];
+  dayLabel: string;
+  onShare: () => void;
+  onNewEndless: (() => void) | null;
 }
 
 export function EndScreen({
@@ -31,20 +31,21 @@ export function EndScreen({
   onShare,
   onNewEndless,
 }: EndScreenProps) {
-  const playedWords = played.map((p) => p.word)
-  const rank = rankFor(result.score, puzzle.par)
-  const eights = puzzle.holds.fullRackWords
-  const foundEights = playedWords.filter((w) => eights.includes(w)).length
-  const multiEight = eights.length >= 2
-  const allEights = multiEight && foundEights === eights.length
-  const diverges =
-    puzzle.bestClean !== null && puzzle.par !== puzzle.bestClean;
+  const playedWords = played.map((p) => p.word);
+  const rank = rankFor(result.score, puzzle.par);
+  const eights = puzzle.holds.fullRackWords;
+  const foundEights = playedWords.filter((w) => eights.includes(w)).length;
+  const multiEight = eights.length >= 2;
+  const allEights = multiEight && foundEights === eights.length;
+  const diverges = puzzle.bestClean !== null && puzzle.par !== puzzle.bestClean;
   const gap = puzzle.bestClean === null ? 0 : puzzle.par - puzzle.bestClean;
 
   return (
     <section className="end-screen" data-testid="end-screen">
       <h2>
-        {result.endReason === 'clean-finish' ? 'Out of sorts.' : 'Rested early.'}
+        {result.endReason === 'clean-finish'
+          ? 'Out of sorts.'
+          : 'Rested early.'}
       </h2>
       <p className="end-sub">
         {dayLabel} · {result.score} points · par {puzzle.par}
@@ -145,5 +146,5 @@ export function EndScreen({
         )}
       </div>
     </section>
-  )
+  );
 }

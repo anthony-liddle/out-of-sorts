@@ -6,8 +6,8 @@
 // technology, announced as it changes, so a screen reader user can hear what
 // they have built.
 export interface WordDisplayProps {
-  word: string
-  error: string | null
+  word: string;
+  error: string | null;
 }
 
 export function WordDisplay({ word, error }: WordDisplayProps) {
@@ -35,5 +35,5 @@ export function WordDisplay({ word, error }: WordDisplayProps) {
         </p>
       )}
     </div>
-  )
+  );
 }
