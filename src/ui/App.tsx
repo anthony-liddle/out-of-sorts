@@ -4,9 +4,11 @@ import { buildShare } from '../game/share'
 import { Drift } from './components/Drift'
 import { EndScreen } from './components/EndScreen'
 import { Pool, reconcileSelection } from './components/Pool'
+import { WordDisplay } from './components/WordDisplay'
 import { Stack } from './components/Stack'
 import type { GameServices } from './services'
 import { useGame } from './useGame'
+import { useKeyboard } from './useKeyboard'
 import './theme.css'
 
 export function App({ services }: { services: GameServices }) {
@@ -47,6 +49,44 @@ export function App({ services }: { services: GameServices }) {
     const outcome = game.submit(input)
     if (outcome !== 'rejected') setEntry('', [])
   }
+
+  const backspace = () =>
+    setEntry(
+      input.slice(0, -1),
+      game.pool
+        ? reconcileSelection(game.pool, input, input.slice(0, -1), selection)
+        : [],
+    )
+
+  const clear = () => setEntry('', [])
+
+  /** A typed letter takes the first unused tile bearing it, which is the
+   * same rule a tapped tile follows by index. A letter the pool cannot
+   * supply is simply ignored: the tiles are the alphabet here. */
+  const typeLetter = (letter: string) => {
+    if (!game.pool) return
+    const next = input + letter
+    const nextSelection = reconcileSelection(game.pool, input, next, selection)
+    if (nextSelection[nextSelection.length - 1] === -1) return
+    setEntry(next, nextSelection)
+  }
+
+  // You open the game and type. No click to focus, ever.
+  useKeyboard(
+    useMemo(
+      () => ({
+        letter: typeLetter,
+        spend: submit,
+        backspace,
+        clear,
+      }),
+      // these close over the current input and selection, so they must be
+      // rebuilt when either changes
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [input, selection, game.pool, game.submit],
+    ),
+    !game.result,
+  )
 
   const share = () => {
     if (!game.puzzle || !game.run || !game.result || !game.entry) return
@@ -142,32 +182,8 @@ export function App({ services }: { services: GameServices }) {
                 }
               />
             )}
-            <form
-              className="entry"
-              onSubmit={(e) => {
-                e.preventDefault()
-                submit()
-              }}
-            >
-              <label className="visually-hidden" htmlFor="word-input">
-                Type a word
-              </label>
-              <input
-                id="word-input"
-                autoComplete="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                value={input}
-                onChange={(e) => {
-                  const next = e.target.value
-                  setEntry(
-                    next,
-                    game.pool
-                      ? reconcileSelection(game.pool, input, next, selection)
-                      : [],
-                  )
-                }}
-              />
+            <div className="entry">
+              <WordDisplay word={input} error={game.error} />
               <div className="control-row" data-testid="control-row">
                 <button
                   type="button"
@@ -175,38 +191,21 @@ export function App({ services }: { services: GameServices }) {
                 >
                   Shuffle
                 </button>
-                <button type="button" onClick={() => setEntry('', [])}>
+                <button type="button" onClick={clear}>
                   Clear
                 </button>
                 <button
                   type="button"
                   aria-label="Delete last letter"
-                  onClick={() =>
-                    setEntry(
-                      input.slice(0, -1),
-                      game.pool
-                        ? reconcileSelection(
-                            game.pool,
-                            input,
-                            input.slice(0, -1),
-                            selection,
-                          )
-                        : [],
-                    )
-                  }
+                  onClick={backspace}
                 >
                   ⌫
                 </button>
-                <button type="submit" className="spend">
+                <button type="button" className="spend" onClick={submit}>
                   Spend
                 </button>
               </div>
-            </form>
-            {game.error && (
-              <p className="entry-error" role="alert">
-                {game.error}
-              </p>
-            )}
+            </div>
             {game.run && game.entry && (
               <Stack
                 words={game.run.played}

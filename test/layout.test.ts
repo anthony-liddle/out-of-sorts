@@ -38,7 +38,7 @@ async function freshGame(width: number) {
   page = await context.newPage();
   await page.goto(origin);
   await page.waitForSelector('[data-ready="true"]');
-  await page.waitForSelector('#word-input');
+  await page.waitForSelector('[data-testid="pool-tile"]');
 }
 
 /**
@@ -75,12 +75,14 @@ async function fixedRack(width: number) {
   await page.goto(origin);
   await page.waitForSelector('[data-ready="true"]');
   await page.getByRole('button', { name: 'Endless' }).click();
-  await page.waitForSelector('#word-input');
+  await page.waitForSelector('[data-testid="pool-tile"]');
 }
 
 async function play(word: string) {
-  await page.locator('#word-input').fill(word);
-  await page.locator('#word-input').press('Enter');
+  // Type it, the way a player does: no field to focus, and no OS keyboard.
+  await page.keyboard.press('Escape');
+  for (const letter of word) await page.keyboard.press(letter);
+  await page.keyboard.press('Enter');
 }
 
 async function tops(selector: string): Promise<number[]> {
@@ -173,8 +175,10 @@ describe('cold tiles at phone width', () => {
   it('keeps the tile silhouette: no ghost mask, uniform corners', async () => {
     // A ghost means the letter is gone; a cold tile means it is about to
     // be. The ghost silhouette is reserved for the drift, at every width.
-    await freshGame(375);
-    await page.locator('#word-input').fill('dis');
+    // The fixed rack, never the daily: the daily rolls over at midnight and
+    // its letters change under the test.
+    await fixedRack(375);
+    for (const letter of 'pen') await page.keyboard.press(letter);
     await page.waitForTimeout(300);
     const cold = await page.$$eval(
       '[data-testid="pool-tile"][data-state="cold"]',
