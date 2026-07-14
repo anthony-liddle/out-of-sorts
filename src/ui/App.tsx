@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { rankFor } from '../game/rank'
 import { buildShare } from '../game/share'
-import { Drift } from './components/Drift'
+import { GHOST_WIDTH } from './haunt-layout'
+import { Haunt, type HauntBirths } from './components/Haunt'
 import { EndScreen } from './components/EndScreen'
 import { Pool, reconcileSelection } from './components/Pool'
 import { WordDisplay } from './components/WordDisplay'
@@ -25,6 +26,11 @@ export function App({ services }: { services: GameServices }) {
   // the OS setting is the one the player already made.
   const reducedMotion = services.reducedMotionDefault
   const [copied, setCopied] = useState(false)
+  // The tiles a Spend is about to drop, captured at the moment the button
+  // is pressed, so each new ghost can rise from the tile that spent it.
+  // Session only, and overwritten on every submit: a reload has no births
+  // and the settled dead do not re-rise.
+  const [births, setBirths] = useState<HauntBirths | null>(null)
 
   const selection = useMemo(() => {
     if (!game.pool) return []
@@ -58,6 +64,24 @@ export function App({ services }: { services: GameServices }) {
    * eight taps to retype. A board that lies about itself is worse.
    */
   const submit = () => {
+    const layer = document.querySelector('[data-testid="haunt"]')
+    if (layer && game.run) {
+      const layerBox = layer.getBoundingClientRect()
+      const used = new Set(selection.filter((i) => i >= 0))
+      const at = [
+        ...document.querySelectorAll('[data-testid="pool-tile"]'),
+      ]
+        .filter((_, i) => !used.has(i))
+        .map((tile) => {
+          const box = tile.getBoundingClientRect()
+          return {
+            letter: tile.textContent?.trim().toLowerCase() ?? '',
+            x: box.left + box.width / 2 - GHOST_WIDTH / 2 - layerBox.left,
+            y: box.top - layerBox.top,
+          }
+        })
+      setBirths({ playIndex: game.run.played.length, at })
+    }
     game.submit(input)
     // Reset the entry WITHOUT the stale error clearing that setEntry does:
     // this submit may have just set a fresh message, and it must not clear
@@ -183,10 +207,16 @@ export function App({ services }: { services: GameServices }) {
         ) : (
           <>
             <p className="day-label">{dayLabel}</p>
-            <Drift
+            <div className="drift" data-testid="drift">
+              {(game.run?.spent.length ?? 0) === 0 && (
+                <p className="drift-empty">Nothing lost yet.</p>
+              )}
+            </div>
+            <Haunt
               spent={game.run?.spent ?? []}
               currentPlayCount={game.run?.played.length ?? 0}
               reducedMotion={reducedMotion}
+              births={births}
             />
             {game.pool && (
               <Pool

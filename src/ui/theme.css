@@ -110,17 +110,15 @@ body {
   letter-spacing: 0.14em;
 }
 
-/* The drift: what you lost, rising and fading above the pool. Oldest at
-   the top, nearly gone. */
+/* The drift is sky now: an open band above the pool that the ghosts rise
+   into. It reserves the room (no layout jump when the first ghost lands)
+   and holds the empty line; the ghosts themselves live on the haunt layer
+   and scatter, never queue. */
 .drift {
-  /* Enough reserve that the first ghost causes no layout jump, no more. */
-  min-height: 4.3rem;
+  min-height: 5.5rem;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  align-content: flex-end;
   align-items: flex-end;
-  gap: 0.3rem 0.4rem;
   padding: 0.4rem 0.25rem 0.8rem;
 }
 
@@ -129,6 +127,22 @@ body {
   font-size: 0.9rem;
   margin: 0 0 0.2rem;
   opacity: 0.8;
+}
+
+/* The haunt: the margins are where the dead go. An absolute layer over the
+   whole main column, pointer transparent, painting behind the board so an
+   arriving ghost rises out of its tile rather than over it. Positions come
+   from haunt-layout.ts and never intersect the pool, the input, the
+   controls, or the stack. */
+main {
+  position: relative;
+}
+
+.haunt {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* The pool: the decision surface. Never waits on anything. */
@@ -165,7 +179,6 @@ body {
 }
 
 /* Used: lifted, mint outline. Consumed: one tile, one letter, spent. */
-
 
 /* Cold: at risk, not gone. A ghost means the letter is gone; a cold tile
    means it is about to be, and they must never look the same: the ghost
@@ -404,15 +417,68 @@ body {
   outline: 1.5px dashed var(--mint);
 }
 
-/* Ghosts: soft gray-violet, scalloped hem, two dot eyes, waving in on
-   arrival, then a slow rise. The letter always stays readable. */
-.ghost {
-  position: relative;
-  width: clamp(1.7rem, 8.4vw, 2.1rem);
-  height: clamp(2rem, 9.8vw, 2.4rem);
-  display: inline-flex;
+/* Ghosts: soft gray-violet, scalloped hem, two dot eyes. Each one is a
+   character on its own clocks: a slow bob, a slower wander, a rare blink,
+   all seeded per letter so nothing pulses in unison. Transform and opacity
+   only; twenty of these must not drop frames on a phone. */
+.haunt-ghost {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  /* Aging glides: each play pushes the settled dead a little further out
+     and a little dimmer. */
+  transition:
+    transform 1200ms ease,
+    opacity 1200ms ease;
+}
+
+/* The arrival: born at the tile that spent it, rising out softly. It fires
+   more than anything else in the game, so it is quiet and brief. */
+.haunt-ghost[data-arriving] {
+  animation: haunt-arrive 900ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes haunt-arrive {
+  from {
+    transform: translate(var(--birth-x), var(--birth-y)) scale(1);
+    opacity: 0;
+  }
+}
+
+.ghost-wander,
+.ghost-bob {
+  position: absolute;
+  inset: 0;
+}
+
+.ghost-wander {
+  animation: ghost-wander 18s ease-in-out infinite alternate;
+}
+
+.ghost-bob {
+  display: flex;
   align-items: center;
   justify-content: center;
+  animation: ghost-bob 6s ease-in-out infinite alternate;
+}
+
+@keyframes ghost-wander {
+  from {
+    transform: translateX(-0.3rem);
+  }
+  to {
+    transform: translateX(0.3rem);
+  }
+}
+
+@keyframes ghost-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-0.35rem);
+  }
 }
 
 .ghost-body {
@@ -426,6 +492,7 @@ body {
     linear-gradient(black, black) top / 100% calc(100% - 0.26rem) no-repeat;
 }
 
+/* The eyes, and the blink: occasional, individual, rare. Opacity only. */
 .ghost-body::before {
   content: '';
   position: absolute;
@@ -436,6 +503,21 @@ body {
   border-radius: 50%;
   background: var(--ghost);
   box-shadow: 0.6rem 0 0 var(--ghost);
+  animation: ghost-blink var(--blink-duration, 9s) linear var(--blink-delay, 0s)
+    infinite;
+}
+
+@keyframes ghost-blink {
+  0%,
+  93%,
+  97%,
+  100% {
+    opacity: 1;
+  }
+  94%,
+  96% {
+    opacity: 0;
+  }
 }
 
 .ghost-letter {
@@ -445,38 +527,6 @@ body {
   font-weight: 700;
   font-size: 0.95rem;
   margin-top: 0.45rem;
-}
-
-.ghost[data-motion='on'] {
-  animation:
-    ghost-arrive 800ms ease-out,
-    ghost-rise 6s ease-in-out 800ms infinite alternate;
-}
-
-.ghost[data-motion='on']:nth-child(odd) {
-  animation-duration: 800ms, 7.3s;
-}
-
-@keyframes ghost-arrive {
-  from {
-    transform: translateY(2.2rem) rotate(-9deg);
-    opacity: 0;
-  }
-  55% {
-    transform: translateY(-0.25rem) rotate(6deg);
-  }
-  to {
-    transform: none;
-  }
-}
-
-@keyframes ghost-rise {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-0.45rem);
-  }
 }
 
 .app[data-reduced-motion] * {

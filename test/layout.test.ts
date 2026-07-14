@@ -161,20 +161,193 @@ describe('cold start in a real browser', () => {
   }, 30000);
 });
 
-describe('the drift at phone width', () => {
-  it('holds its ghosts in at most two tidy rows at 375px', async () => {
-    await fixedRack(375);
+describe('the haunting', () => {
+  // The margins are where the dead go. Ghosts scatter around the board,
+  // deterministically, and never sit on the pool, the input, the controls,
+  // or the stack. Five ghosts is a full run: the pool only ever shrinks,
+  // so a rack of eight ending at three spends exactly five letters, and
+  // FIXED.words spends all of them.
+  const KEEP_OUT = [
+    '[data-testid="pool"]',
+    '[data-testid="word-display"]',
+    '[data-testid="control-row"]',
+    '[data-testid="stack"]',
+  ];
+
+  async function boxes(selector: string) {
+    return page.$$eval(selector, (els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+      }),
+    );
+  }
+
+  type Box = { left: number; top: number; right: number; bottom: number };
+  const intersects = (a: Box, b: Box) =>
+    a.left < b.right &&
+    b.left < a.right &&
+    a.top < b.bottom &&
+    b.top < a.bottom;
+
+  async function fullHaunt(width: number) {
+    await fixedRack(width);
     for (const w of FIXED.words) await play(w);
-    await page.waitForTimeout(900);
-    const ghostTops = await tops('[data-testid="ghost"]');
-    expect(ghostTops.length).toBe(5);
-    expect(new Set(ghostTops).size).toBeLessThanOrEqual(2);
-    const overflow = await page.evaluate(() => {
-      const d = document.querySelector('[data-testid="drift"]')!;
-      return d.scrollWidth > d.clientWidth;
+    // let the arrival and the aging glides settle before measuring
+    await page.waitForTimeout(1600);
+  }
+
+  for (const width of [320, 375, 1024]) {
+    it(`scatters a full run around the board, never on it, at ${width}px`, async () => {
+      await fullHaunt(width);
+      const ghosts = await boxes('[data-testid="ghost"]');
+      // one ghost per spent letter, exactly
+      expect(ghosts.length).toBe(5);
+
+      for (const selector of KEEP_OUT) {
+        const parts = await boxes(selector);
+        expect(parts.length).toBeGreaterThan(0);
+        for (const part of parts) {
+          for (const ghost of ghosts) {
+            expect(
+              intersects(ghost, part),
+              `ghost at ${Math.round(ghost.left)},${Math.round(ghost.top)} sits on ${selector}`,
+            ).toBe(false);
+          }
+        }
+      }
+
+      // a scatter, not a row: the dead do not share a baseline
+      const ys = new Set(ghosts.map((g) => Math.round(g.top)));
+      expect(ys.size).toBeGreaterThanOrEqual(3);
+
+      // and nothing pushes the page wider than the phone
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth,
+      );
+      expect(overflow).toBe(false);
+    }, 40000);
+  }
+
+  async function hauntSnapshot() {
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(300);
+    return page.$$eval('[data-testid="ghost"]', (els) =>
+      els.map((e) => ({
+        letter: e.textContent!.trim(),
+        playIndex: (e as HTMLElement).dataset.playIndex,
+        transform: (e as HTMLElement).style.transform,
+        opacity: (e as HTMLElement).style.opacity,
+      })),
+    );
+  }
+
+  it('the same run haunts the same places after a reload', async () => {
+    // Play the run live and carry its saved state into a fresh context:
+    // fixedRack's init script re-seeds storage on every navigation, so a
+    // plain reload would silently wipe the run instead of restoring it.
+    await fullHaunt(375);
+    const before = await hauntSnapshot();
+    expect(before).toHaveLength(5);
+    const saved = await page.evaluate(() =>
+      localStorage.getItem('oos:endless-current'),
+    );
+    await page.context().close();
+
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 900 },
     });
-    expect(overflow).toBe(false);
-  }, 30000);
+    page = await context.newPage();
+    // Seed the storage before the app boots: the persist effect writes the
+    // in-memory state out once the calendar lands, so a value set into a
+    // page that has already booted gets clobbered by the fresh defaults.
+    await page.addInitScript(
+      (state) => localStorage.setItem('oos:endless-current', state!),
+      saved,
+    );
+    await page.goto(origin);
+    // the app boots into Daily; the endless run lives on its own tab
+    await page.waitForSelector('[data-ready="true"]');
+    await page.getByRole('button', { name: 'Endless' }).click();
+    await page.waitForSelector('[data-testid="ghost"]');
+    await page.waitForTimeout(700);
+    const after = await hauntSnapshot();
+    expect(after).toEqual(before);
+  }, 40000);
+
+  it('reduced motion stills every ghost at its aged place', async () => {
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 900 },
+      reducedMotion: 'reduce',
+    });
+    page = await context.newPage();
+    await page.addInitScript((fixed) => {
+      localStorage.setItem(
+        'oos:endless-current',
+        JSON.stringify({
+          rack: fixed.rack,
+          words: [],
+          stopped: false,
+          endlessSeed: fixed.seed,
+        }),
+      );
+    }, FIXED);
+    await page.goto(origin);
+    await page.waitForSelector('[data-ready="true"]');
+    await page.getByRole('button', { name: 'Endless' }).click();
+    await page.waitForSelector('[data-testid="pool-tile"]');
+    for (const w of FIXED.words) await play(w);
+    await page.waitForTimeout(400);
+
+    // every ghost visible, positioned, at its aged opacity
+    const spirits = await page.$$eval('[data-testid="ghost"]', (els) =>
+      els.map((e) => {
+        const cs = getComputedStyle(e);
+        const wander = e.querySelector('.ghost-wander')!;
+        const bob = e.querySelector('.ghost-bob')!;
+        return {
+          playIndex: Number((e as HTMLElement).dataset.playIndex),
+          opacity: Number(cs.opacity),
+          animations: [
+            cs.animationName,
+            getComputedStyle(wander).animationName,
+            getComputedStyle(bob).animationName,
+            getComputedStyle(bob, '::before').animationName,
+          ],
+          transition: cs.transitionDuration,
+        };
+      }),
+    );
+    expect(spirits).toHaveLength(5);
+    for (const s of spirits) {
+      for (const name of s.animations) expect(name).toBe('none');
+      expect(s.transition.split(',').every((d) => d.trim() === '0s')).toBe(
+        true,
+      );
+      expect(s.opacity).toBeGreaterThan(0.1);
+    }
+    // older is fainter, always: age survives stillness
+    const byPlay = new Map<number, number>();
+    for (const s of spirits) byPlay.set(s.playIndex, s.opacity);
+    const plays = [...byPlay.keys()].sort((a, b) => a - b);
+    for (let i = 1; i < plays.length; i++) {
+      expect(byPlay.get(plays[i]!)!).toBeGreaterThan(
+        byPlay.get(plays[i - 1]!)!,
+      );
+    }
+
+    // and nothing moves: the haunt holds perfectly still
+    const at = async () =>
+      page.$$eval('[data-testid="ghost"] .ghost-body', (els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return `${r.left.toFixed(1)},${r.top.toFixed(1)}`;
+        }),
+      );
+    const first = await at();
+    await page.waitForTimeout(600);
+    expect(await at()).toEqual(first);
+  }, 40000);
 });
 
 describe('the word display holds its size', () => {
