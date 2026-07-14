@@ -4,8 +4,15 @@
 // possible: the par path rendered as a ghosted stack beside the player's
 // own, so the comparison is a silhouette, not a reading exercise. The eight
 // count is revealed here and only here.
+//
+// And the ceremony. All Eights fires on 9.8 percent of racks and finding
+// every eight is the rarest, hardest thing this game can produce, so the
+// screen says so in words before it says the score. QUIET WARMTH, NEVER
+// FIREWORKS: no confetti, no bounce, no exclamation mark. Ghosts are what is
+// left of things, and a celebration that reads as perky has failed.
+import type { CSSProperties } from 'react';
 import type { Puzzle } from '../../engine/engine';
-import type { PlayedWord, RunResult } from '../../engine/run';
+import type { PlayedWord, RunResult, SpentLetter } from '../../engine/run';
 import { wordScore } from '../../engine/values';
 import { rankFor } from '../../game/rank';
 import { Stack } from './Stack';
@@ -18,21 +25,96 @@ export interface EndScreenProps {
   puzzle: Puzzle;
   result: RunResult;
   played: readonly PlayedWord[];
+  /** The run's dead, for the ceremony to gather. At most five: every letter
+   * spent is gone forever and a run ends at a pool of three. */
+  spent?: readonly SpentLetter[];
   dayLabel: string;
   onShare: () => void;
+  /** True once the share text is on the clipboard. Never true for the native
+   * sheet, which says so itself. */
+  copied?: boolean;
   onNewEndless: (() => void) | null;
+  reducedMotion?: boolean;
+}
+
+/**
+ * The eights, revealed. Not a caption: this is the payoff of the rarest
+ * badge in the game, and it shipped as grey 14px text below the fold of
+ * attention. Mint, because mint is the eights and nothing else.
+ */
+function EightsReveal({ eights }: { eights: readonly string[] }) {
+  return (
+    <div className="eights-reveal" data-testid="eights-reveal">
+      <p className="eights-label">{eights.length === 1 ? 'The eight' : 'The eights'}</p>
+      <p className="eights-words">
+        {eights.map((word) => (
+          <span className="eight-word" data-testid="eight-word" key={word}>
+            {word.toUpperCase()}
+          </span>
+        ))}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The ghosts gather. The run's spent letters drift in over the reveal and
+ * settle, once, and hold: loss becomes an audience. They reuse the drift's
+ * own glyph and its bob, so this is the same ghost, not a second species.
+ * Reduced motion suppresses the gathering and leaves them simply present.
+ */
+function Gathering({
+  spent,
+  reducedMotion,
+}: {
+  spent: readonly SpentLetter[];
+  reducedMotion: boolean;
+}) {
+  if (spent.length === 0) return null;
+  return (
+    <div
+      className="gathering"
+      data-testid="gathering"
+      data-motion={reducedMotion ? 'off' : 'on'}
+      role="img"
+      aria-label={`The letters you spent: ${spent
+        .map((s) => s.letter.toUpperCase())
+        .join(', ')}`}
+    >
+      {spent.map((s, i) => (
+        <span
+          className="gather-ghost"
+          data-testid="gather-ghost"
+          key={`${s.letter}-${i}`}
+          // Staggered, so they arrive as individuals rather than a chorus
+          // line. One beat, and then they hold.
+          style={{ '--gather-delay': `${i * 110}ms` } as CSSProperties}
+        >
+          <span className="ghost-bob">
+            <span className="ghost-body" aria-hidden="true" />
+            <span className="ghost-letter">{s.letter.toUpperCase()}</span>
+          </span>
+        </span>
+      ))}
+    </div>
+  );
 }
 
 export function EndScreen({
   puzzle,
   result,
   played,
+  spent = [],
   dayLabel,
   onShare,
+  copied = false,
   onNewEndless,
+  reducedMotion = false,
 }: EndScreenProps) {
   const playedWords = played.map((p) => p.word);
   const rank = rankFor(result.score, puzzle.par);
+  // The solver's common-pool hold inventory. NEVER the calendar's baked
+  // boundary list: AEGINRST holds 5 common eights and 12 boundary ones.
   const eights = puzzle.holds.fullRackWords;
   const foundEights = playedWords.filter((w) => eights.includes(w)).length;
   const multiEight = eights.length >= 2;
@@ -42,12 +124,25 @@ export function EndScreen({
 
   return (
     <section className="end-screen" data-testid="end-screen">
+      {/* On a single-eight rack none of this exists, and that is the rule:
+          ABSENCE, NEVER FAILURE. 90.2 percent of racks hold exactly one, and
+          a ceremony for playing the obvious opener is not a ceremony. */}
+      {allEights && (
+        <section className="ceremony" data-testid="ceremony">
+          <Gathering spent={spent} reducedMotion={reducedMotion} />
+          <p className="ceremony-line" data-testid="ceremony-line">
+            You left nothing in the case.
+          </p>
+          <EightsReveal eights={eights} />
+        </section>
+      )}
+
       <h2>
         {result.endReason === 'clean-finish'
           ? 'Out of sorts.'
           : 'Rested early.'}
       </h2>
-      <p className="end-sub">
+      <p className="end-sub" data-testid="end-sub">
         {dayLabel} · {result.score} points · par {puzzle.par}
       </p>
 
@@ -128,16 +223,30 @@ export function EndScreen({
             </figure>
           )}
         </div>
-        {multiEight && (
-          <p className="eights-reveal">
-            The eights: {eights.map((w) => w.toUpperCase()).join(', ')}
-          </p>
-        )}
+        {/* A multi-eight rack where one got away still reveals them, because
+            the player wants to know what was there. It just does not get the
+            ceremony: the reveal is information, the ceremony is the peak. */}
+        {multiEight && !allEights && <EightsReveal eights={eights} />}
       </section>
 
       <div className="end-actions">
-        <button type="button" onClick={onShare}>
-          Copy share text
+        <button
+          type="button"
+          className="share-button"
+          data-testid="share-button"
+          data-copied={copied || undefined}
+          onClick={onShare}
+        >
+          {/* Both labels are always in the DOM, stacked in one grid cell, so
+              the button is already as wide and as tall as its widest state.
+              "Copied." used to be a new paragraph below the buttons and it
+              pushed the footer down on every single copy. */}
+          <span className="share-idle" data-testid="share-idle">
+            Share
+          </span>
+          <span className="share-done" data-testid="share-done" aria-hidden={!copied}>
+            Copied.
+          </span>
         </button>
         {onNewEndless && (
           <button type="button" onClick={onNewEndless}>

@@ -10,6 +10,7 @@ import { Pool, reconcileSelection } from './components/Pool';
 import { WordDisplay } from './components/WordDisplay';
 import { Stack } from './components/Stack';
 import type { GameServices } from './services';
+import { deliverShare } from './share-out';
 import { useGame } from './useGame';
 import { useKeyboard } from './useKeyboard';
 import './theme.css';
@@ -153,9 +154,15 @@ export function App({ services }: { services: GameServices }) {
       score: game.result.score,
       par: game.puzzle.par,
     });
-    void navigator.clipboard?.writeText(text);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    // The native sheet where the browser has one, the clipboard where it does
+    // not, feature detected. "Copied." is only ever said when something was
+    // in fact copied: the sheet announces itself, and a sheet the player
+    // dismissed did nothing at all.
+    void deliverShare(text).then((outcome) => {
+      if (outcome !== 'copied') return;
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
@@ -193,8 +200,11 @@ export function App({ services }: { services: GameServices }) {
           </nav>
           <div className="meta">
             {game.mode === 'daily' && game.streak > 1 && (
-              <span className="streak" title="Daily streak">
-                {game.streak} days
+              /* "3 days" is a number with no noun. Label it: the streak is
+                 the only thing in the header that persists between runs, and
+                 a bare count says nothing about what it counts. */
+              <span className="streak" data-testid="streak">
+                Streak {game.streak}
               </span>
             )}
             {game.run && !game.result && (
@@ -234,9 +244,12 @@ export function App({ services }: { services: GameServices }) {
             puzzle={game.puzzle}
             result={game.result}
             played={game.run.played}
+            spent={game.run.spent}
             dayLabel={dayLabel}
             onShare={share}
+            copied={copied}
             onNewEndless={game.mode === 'endless' ? game.newEndless : null}
+            reducedMotion={reducedMotion}
           />
         ) : (
           /* The page, not a strip: on wide viewports the board keeps its
@@ -322,7 +335,13 @@ export function App({ services }: { services: GameServices }) {
             </aside>
           </div>
         )}
-        {copied && <p role="status">Copied.</p>}
+        {/* "Copied." is said by the button, in place, in a slot that already
+            reserves the room for it. It used to be a paragraph that appeared
+            here and pushed the whole footer down on every copy. The spoken
+            confirmation stays, out of the layout entirely. */}
+        <p role="status" className="visually-hidden">
+          {copied ? 'Copied.' : ''}
+        </p>
       </main>
 
       <Footer />

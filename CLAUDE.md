@@ -169,6 +169,27 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   keyboard.
 - **The cold preview fires on formability and length, never validity.**
   Gating it on validity would turn it into a dictionary oracle.
+- **The peak gets a ceremony, and the ceremony is quiet.** All Eights fires
+  on 9.8 percent of racks and it used to render as a chip in a row of chips.
+  It now says so in words, before the score, with the eights revealed in
+  mint and the run's ghosts gathered above them. No confetti, no bounce, no
+  sparkle, no exclamation mark: if it reads as perky it has failed, and
+  failing that way is worse than doing nothing. On a single-eight rack none
+  of it exists. **Absence, never failure.**
+- **"Out of sorts." is the idiom, not the title.** The line never changes,
+  but it must never be SET like the masthead: it shipped in violet Baloo at
+  2rem six inches under a violet Baloo 1.9rem title, and a stranger read a
+  duplicate heading. Plum, body face, italic, smaller. Pinned by a test that
+  compares the two computed styles.
+- **The focus ring is designed, and it is violet.** It was whatever the
+  browser picked, and on the Endless chip that was amber, which is banned.
+  A focus ring is not an automation artifact; keyboard users see it
+  constantly. Global `:focus-visible`, and a test sweeps the rendered styles
+  for anything in the amber band.
+- **The page must never move when you share.** Both button labels live in
+  one grid cell so the swap to "Copied." costs no reflow. `navigator.share`
+  where it exists, clipboard where it does not, always feature-detected and
+  never sniffed. A cancelled sheet copies nothing: the player declined.
 
 ## Working conventions
 

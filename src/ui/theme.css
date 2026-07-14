@@ -24,6 +24,21 @@
   box-sizing: border-box;
 }
 
+/* THE FOCUS RING IS DESIGNED, AND IT IS VIOLET. It was never chosen: it was
+   whatever the browser picked, and on the Endless chip Chromium picked
+   AMBER, which is Peach's crown and is banned here outright. A focus ring is
+   not an automation artifact; it is a real thing real users see, keyboard
+   users constantly, and it was the one piece of chrome nobody had looked at.
+   Violet is chrome and brand, which is exactly what a focus ring is.
+
+   :focus-visible, so a mouse press never draws it and a Tab always does. The
+   offset keeps it clear of the tiles' own border ring, and the ring is the
+   only thing that moves: no layout, ever. */
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
 body {
   margin: 0;
   background-color: var(--ground);
@@ -731,10 +746,20 @@ main {
   text-align: center;
 }
 
+/* "Out of sorts." is the idiom, not the title. The masthead says Out of
+   Sorts in violet Baloo at 1.9rem, and this line said it again, six inches
+   below, in violet Baloo at 2rem: a stranger read a duplicate heading and
+   the joke stuttered. The LINE does not change, because it is the entire
+   reason the game has that name and it fires only when the pool is genuinely
+   dead. How it is SET changes: plum not violet, body face not display,
+   italic, smaller than the title. Now it reads as a sentence. */
 .end-screen h2 {
-  font-family: var(--font-display);
-  color: var(--violet);
-  font-size: 2rem;
+  font-family: var(--font-body);
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   margin: 1.6rem 0 0.2rem;
 }
 
@@ -853,6 +878,13 @@ main {
   max-height: none;
   margin-top: 0;
   width: 100%;
+  /* The stack is a scroll container during play (max-height plus overflow-y
+     auto). Here it has no max-height, so it never scrolls, but it inherited
+     the overflow and a scroll container CLIPS. An outline is painted outside
+     the border box, so the mint dashed outline on the top eight row (the
+     first row of the par path) was being cut off at the container's edge.
+     Nothing to scroll, nothing to clip. */
+  overflow: visible;
 }
 
 .stack-compare .stack-row {
@@ -873,9 +905,112 @@ main {
   font-size: 0.7rem;
 }
 
-.eights-reveal {
+/* THE CEREMONY. All Eights fires on 9.8 percent of racks and finding every
+   one is the rarest thing this game can produce; it used to render as a chip
+   in a row of chips, with the reveal a grey caption below the fold. It says
+   so now, first, before the score.
+
+   The register is the whole job. No confetti, no bounce, no sparkle, no
+   exclamation mark: quiet warmth. Ghosts are what is left of things, and a
+   celebration that reads as perky would be worse than none. Everything here
+   is a slow fade and a small rise; nothing pops. */
+.ceremony {
+  margin: 1.6rem 0 0.4rem;
+  animation: ceremony-in 900ms ease-out both;
+}
+
+@keyframes ceremony-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The line. Plain, warm, the game noticing rather than a trophy popping.
+   Letterpress: the case is where the sorts live, and you emptied it. */
+.ceremony-line {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
   color: var(--ink);
-  font-size: 0.9rem;
+  margin: 0.9rem 0 0;
+}
+
+/* The reveal. Mint, because mint is THE EIGHTS and nothing else in this
+   game. Rose stays reserved for the All Eights badge itself. */
+.eights-reveal {
+  margin: 0.8rem 0 0;
+}
+
+.eights-label {
+  margin: 0;
+  color: var(--ghost);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+}
+
+.eights-words {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.1rem;
+  margin: 0.35rem 0 0;
+}
+
+.eight-word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 5vw, 1.5rem);
+  letter-spacing: 0.06em;
+  color: var(--mint-deep);
+  background: color-mix(in srgb, var(--mint) 22%, transparent);
+  border-radius: 0.6rem;
+  padding: 0.15rem 0.6rem;
+}
+
+/* The ghosts gather. The run's spent letters (at most five: every run ends
+   at a pool of three) drift in over the reveal and settle, once, and hold.
+   Loss becomes an audience. Same glyph as the drift, same bob: this is the
+   same ghost, not a second species. */
+.gathering {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  height: 38px;
+}
+
+.gather-ghost {
+  position: relative;
+  width: 34px;
+  height: 38px;
+  animation: gather 700ms ease-out both;
+  animation-delay: var(--gather-delay, 0ms);
+}
+
+@keyframes gather {
+  from {
+    opacity: 0;
+    transform: translateY(0.7rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion: they are simply present. The state is never lost, only
+   the movement, and the drift's own decay follows the same rule. */
+.gathering[data-motion='off'] .gather-ghost,
+.gathering[data-motion='off'] .ghost-bob {
+  animation: none;
+}
+
+.gathering[data-motion='off'] {
+  opacity: 1;
 }
 
 .end-actions {
@@ -893,6 +1028,30 @@ main {
   background: var(--violet);
   color: #fff;
   cursor: pointer;
+}
+
+/* THE PAGE MUST NOT MOVE WHEN YOU SHARE. Both labels live in the same grid
+   cell, always in the DOM, so the button is already exactly as wide and as
+   tall as its widest state and the swap costs zero reflow. "Copied." used to
+   be a paragraph that appeared below the buttons and shoved the footer down
+   on every single copy. */
+.share-button {
+  display: grid;
+}
+
+.share-idle,
+.share-done {
+  grid-area: 1 / 1;
+  transition: opacity 180ms ease;
+}
+
+.share-done,
+.share-button[data-copied] .share-idle {
+  opacity: 0;
+}
+
+.share-button[data-copied] .share-done {
+  opacity: 1;
 }
 
 /* Three columns is too many on a phone. Yours vs Best is the comparison
