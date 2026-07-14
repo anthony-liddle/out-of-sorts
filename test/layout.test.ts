@@ -41,6 +41,43 @@ async function freshGame(width: number) {
   await page.waitForSelector('#word-input');
 }
 
+/**
+ * A fixed rack, in Endless, with the words to play on it. The daily rolls
+ * over at midnight, so a test that hardcodes today's words breaks tomorrow:
+ * that is the calendar epoch bug in miniature. Endless seed 1 is a pure
+ * function of the committed calendar and never moves. PETUNIAS and PANTIES
+ * both sit on the par path AND the clean path, so the same word can be
+ * measured in all three end screen columns.
+ */
+const FIXED = {
+  seed: 1,
+  rack: 'aeinpstu',
+  words: ['petunias', 'panties', 'paste', 'apes', 'pea'],
+  onEveryPath: 'PETUNIAS',
+};
+
+async function fixedRack(width: number) {
+  const context = await browser.newContext({
+    viewport: { width, height: 900 },
+  });
+  page = await context.newPage();
+  await page.addInitScript((fixed) => {
+    localStorage.setItem(
+      'oos:endless-current',
+      JSON.stringify({
+        rack: fixed.rack,
+        words: [],
+        stopped: false,
+        endlessSeed: fixed.seed,
+      }),
+    );
+  }, FIXED);
+  await page.goto(origin);
+  await page.waitForSelector('[data-ready="true"]');
+  await page.getByRole('button', { name: 'Endless' }).click();
+  await page.waitForSelector('#word-input');
+}
+
 async function play(word: string) {
   await page.locator('#word-input').fill(word);
   await page.locator('#word-input').press('Enter');
@@ -68,8 +105,8 @@ async function rowWidth(stack: string, word: string): Promise<number> {
 }
 
 async function endedRun() {
-  await freshGame(375);
-  await play('side');
+  await fixedRack(375);
+  for (const w of FIXED.words.slice(0, 3)) await play(w);
   await page.getByRole('button', { name: 'Stop' }).click();
   await page.waitForSelector('[data-testid="end-screen"]');
 }
@@ -118,8 +155,8 @@ describe('cold start in a real browser', () => {
 
 describe('the drift at phone width', () => {
   it('holds its ghosts in at most two tidy rows at 375px', async () => {
-    await freshGame(375);
-    for (const w of ['side', 'dies', 'ides', 'die']) await play(w);
+    await fixedRack(375);
+    for (const w of FIXED.words) await play(w);
     await page.waitForTimeout(900);
     const ghostTops = await tops('[data-testid="ghost"]');
     expect(ghostTops.length).toBe(5);
@@ -169,18 +206,22 @@ describe('one scale across every stack', () => {
     // in each column, the shapes cannot be compared, which is the entire
     // reason the columns exist.
     await endedRun();
-    const yours = await rowWidth('your-stack', 'SIDE');
-    const best = await rowWidth('par-stack', 'SIDE');
-    const clean = await rowWidth('clean-stack', 'SIDE');
+    // PETUNIAS is the eight letter row and it sits in every column,
+    // including Clean below the fold
+    const eight = FIXED.onEveryPath;
+    const yours = await rowWidth('your-stack', eight);
+    const best = await rowWidth('par-stack', eight);
+    const clean = await rowWidth('clean-stack', eight);
     expect(yours).toBeGreaterThan(0);
     expect(Math.abs(yours - best)).toBeLessThanOrEqual(1);
     expect(Math.abs(best - clean)).toBeLessThanOrEqual(1);
 
-    // and the eight letter rows agree too, across the fold
-    const bestEight = await rowWidth('par-stack', 'DISSUADE');
-    const cleanEight = await rowWidth('clean-stack', 'DISSUADE');
-    expect(Math.abs(bestEight - cleanEight)).toBeLessThanOrEqual(1);
-    expect(bestEight).toBeGreaterThan(best);
+    // a shorter word measures shorter, by the same unit, everywhere
+    const seven = await rowWidth('par-stack', 'PANTIES');
+    expect(seven).toBeLessThan(best);
+    expect(
+      Math.abs(seven - (await rowWidth('clean-stack', 'PANTIES'))),
+    ).toBeLessThanOrEqual(1);
 
     // desktop: same rule, three columns side by side
     await page.setViewportSize({ width: 1024, height: 900 });

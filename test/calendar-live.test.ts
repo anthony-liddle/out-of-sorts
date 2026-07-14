@@ -38,11 +38,20 @@ describe("today's daily, against the shipped calendar", () => {
     expect(new Set(days).size).toBe(3);
   });
 
+  it('was not the same rack yesterday', () => {
+    const yesterday = rackForDate(calendar, at(-1));
+    expect(yesterday).not.toBeNull();
+    expect(yesterday!.rack).not.toBe(rackForDate(calendar, new Date())!.rack);
+  });
+
   it('returns null before the epoch, rather than a plausible wrong rack', () => {
-    // The epoch is today, so yesterday is before the game existed. Null is
-    // the correct answer, and the caller must surface it: the original bug
-    // was not this guard, it was the UI clamping past it to entry 0.
-    expect(rackForDate(calendar, at(-1))).toBeNull();
+    // Null is the correct answer for a date before the game existed, and the
+    // caller must surface it: the original bug was never this guard, it was
+    // the UI clamping past it to entry 0 and serving Day 1 forever.
+    // Local date parts, never new Date('2026-07-12'), which parses as UTC
+    // midnight and lands on the previous local day west of Greenwich.
+    const [y, m, d] = calendar.epoch.split('-').map(Number);
+    expect(rackForDate(calendar, new Date(y!, m! - 1, d! - 1))).toBeNull();
   });
 
   it('has a rack for every day from the epoch through thirty days out', () => {

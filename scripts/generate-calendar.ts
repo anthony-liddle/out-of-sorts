@@ -25,7 +25,7 @@ const OUT = 'public/data/calendar.json';
 // STORAGE_EPOCH), but it must never be in the future: a future epoch makes
 // rackForDate return null every day, and the first build shipped exactly
 // that. Set it to the generation date.
-const CALENDAR_EPOCH = '2026-07-13';
+const CALENDAR_EPOCH = '2026-07-12';
 const ORDER_SEED = 20260801;
 
 if (existsSync(OUT) && !process.argv.includes('--force')) {
