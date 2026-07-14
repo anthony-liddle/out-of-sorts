@@ -761,6 +761,50 @@ main {
   transition: none !important;
 }
 
+/* Setting the sorts. A returning player, and the engine is still building
+   the index; nothing derived from the run can be drawn truthfully yet.
+
+   NO SPINNER. A line of text, in the game's own face, and then the game. It
+   is also DELAYED: it starts transparent and fades in over the second
+   quarter of a second, so a warm restore (the index is cached, and that is
+   the common case) is finished before the line is ever painted. The player
+   simply sees their run. Only a genuinely slow restore ever says anything,
+   which is exactly when a word is worth more than a blank screen.
+
+   A fresh rack never comes near this. It has nothing to restore. */
+.restoring {
+  min-height: 40vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.restoring p {
+  margin: 0;
+  color: var(--ghost);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  animation: restoring-in 400ms ease 250ms both;
+}
+
+@keyframes restoring-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion keeps the word and drops the fade. The line is information,
+   never decoration. */
+.app[data-reduced-motion] .restoring p {
+  animation: none;
+}
+
 /* The end screen carries the serious part of the register. */
 .end-screen {
   text-align: center;

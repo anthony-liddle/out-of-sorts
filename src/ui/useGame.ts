@@ -180,6 +180,28 @@ export function useGame(services: GameServices) {
     [puzzle, run, stopped],
   );
 
+  /**
+   * True when this mode has a run saved that the game cannot yet tell the
+   * truth about.
+   *
+   * The flash was never a localStorage race: progress is read synchronously
+   * in the lazy initializer above and is present on render 1. It is the
+   * ENGINE. `run` needs `puzzle` needs `engine` needs the dictionary, which
+   * lands about a second later, off the critical path and deliberately so.
+   * Until it does, a finished daily has no `result` (so the board painted as
+   * playable and then flipped) and a mid-run pool falls back to the entry's
+   * RACK (so the player was shown eight letters they no longer own, which is
+   * worse).
+   *
+   * THE GATE IS RESTORED-WORDS-AND-NO-RUN, AND NOTHING WIDER. A fresh rack
+   * has nothing to restore, so nothing about it is unknowable, so it still
+   * renders in 0 to 2ms with no loading state at all. Never gate on the
+   * dictionary in general: that would undo the entire cold start design.
+   * Both modes carry their own saved run, so they gate independently.
+   */
+  const restoring =
+    (progress[mode].words.length > 0 || stopped) && run === null;
+
   const pool = useMemo(() => {
     if (!active) return null;
     // THE POOL DISPLAY MUST NEVER SPELL A VALID WORD, AT ANY SIZE. Before
@@ -335,6 +357,7 @@ export function useGame(services: GameServices) {
     run,
     result,
     pool,
+    restoring,
     ready: !!puzzle,
     streak: loadJson<Streak>(services.storage, 'streak')?.length ?? 0,
     announcement,
