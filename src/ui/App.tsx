@@ -174,7 +174,6 @@ export function App({ services }: { services: GameServices }) {
           </p>
         </div>
         <hr className="masthead-rule" data-testid="masthead-divider" />
-        <p className="tagline">Every letter you don't use is gone.</p>
         <div className="masthead-row">
           <nav className="modes" aria-label="Game mode">
             <button
@@ -283,20 +282,9 @@ export function App({ services }: { services: GameServices }) {
                   </button>
                 </div>
               </div>
-            </div>
-            <Haunt
-              spent={game.run?.spent ?? []}
-              currentPlayCount={game.run?.played.length ?? 0}
-              reducedMotion={reducedMotion}
-              births={births}
-            />
-            <aside className="stack-col">
-              {game.run && game.entry && (
-                <Stack
-                  words={game.run.played}
-                  rackSize={game.entry.rack.length}
-                />
-              )}
+              {/* Stop is a run control, so it lives with the board: under
+                  the controls, quiet, with air between it and Spend (never
+                  one fat finger away), and never alone in an empty region. */}
               <div className="rest-row">
                 <button
                   type="button"
@@ -306,6 +294,31 @@ export function App({ services }: { services: GameServices }) {
                   Stop
                 </button>
               </div>
+            </div>
+            <Haunt
+              spent={game.run?.spent ?? []}
+              currentPlayCount={game.run?.played.length ?? 0}
+              reducedMotion={reducedMotion}
+              births={births}
+            />
+            <aside className="stack-col">
+              {/* Reserved, not collapsed: the board never moves when the
+                  first word lands. Until then the column speaks, in voice,
+                  mirroring the drift's "Nothing lost yet." The line only
+                  shows where the column exists; on a phone the drift
+                  already carries the fresh rack. */}
+              {game.run &&
+                game.entry &&
+                (game.run.played.length > 0 ? (
+                  <Stack
+                    words={game.run.played}
+                    rackSize={game.entry.rack.length}
+                  />
+                ) : (
+                  <p className="stack-waiting" data-testid="stack-waiting">
+                    Nothing spent yet.
+                  </p>
+                ))}
             </aside>
           </div>
         )}

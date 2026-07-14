@@ -39,6 +39,12 @@ body {
   max-width: 30rem;
   margin: 0 auto;
   padding: 1rem 1rem 3rem;
+  /* The page fills the viewport so the footer meets the bottom on a short
+     page instead of leaving a dead field of lilac beneath it. */
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 .visually-hidden {
@@ -118,13 +124,6 @@ body {
   border: none;
   border-top: 1px solid var(--ghost-body);
   margin: 1rem 0 0.8rem;
-}
-
-.tagline {
-  margin: 0 0 0.6rem;
-  color: var(--ghost);
-  font-size: 0.9rem;
-  text-align: center;
 }
 
 .masthead-row {
@@ -207,6 +206,18 @@ body {
   opacity: 0.8;
 }
 
+/* The reserved column's voice, wide layout only. On a phone the column
+   does not exist and the drift's "Nothing lost yet." already carries the
+   fresh rack; a second empty line stacked under it would be clutter. */
+.stack-waiting {
+  display: none;
+  margin: 0;
+  color: var(--ghost);
+  font-size: 0.9rem;
+  text-align: center;
+  opacity: 0.8;
+}
+
 /* The haunt: the margins are where the dead go. An absolute layer over the
    whole main column, pointer transparent, painting behind the board so an
    arriving ghost rises out of its tile rather than over it. Positions come
@@ -214,6 +225,9 @@ body {
    controls, or the stack. */
 main {
   position: relative;
+  /* The main region absorbs the spare height so the footer sits at the
+     bottom of the viewport on a short page. */
+  flex: 1;
 }
 
 .haunt {
@@ -238,17 +252,31 @@ main {
     max-width: 68rem;
   }
 
+  /* THE BOARD IS PAGE CENTERED. ALWAYS. The board and the masthead share
+     one center line, with a stack or without one, so the grid is
+     symmetric: equal flexible tracks either side of the board, the stack
+     living in the right one. Centering the board-plus-stack PAIR (the old
+     layout) put the board half a stack column left of the title, and that
+     misalignment is the single thing that made a fresh rack read as
+     broken. */
   .play-grid {
     display: grid;
-    grid-template-columns: minmax(0, 30rem) minmax(15rem, 21rem);
-    column-gap: 4rem;
-    justify-content: center;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 30rem) minmax(0, 1fr);
+    column-gap: 3rem;
     align-items: start;
   }
 
   .board-col,
   .stack-col {
     display: block;
+  }
+
+  .board-col {
+    grid-column: 2;
+  }
+
+  .stack-col {
+    grid-column: 3;
   }
 
   /* The stack heads sit level with the pool, a monument beside the work. */
@@ -260,6 +288,10 @@ main {
     margin-top: 0;
     max-height: none;
     overflow-y: visible;
+  }
+
+  .stack-waiting {
+    display: block;
   }
 
   /* The end screen and the empty daily keep their measure; the wide app
