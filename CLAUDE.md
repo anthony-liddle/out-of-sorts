@@ -4,15 +4,21 @@ The GDD is the source of truth for design and lives at
 `../vault/Projects/Out of Sorts/GDD.md`. Read it before any design-affecting
 work. Do not copy it into this repo.
 
-A daily word game about attrition. A run starts with the eight scrambled
-letters of a source word; each play's letters become the new pool; every
+A daily word game about attrition. A run starts with **eight scrambled
+letters, and nothing more**; each play's letters become the new pool; every
 letter you did not use is gone for good; no repeats; the run ends when no
 legal, unplayed, valid word can be formed. Score is the Scrabble value sum
 of each word played, which equals each letter's value times the number of
 words it survived in.
 
-This repo currently ships the engine, the solver, and the data bake. No UI
-yet. The design was settled by three measured discovery passes; the reports
+**There is no source word.** The Cut (GDD v0.4) removed it: an eight letter
+word here is the opening move, not a hidden crown, and a rack may spell up
+to five of them. Seeds enumerate racks and are never surfaced; two anagram
+seeds are the same day. If you find yourself reasoning about a crown, a
+lemma rule, or an etymology gate, you are working from a dead draft.
+
+The whole game ships: engine, solver, data bake, calendar, cold start, and
+UI. The design was settled by four measured discovery passes; the reports
 live in `scratch/` and the numbers in `scratch/results_*.json`.
 
 ## Load-bearing rules (breaking any of these breaks the game)
@@ -24,12 +30,13 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   optimum over the boundary exceeds par on 100.0 percent of racks, roughly
   doubling it. The boundary's job is generous acceptance during play; it is
   never the yardstick. The solver only ever receives the common index.
-- **Bands are decoupled on purpose.** Source words: SCOWL 35, length 8.
-  Common pool: SCOWL 50. The crown must be recognizable; the ladder generous.
-- **The gate is not configurable.** A source word may headline only if a
-  Clean Descent exists for its rack using common-pool words only. Every
-  daily is perfectible. The gate is invariant across endgame rules (pinned
-  by tests); compute it through the solver, never reimplement it.
+- **Bands are decoupled on purpose.** Rack seeds: SCOWL 35, length 8.
+  Common pool: SCOWL 50. Seeding from band 35 guarantees every rack holds at
+  least one findable eight letter word; the ladder stays generous at 50.
+- **The gate is not configurable.** A rack becomes a day only if a Clean
+  Descent exists for it using common-pool words only. Every daily is
+  perfectible. The gate is invariant across endgame rules (pinned by tests);
+  compute it through the solver, never reimplement it.
 - **The endgame rule is a flag, not a decision.** `mill` (default),
   `terminal-three`, `descent`. It is one predicate in
   `src/engine/rules.ts`, threaded through play legality and solver banking.
@@ -123,6 +130,32 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   shared by the worker, any main thread fallback, and the Node loader. Do
   not fork it.
 
+## UI rules (each one was learned by getting it wrong)
+
+- **The board must never claim something the state does not support.** The
+  cold tile read as disabled for two builds because every one of its signals
+  was subtractive (pale fill, gray letter, sunk position), which is the
+  universal vocabulary of a disabled control. **At risk is marked by
+  ADDITION, never by removal.** Three tile states, one grammar: the ring
+  carries the status (none, solid mint, dashed ghost violet) and the fill,
+  the letter color, and the height are held constant.
+- **A ghost means the letter is gone; a cold tile means it is about to be.**
+  The ghost silhouette is reserved for the drift. Reference the color of
+  loss, never the shape.
+- **The pool display must never spell a valid word, at any size**: the
+  opening eight (guarded by the calendar's baked list, before the dictionary
+  loads), every redisplay after a drop, and every shuffle.
+- **The pill is a length bar, not a container.** Row width is a pure
+  function of word length and rack size, shared by every stack on screen.
+  Scores live in a fixed gutter beside the stack. Never widen a pill to fit
+  its contents: that lies about word length, and the silhouette is the whole
+  basis of the comparison and the share.
+- **Never raise the OS keyboard.** The word display is a display, not an
+  input; typing is captured globally, and on a phone the tiles are the
+  keyboard.
+- **The cold preview fires on formability and length, never validity.**
+  Gating it on validity would turn it into a dictionary oracle.
+
 ## Working conventions
 
 - pnpm. TypeScript strict. Vite and Vitest. TDD: failing test first.
@@ -140,8 +173,19 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
 - `pnpm bench` measures dictionary load and puzzle creation times.
 - `pnpm run check:flavour` proves the F-Droid bundle is analytics-free.
 
-## What is deliberately not here yet
+## What is deliberately not here
 
-UI, daily calendar, streaks, local storage, etymology gate, lemma rule,
-hand review of the source pool, definitions bake. Later prompts. Counts in
-this repo are optimistic ceilings on a raw pool until curation lands.
+- **An ungated Run mode** (random rack, no perfectibility promise). A v1.1
+  candidate on the same engine; it would muddy the v1 promise.
+- **A second theme.** Ghosts carries the whole game. Not a theme system.
+- **A backend, or cross-device sync.** Local storage in v1.
+- **A definitions bake.**
+- **Curation beyond the denylist.** The Cut removed the need for a lemma
+  rule and an etymology gate entirely; do not reintroduce them.
+
+## Open, and playtest-shaped
+
+- **The endgame rule.** `mill` ships. Fully measured, and the taste is not:
+  at five letters with A-P-S-W-O, is playing PAWS, SWAP, WASP a pleasure or
+  a chore? The flag exists so a week of dailies can answer it.
+- **Rank tier names and thresholds.** Provisional.
