@@ -166,6 +166,11 @@ export function App({ services }: { services: GameServices }) {
     <div className="app" data-reduced-motion={reducedMotion || undefined}>
       <header className="masthead">
         <div className="brand">
+          {/* Three registers: caps eyebrow, display title, body tagline.
+              Two read as a heading; three read as a marque. */}
+          <p className="marque" data-testid="marque">
+            A daily word game
+          </p>
           <h1>Out of Sorts</h1>
           <p className="tagline">Every letter you don't use is gone.</p>
         </div>

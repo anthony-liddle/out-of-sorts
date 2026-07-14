@@ -410,6 +410,18 @@ describe('voice and the vertical', () => {
     expect(screen.getByText(/nothing lost yet/i)).toBeTruthy()
   })
 
+  it('sets the masthead in three registers, so it reads as a marque', async () => {
+    // Caps eyebrow, display title, body tagline. Two registers read as a
+    // heading; three read as a wordmark.
+    render(<App services={services()} />)
+    await ready()
+    const marque = screen.getByTestId('marque')
+    expect(marque.textContent).toMatch(/daily word game/i)
+    const masthead = marque.closest('.masthead')!
+    expect(masthead.querySelector('h1')).toBeTruthy()
+    expect(masthead.textContent).toMatch(/every letter you don't use is gone/i)
+  })
+
   it('the submit button says spend', async () => {
     render(<App services={services()} />)
     await ready()

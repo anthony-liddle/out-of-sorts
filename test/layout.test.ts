@@ -368,6 +368,34 @@ describe('the haunting', () => {
   }, 40000);
 });
 
+describe('the trim', () => {
+  it('lifts the tiles on a violet under shadow and grains the ground', async () => {
+    await fixedRack(375);
+    // tiles are objects being lifted, not divs: the under shadow is the
+    // violet of the game, not a grey
+    const shadow = await page.$eval(
+      '[data-testid="pool-tile"]',
+      (el) => getComputedStyle(el).boxShadow,
+    );
+    expect(shadow).toContain('rgba(127, 119, 221');
+    // the ground carries a whisper of grain, inline and self contained
+    const ground = await page.evaluate(
+      () => getComputedStyle(document.body).backgroundImage,
+    );
+    expect(ground).toContain('data:image/svg+xml');
+    // and the marque sits above the title, a third register
+    const marqueTop = await page.$eval(
+      '[data-testid="marque"]',
+      (el) => el.getBoundingClientRect().top,
+    );
+    const titleTop = await page.$eval(
+      '.masthead h1',
+      (el) => el.getBoundingClientRect().top,
+    );
+    expect(marqueTop).toBeLessThan(titleTop);
+  }, 30000);
+});
+
 describe('the stack is a monument', () => {
   // A landing (a mined anagram class) fuses into one tier: tighter gap,
   // flattened adjoining corners. A notch stays a gap and nothing else; no

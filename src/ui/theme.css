@@ -26,7 +26,11 @@
 
 body {
   margin: 0;
-  background: var(--ground);
+  background-color: var(--ground);
+  /* A whisper of grain, or the lilac reads as an untouched default. Inline
+     SVG noise, self contained, at most 5 percent alpha: texture, never a
+     pattern. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.31 0 0 0 0 0.27 0 0 0 0 0.62 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
   color: var(--ink);
   font-family: var(--font-body);
 }
@@ -65,6 +69,16 @@ body {
   font-weight: 700;
   letter-spacing: 0.01em;
   margin: 0;
+}
+
+/* The marque's top register: caps, spaced, quiet. */
+.marque {
+  margin: 0 0 0.15rem;
+  color: var(--ghost);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
 }
 
 .tagline {
@@ -230,7 +244,12 @@ main {
      changes the tile's size or position. */
   border: 2px solid transparent;
   border-radius: 0.9rem;
-  box-shadow: 0 3px 0 rgba(60, 52, 137, 0.14);
+  /* A violet under shadow, so the tile reads as an object being lifted
+     off the lilac rather than a div with a drop shadow. Depth belongs to
+     the tile itself: all three states carry it equally. */
+  box-shadow:
+    0 4px 0 rgba(127, 119, 221, 0.38),
+    0 6px 12px rgba(127, 119, 221, 0.16);
   width: clamp(2rem, 10.2vw, 3rem);
   height: clamp(2.5rem, 12vw, 3.4rem);
   font-size: clamp(1.05rem, 4.8vw, 1.5rem);
