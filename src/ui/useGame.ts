@@ -5,7 +5,7 @@
 // through the engine. Daily and Endless each keep a slot; switching modes
 // is a view change and never resets either.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { entryForDayIndex } from '../calendar/day';
+import { rackForDate } from '../calendar/day';
 import { endlessEntry } from '../calendar/endless';
 import {
   dailyRunKey,
@@ -72,18 +72,33 @@ function restoreProgress(services: GameServices): Progress {
   };
 }
 
+/**
+ * The rack for a mode, or null when the daily has none. NEVER clamp a
+ * pre-epoch date to entry 0: that substitutes a plausible wrong rack for a
+ * null the calendar returned deliberately, and it is what hid a future
+ * calendar epoch for the entire life of the project (every daily served
+ * entry 0, and nothing complained).
+ */
 function entryFor(
   calendar: Calendar,
   mode: Mode,
   now: Date,
   seed: number,
-): { entry: CalendarEntry; dayNumber: number | null } {
+): { entry: CalendarEntry; dayNumber: number | null } | null {
   if (mode === 'daily') {
-    const dayIndex = Math.max(0, localDaysBetween(calendar.epoch, now));
-    return {
-      entry: entryForDayIndex(calendar, dayIndex),
-      dayNumber: dayIndex + 1,
-    };
+    const entry = rackForDate(calendar, now);
+    if (!entry) {
+      if (import.meta.env.DEV) {
+        throw new Error(
+          `No daily for ${now.toDateString()}: the calendar epoch ` +
+            `(${calendar.epoch}) is in the future. Move it; it is the ` +
+            `movable epoch and moving it costs no streaks.`,
+        );
+      }
+      return null;
+    }
+    const dayIndex = localDaysBetween(calendar.epoch, now);
+    return { entry, dayNumber: dayIndex + 1 };
   }
   return { entry: endlessEntry(calendar, seed), dayNumber: null };
 }
@@ -200,7 +215,9 @@ export function useGame(services: GameServices) {
     if (!calendar) return;
     for (const m of ['daily', 'endless'] as const) {
       const p = progress[m];
-      const { entry } = entryFor(calendar, m, services.now(), p.seed);
+      const active = entryFor(calendar, m, services.now(), p.seed);
+      if (!active) continue;
+      const { entry } = active;
       saveRunSnapshot(
         services.storage,
         m === 'daily' ? dailyRunKey(services.now()) : ENDLESS_RUN_KEY,
@@ -300,6 +317,9 @@ export function useGame(services: GameServices) {
     setMode,
     entry: active?.entry ?? null,
     dayNumber: active?.dayNumber ?? null,
+    /** True once the calendar has loaded, so a missing daily can be told
+     * apart from a calendar that has not arrived yet. */
+    calendarReady: calendar !== null,
     endlessSeed: progress.endless.seed,
     puzzle,
     run,
@@ -350,7 +370,9 @@ function flushQueue(
   for (const m of ['daily', 'endless'] as const) {
     const items = queued.filter((q) => q.mode === m);
     if (items.length === 0) continue;
-    const { entry } = entryFor(calendar, m, services.now(), prev[m].seed);
+    const slot = entryFor(calendar, m, services.now(), prev[m].seed);
+    if (!slot) continue;
+    const { entry } = slot;
     const puzzle = engine.createPuzzle(entry.rack);
     const base =
       prev[m].rack === null || prev[m].rack === entry.rack ? prev[m].words : [];

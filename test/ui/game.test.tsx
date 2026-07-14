@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { App } from '../../src/ui/App'
 import { EndScreen } from '../../src/ui/components/EndScreen'
 import { buildDictionaries } from '../../src/engine/dictionary'
@@ -79,9 +79,13 @@ async function playWord(word: string) {
 }
 
 describe('cold start in the UI', () => {
-  it('renders the rack with no dictionary, fast, with no spinner', async () => {
+  it('renders the rack with the dictionary still pending, and no spinner', async () => {
+    // The guarantee is that the rack never WAITS on the dictionary, so the
+    // test withholds it forever and the rack must appear anyway. The wall
+    // clock time to interactive is measured in the real browser
+    // (test/layout.test.ts); a millisecond budget inside jsdom measures the
+    // CI runner's mood, not the game.
     const never = new Promise<never>(() => {})
-    const t0 = performance.now()
     render(
       <App
         services={services({
@@ -90,7 +94,6 @@ describe('cold start in the UI', () => {
       />,
     )
     const tiles = await screen.findAllByTestId('pool-tile')
-    expect(performance.now() - t0).toBeLessThan(100)
     expect(tiles).toHaveLength(8)
     expect(document.body.textContent).not.toMatch(/loading/i)
     expect(document.querySelector('[role="progressbar"]')).toBeNull()
@@ -595,6 +598,64 @@ describe('face: the end screen explains the day', () => {
     expect(
       screen.queryByText(/most points possible/i),
     ).toBeNull()
+  })
+})
+
+describe('a daily that does not exist', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('says so rather than serving a plausible wrong rack', async () => {
+    // In dev this throws, which is the point: a future epoch must be
+    // impossible to miss. In production it surfaces a true message instead
+    // of a plausible wrong rack, and that is the path under test here.
+    vi.stubEnv('DEV', false)
+    // The original bug: the epoch sat in the future, rackForDate returned
+    // null every day, and the UI clamped to entry 0. It looked like a
+    // working game and the daily never rolled over.
+    const future: Calendar = {
+      epoch: '2099-01-01',
+      entries: CALENDAR.entries,
+    }
+    render(
+      <App services={services({ loadCalendar: async () => future })} />,
+    )
+    expect(await screen.findByTestId('no-daily')).toBeTruthy()
+    expect(screen.getByText(/no puzzle today/i)).toBeTruthy()
+    expect(screen.queryAllByTestId('pool-tile')).toHaveLength(0)
+
+    // and endless still works
+    await userEvent.click(
+      screen.getByRole('button', { name: /play endless/i }),
+    )
+    expect(await screen.findAllByTestId('pool-tile')).toHaveLength(8)
+  })
+
+  it('throws in dev, so a future epoch cannot be missed', async () => {
+    vi.stubEnv('DEV', true)
+    const errors: unknown[] = []
+    const onError = (e: ErrorEvent) => {
+      errors.push(e.error)
+      e.preventDefault()
+    }
+    window.addEventListener('error', onError)
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      render(
+        <App
+          services={services({
+            loadCalendar: async () => ({
+              epoch: '2099-01-01',
+              entries: CALENDAR.entries,
+            }),
+          })}
+        />,
+      )
+      await waitFor(() => expect(errors.length).toBeGreaterThan(0))
+      expect(String(errors[0])).toMatch(/epoch .* is in the future/i)
+    } finally {
+      window.removeEventListener('error', onError)
+      spy.mockRestore()
+    }
   })
 })
 
