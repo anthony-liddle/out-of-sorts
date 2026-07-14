@@ -1032,3 +1032,308 @@ describe('the end screen comparison', () => {
     expect(Math.abs(b[0]! - c[0]!)).toBeLessThanOrEqual(2);
   }, 30000);
 });
+
+/**
+ * The ceremony, and the furniture around it. Everything below is spatial or
+ * computed-style, so it must be measured in a real browser: jsdom has no
+ * layout engine, and an earlier build was fully green in jsdom while the
+ * rack wrapped 6 and 2 on a real phone.
+ *
+ * Endless seed 19 is CADUCEUS and CAUCUSED, two common-pool eights, and it
+ * is a pure function of the committed calendar, so it never moves. Seed 1
+ * (PETUNIAS) carries exactly one, and is the absence case.
+ */
+const TWO_EIGHTS = {
+  seed: 19,
+  rack: 'accdesuu',
+  words: ['caduceus', 'caucused'],
+};
+
+async function seededRack(
+  width: number,
+  fixture: { seed: number; rack: string },
+) {
+  const context = await browser.newContext({
+    viewport: { width, height: 900 },
+  });
+  page = await context.newPage();
+  await page.addInitScript((f) => {
+    localStorage.setItem(
+      'oos:endless-current',
+      JSON.stringify({
+        rack: f.rack,
+        words: [],
+        stopped: false,
+        endlessSeed: f.seed,
+      }),
+    );
+  }, fixture);
+  await page.goto(origin);
+  await page.waitForSelector('[data-ready="true"]');
+  await page.getByRole('button', { name: 'Endless' }).click();
+  await page.waitForSelector('[data-testid="pool-tile"]');
+}
+
+/** A finished run on the two-eight rack, with both eights found. */
+async function allEightsRun(width = 375) {
+  await seededRack(width, TWO_EIGHTS);
+  for (const w of TWO_EIGHTS.words) await play(w);
+  await page.getByRole('button', { name: 'Stop' }).click();
+  await page.waitForSelector('[data-testid="end-screen"]');
+}
+
+function styleOf(selector: string, props: string[]) {
+  return page.$eval(
+    selector,
+    (el, names) => {
+      const cs = getComputedStyle(el);
+      return Object.fromEntries(
+        names.map((n) => [n, cs.getPropertyValue(n)]),
+      ) as Record<string, string>;
+    },
+    props,
+  );
+}
+
+describe('the dashed outline on the eights is not clipped', () => {
+  it('no ancestor of the paired eight rows clips them', async () => {
+    await allEightsRun();
+    // The stack is a scroll container during play (max-height, overflow-y
+    // auto). On the end screen it has no max-height, but the overflow was
+    // inherited, so the 1.5px dashed outline of the FIRST row (an eight, on
+    // the par path) was drawn outside the pill's box and clipped away at the
+    // container's top edge. An outline is painted outside the border box, so
+    // any clipping ancestor eats it.
+    const stack = await styleOf('[data-testid="par-stack"]', [
+      'overflow-x',
+      'overflow-y',
+    ]);
+    expect(stack['overflow-x']).toBe('visible');
+    expect(stack['overflow-y']).toBe('visible');
+
+    // And the outline is really there, on the eight rows, in mint.
+    const outline = await styleOf(
+      '[data-testid="par-stack"] [data-eight] .stack-pill',
+      ['outline-style', 'outline-color', 'outline-width'],
+    );
+    expect(outline['outline-style']).toBe('dashed');
+    expect(outline['outline-color']).toBe('rgb(93, 202, 165)');
+    expect(parseFloat(outline['outline-width']!)).toBeGreaterThanOrEqual(1);
+  }, 30000);
+
+  it('nothing cuts the outline on any edge, at any width', async () => {
+    for (const width of [375, 1024]) {
+      await allEightsRun(width);
+      // The real definition of clipped: an ancestor that clips (any overflow
+      // but visible) whose padding box does not contain the whole outline
+      // box. An outline is painted OUTSIDE the border box, so a pill flush
+      // with the top of a scroll container loses its top edge, which is
+      // exactly what happened and exactly what a screenshot showed.
+      const cut = await page.evaluate(() => {
+        const bad: string[] = [];
+        for (const pill of document.querySelectorAll(
+          '.stack-compare [data-eight] .stack-pill',
+        )) {
+          const w = parseFloat(getComputedStyle(pill).outlineWidth);
+          const r = pill.getBoundingClientRect();
+          const box = {
+            top: r.top - w,
+            bottom: r.bottom + w,
+            left: r.left - w,
+            right: r.right + w,
+          };
+          for (
+            let el = pill.parentElement;
+            el && el !== document.body;
+            el = el.parentElement
+          ) {
+            const cs = getComputedStyle(el);
+            const clips = ![cs.overflowX, cs.overflowY].every(
+              (o) => o === 'visible',
+            );
+            if (!clips) continue;
+            const a = el.getBoundingClientRect();
+            if (
+              box.top < a.top ||
+              box.bottom > a.bottom ||
+              box.left < a.left ||
+              box.right > a.right
+            ) {
+              bad.push(
+                `${el.className || el.tagName} clips ${pill.textContent}`,
+              );
+            }
+          }
+        }
+        return bad;
+      });
+      expect(cut, `at ${width}px`).toEqual([]);
+    }
+  }, 60000);
+});
+
+describe('the end screen headline is the idiom, not the title', () => {
+  it('does not read as the masthead printed twice', async () => {
+    await allEightsRun();
+    // The line does not change: it is the entire reason the game has that
+    // name, and it fires only when the pool is genuinely dead. What changes
+    // is how it is set. If it matches the masthead in size, weight AND
+    // color, a stranger reads a duplicate heading and the joke stutters.
+    const headline = await styleOf('.end-screen h2', [
+      'font-size',
+      'font-weight',
+      'color',
+      'font-style',
+    ]);
+    const masthead = await styleOf('.masthead h1', [
+      'font-size',
+      'font-weight',
+      'color',
+      'font-style',
+    ]);
+    expect(headline).not.toEqual(masthead);
+    expect(headline['font-size']).not.toBe(masthead['font-size']);
+    expect(headline['color']).not.toBe(masthead['color']);
+    expect(parseInt(headline['font-size']!)).toBeLessThan(
+      parseInt(masthead['font-size']!),
+    );
+    // Quiet: plum, not the brand violet. Violet is chrome and brand only.
+    expect(headline['color']).toBe('rgb(60, 52, 137)');
+    expect(masthead['color']).toBe('rgb(127, 119, 221)');
+  }, 30000);
+});
+
+describe('sharing never moves the page', () => {
+  /** Position in the DOCUMENT, not the viewport. A click scrolls the button
+   * into view, so viewport coordinates move even when nothing reflows, and a
+   * test that measured those would be measuring the scroll. */
+  async function geometry() {
+    return page.evaluate(() => {
+      const top = (sel: string) =>
+        Math.round(
+          document.querySelector(sel)!.getBoundingClientRect().top +
+            window.scrollY,
+        );
+      return {
+        footer: top('.footer'),
+        button: top('[data-testid="share-button"]'),
+        buttonWidth: Math.round(
+          document
+            .querySelector('[data-testid="share-button"]')!
+            .getBoundingClientRect().width,
+        ),
+        documentHeight: document.documentElement.scrollHeight,
+      };
+    });
+  }
+
+  it('the footer does not shift when the label swaps to Copied', async () => {
+    await allEightsRun();
+    await page.evaluate(() => {
+      // A clipboard write needs permission in a headless context, and there
+      // is no native sheet here. The feature detection is unit tested; what
+      // must be measured in a real browser is that the page HOLDS STILL when
+      // the label changes.
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: () => Promise.resolve() },
+        configurable: true,
+      });
+    });
+    const before = await geometry();
+    await page.getByTestId('share-button').click();
+    await page.waitForSelector('[data-testid="share-button"][data-copied]');
+    const after = await geometry();
+    // Every one of these moved when "Copied." was a new paragraph below the
+    // buttons: the button kept its place and the footer was pushed down.
+    expect(after).toEqual(before);
+  }, 30000);
+});
+
+describe('the focus ring is designed, and it is violet', () => {
+  it('every focusable thing takes a visible violet ring, and never amber', async () => {
+    await seededRack(375, TWO_EIGHTS);
+    // A focus ring is a real thing real users see, keyboard users
+    // constantly. The browser default was never designed; on the Endless
+    // chip it rendered amber, which is Peach's crown and is banned outright.
+    await page.keyboard.press('Tab');
+    for (let i = 0; i < 8; i++) {
+      const ring = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el || el === document.body) return null;
+        const cs = getComputedStyle(el);
+        return {
+          tag: el.tagName,
+          color: cs.outlineColor,
+          width: parseFloat(cs.outlineWidth),
+          style: cs.outlineStyle,
+        };
+      });
+      if (ring) {
+        expect(ring.style, `${ring.tag} has no focus ring`).not.toBe('none');
+        expect(
+          ring.width,
+          `${ring.tag} ring is invisible`,
+        ).toBeGreaterThanOrEqual(2);
+        expect(ring.color, `${ring.tag} ring is not violet`).toBe(
+          'rgb(127, 119, 221)',
+        );
+      }
+      await page.keyboard.press('Tab');
+    }
+  }, 30000);
+
+  it('no amber anywhere in the rendered styles, focus rings included', async () => {
+    await allEightsRun();
+    await page.keyboard.press('Tab');
+    // Amber above all. Sweep every computed color-bearing property on every
+    // element, including the focused one, and assert nothing lands in the
+    // amber band.
+    const offenders = await page.evaluate(() => {
+      const isAmber = (value: string) => {
+        const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(value);
+        if (!m) return false;
+        const [r, g, b] = [+m[1]!, +m[2]!, +m[3]!];
+        // Amber and oxblood: a strong red channel with little blue. Mint,
+        // violet, plum, rose and the lilac ground all carry real blue.
+        return r > 150 && b < 90 && g < r;
+      };
+      const found: string[] = [];
+      for (const el of document.querySelectorAll('*')) {
+        const cs = getComputedStyle(el);
+        for (const prop of [
+          'color',
+          'background-color',
+          'border-top-color',
+          'outline-color',
+          'text-decoration-color',
+        ]) {
+          const value = cs.getPropertyValue(prop);
+          if (isAmber(value)) {
+            found.push(`${el.tagName}.${el.className} ${prop}: ${value}`);
+          }
+        }
+      }
+      return found;
+    });
+    expect(offenders).toEqual([]);
+  }, 30000);
+});
+
+describe('the streak says what it is', () => {
+  it('labels the number instead of leaving a bare count of days', async () => {
+    await seededRack(375, TWO_EIGHTS);
+    // A bare "3 days" says nothing about what the 3 counts. Peach says
+    // "Streak 1", and it is legible in one glance.
+    await page.evaluate(() =>
+      localStorage.setItem(
+        'oos:streak',
+        JSON.stringify({ length: 3, lastDayIndex: 99999 }),
+      ),
+    );
+    await page.reload();
+    await page.waitForSelector('[data-ready="true"]');
+    const streak = await page.textContent('[data-testid="streak"]');
+    expect(streak).toMatch(/streak/i);
+    expect(streak).toContain('3');
+  }, 30000);
+});
