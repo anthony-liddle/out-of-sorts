@@ -122,13 +122,16 @@ function round(v: number): number {
   return Math.round(v * 10) / 10;
 }
 
-/** Radial offset jitter, sized so the newest ghost is always strictly
- * nearer the board than every older one. */
+/** Radial offset jitter, sized so the newest ghosts are always strictly
+ * nearer the board than every older one, at any zone depth. */
 function jitter(age: number, depth: number, r: number): number {
-  if (age === 0) return r * 3;
-  if (age === 1) return (r - 0.5) * 8;
+  if (age === 0) return r * Math.min(3, 0.04 * depth);
+  if (age === 1) return (r - 0.5) * 2 * Math.min(4, 0.05 * depth);
   return (r - 0.5) * 2 * Math.min(24, 0.12 * depth);
 }
+
+/** Breathing room between twins in one drop. */
+const TWIN_GAP = 6;
 
 export function layoutHaunt(
   spent: readonly SpentLetter[],
@@ -136,14 +139,23 @@ export function layoutHaunt(
   geo: HauntGeometry,
 ): GhostPlacement[] {
   const free = zones(geo);
-  const weights = free.map(
-    (z) => (z.depth + 1) * (z.crossMax - z.crossMin + 1),
-  );
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
   const lastPlay = currentPlayCount - 1;
 
-  return spent.map((s, ordinal) => {
-    const rng = mulberry32(hashString(`${s.letter}:${s.playIndex}:${ordinal}`));
+  // One placement per PLAY, not per letter. A multi letter drop is one
+  // sacrifice: its ghosts share an age, so they share a distance, a zone,
+  // and a set of clocks, and sit side by side. Two ghosts of the same age
+  // are a notch; the drift is the Clean Descent told from the other side.
+  const groups = new Map<number, { letter: string; ordinal: number }[]>();
+  spent.forEach((s, ordinal) => {
+    const list = groups.get(s.playIndex) ?? [];
+    list.push({ letter: s.letter, ordinal });
+    groups.set(s.playIndex, list);
+  });
+
+  const byOrdinal = new Map<number, GhostPlacement>();
+  for (const [playIndex, members] of groups) {
+    const letters = members.map((m) => m.letter).join('');
+    const rng = mulberry32(hashString(`${playIndex}:${letters}`));
     const rZone = rng();
     const rCross = rng();
     const rJitter = rng();
@@ -154,80 +166,113 @@ export function layoutHaunt(
     const rBlinkDuration = rng();
     const rBlinkDelay = rng();
 
-    const age = lastPlay - s.playIndex;
+    const age = lastPlay - playIndex;
     const reach = 1 - Math.pow(OUTWARD, age);
     const opacity = Math.round((0.18 + 0.77 * Math.pow(0.86, age)) * 1e4) / 1e4;
     const scale = Math.round((0.72 + 0.28 * Math.pow(0.86, age)) * 1e3) / 1e3;
 
-    let x: number;
-    let y: number;
-    if (free.length === 0) {
-      // Degenerate geometry (nothing measured yet, or no room anywhere):
-      // hold the invariant that ghosts never sit on the board by floating
-      // them above it, still deterministically.
-      x = geo.board.left;
-      y = geo.board.top - PAD - geo.ghost.height - reach * 60 - rJitter * 3;
-    } else {
-      let pick = rZone * totalWeight;
-      let zone = free[0]!;
-      for (let i = 0; i < free.length; i++) {
-        pick -= weights[i]!;
-        if (pick <= 0) {
-          zone = free[i]!;
-          break;
-        }
-      }
-      const dist = clamp(
-        reach * zone.depth + jitter(age, zone.depth, rJitter),
-        0,
-        zone.depth,
-      );
-      const cross = zone.crossMin + rCross * (zone.crossMax - zone.crossMin);
-      const boardRight = geo.board.left + geo.board.width;
-      const boardBottom = geo.board.top + geo.board.height;
-      switch (zone.axis) {
-        case 'up':
-          x = cross;
-          y = geo.board.top - PAD - geo.ghost.height - dist;
-          break;
-        case 'down':
-          x = cross;
-          y = boardBottom + PAD + dist;
-          break;
-        case 'left':
-          x = geo.board.left - PAD - geo.ghost.width - dist;
-          y = cross;
-          break;
-        case 'right':
-          x = boardRight + PAD + dist;
-          y = cross;
-          break;
-      }
-    }
+    const step = geo.ghost.width + TWIN_GAP;
+    const span = geo.ghost.width + (members.length - 1) * step;
 
     const bobDuration = Math.round(4800 + rBobDuration * 2600);
     const wanderDuration = Math.round(14000 + rWanderDuration * 8000);
     const blinkDuration = Math.round(6000 + rBlinkDuration * 7000);
-    return {
-      letter: s.letter,
-      playIndex: s.playIndex,
-      ordinal,
-      x: round(x),
-      y: round(y),
-      scale,
-      opacity,
-      bob: {
-        duration: bobDuration,
-        delay: -Math.round(rBobDelay * bobDuration),
-      },
-      wander: {
-        duration: wanderDuration,
-        delay: -Math.round(rWanderDelay * wanderDuration),
-      },
-      blink: {
-        duration: blinkDuration,
-        delay: Math.round(rBlinkDelay * blinkDuration),
-      },
+    const bob = {
+      duration: bobDuration,
+      delay: -Math.round(rBobDelay * bobDuration),
     };
-  });
+    const wander = {
+      duration: wanderDuration,
+      delay: -Math.round(rWanderDelay * wanderDuration),
+    };
+    const blink = {
+      duration: blinkDuration,
+      delay: Math.round(rBlinkDelay * blinkDuration),
+    };
+
+    const place = (i: number, x: number, y: number): void => {
+      const m = members[i]!;
+      byOrdinal.set(m.ordinal, {
+        letter: m.letter,
+        playIndex,
+        ordinal: m.ordinal,
+        x: round(x),
+        y: round(y),
+        scale,
+        opacity,
+        bob,
+        wander,
+        blink,
+      });
+    };
+
+    // Zones that can hold the whole group along their cross axis; when
+    // none can (a five letter drop in a sliver), take the roomiest and let
+    // the twins crowd rather than leave the bounds.
+    const fitting = free.filter(
+      (z) => z.crossMax - z.crossMin >= span - geo.ghost.width,
+    );
+    const candidates = fitting.length > 0 ? fitting : free;
+
+    if (candidates.length === 0) {
+      // Degenerate geometry (nothing measured yet, or no room anywhere):
+      // hold the invariant that ghosts never sit on the board by floating
+      // them above it, still deterministically.
+      for (let i = 0; i < members.length; i++) {
+        place(
+          i,
+          geo.board.left + i * step,
+          geo.board.top - PAD - geo.ghost.height - reach * 60 - rJitter * 3,
+        );
+      }
+      continue;
+    }
+
+    const weights = candidates.map(
+      (z) => (z.depth + 1) * (z.crossMax - z.crossMin + 1),
+    );
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    let pick = rZone * totalWeight;
+    let zone = candidates[0]!;
+    for (let i = 0; i < candidates.length; i++) {
+      pick -= weights[i]!;
+      if (pick <= 0) {
+        zone = candidates[i]!;
+        break;
+      }
+    }
+
+    const dist = clamp(
+      reach * zone.depth + jitter(age, zone.depth, rJitter),
+      0,
+      zone.depth,
+    );
+    const crossRange = Math.max(
+      0,
+      zone.crossMax - zone.crossMin - (span - geo.ghost.width),
+    );
+    const crossStart = zone.crossMin + rCross * crossRange;
+    const boardRight = geo.board.left + geo.board.width;
+    const boardBottom = geo.board.top + geo.board.height;
+
+    for (let i = 0; i < members.length; i++) {
+      const cross = clamp(crossStart + i * step, zone.crossMin, zone.crossMax);
+      switch (zone.axis) {
+        case 'up':
+          place(i, cross, geo.board.top - PAD - geo.ghost.height - dist);
+          break;
+        case 'down':
+          place(i, cross, boardBottom + PAD + dist);
+          break;
+        case 'left':
+          place(i, geo.board.left - PAD - geo.ghost.width - dist, cross);
+          break;
+        case 'right':
+          place(i, boardRight + PAD + dist, cross);
+          break;
+      }
+    }
+  }
+
+  return spent.map((_, ordinal) => byOrdinal.get(ordinal)!);
 }

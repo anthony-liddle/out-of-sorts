@@ -244,17 +244,84 @@ describe('age pushes the dead outward', () => {
 });
 
 describe('the ghosts breathe on their own clocks', () => {
-  it('gives ghosts distinct bob phases so they never pulse in unison', () => {
+  it('gives each play its own bob phase so the crowd never pulses in unison', () => {
+    // Distinct per play, identical within one: twins float together, and
+    // that shared motion is part of what makes them read as twins.
     const placed = layoutHaunt(TWENTY, TWENTY_PLAYS, DESKTOP);
     const durations = new Set(placed.map((p) => p.bob.duration));
     const delays = new Set(placed.map((p) => p.bob.delay));
-    expect(durations.size).toBeGreaterThan(10);
-    expect(delays.size).toBeGreaterThan(10);
+    const plays = new Set(placed.map((p) => p.playIndex)).size;
+    expect(durations.size).toBeGreaterThanOrEqual(plays - 1);
+    expect(delays.size).toBeGreaterThanOrEqual(plays - 1);
     for (const p of placed) {
       expect(p.bob.duration).toBeGreaterThan(3000);
       expect(p.bob.delay).toBeLessThanOrEqual(0);
       expect(p.wander.duration).toBeGreaterThan(p.bob.duration);
       expect(p.blink.duration).toBeGreaterThan(3000);
     }
+  });
+});
+
+describe('twins read as twins', () => {
+  // A two letter drop produces two ghosts of the same age, born together.
+  // The drift is the Clean Descent told from the other side: a twin pair is
+  // a notch, without a word said. Same size, same opacity (pinned above),
+  // and placed as a pair rather than scattered independently.
+
+  /** Center distance between two placements. */
+  function apart(a: GhostPlacement, b: GhostPlacement): number {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  it('places ghosts of the same play side by side, in every geometry', () => {
+    for (const geo of GEOMETRIES) {
+      const placed = layoutHaunt(REAL_RUN, REAL_PLAYS, geo);
+      const twins = placed.filter((p) => p.playIndex === 2);
+      expect(twins).toHaveLength(2);
+      expect(apart(twins[0]!, twins[1]!)).toBeLessThanOrEqual(
+        GHOST.width * 1.8,
+      );
+    }
+  });
+
+  it('gives twins one shared set of motion clocks', () => {
+    const placed = layoutHaunt(REAL_RUN, REAL_PLAYS, PHONE_375);
+    const twins = placed.filter((p) => p.playIndex === 2);
+    expect(twins[0]!.bob).toEqual(twins[1]!.bob);
+    expect(twins[0]!.wander).toEqual(twins[1]!.wander);
+    expect(twins[0]!.blink).toEqual(twins[1]!.blink);
+  });
+
+  it('keeps a five letter drop off the board and inside the bounds', () => {
+    // The largest possible sacrifice: an eight letter pool spent down to a
+    // three letter word in one play. Five ghosts, one age, one birth.
+    const quints: SpentLetter[] = ['b', 'c', 'd', 'f', 'g'].map((letter) => ({
+      letter,
+      playIndex: 0,
+    }));
+    const spent = [...quints, { letter: 's', playIndex: 1 }];
+    for (const geo of GEOMETRIES) {
+      const placed = layoutHaunt(spent, 2, geo);
+      const b = geo.bounds;
+      for (const p of placed.slice(0, 5)) {
+        expect(intersects(box(p), geo.board)).toBe(false);
+        expect(p.x).toBeGreaterThanOrEqual(b.left);
+        expect(p.x + GHOST.width).toBeLessThanOrEqual(b.left + b.width);
+      }
+      // the five hang together as one record of one play
+      const group = placed.slice(0, 5);
+      for (const p of group) {
+        const nearest = Math.min(
+          ...group.filter((q) => q !== p).map((q) => apart(p, q)),
+        );
+        expect(nearest).toBeLessThanOrEqual(GHOST.width * 1.8);
+      }
+    }
+  });
+
+  it('still renders the pair deterministically', () => {
+    const a = layoutHaunt(REAL_RUN, REAL_PLAYS, DESKTOP);
+    const b = layoutHaunt([...REAL_RUN], REAL_PLAYS, DESKTOP);
+    expect(b).toEqual(a);
   });
 });
