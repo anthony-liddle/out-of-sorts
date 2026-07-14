@@ -101,6 +101,23 @@ body {
   font-size: 0.85rem;
 }
 
+/* The running score: quiet, always there, climbing. Never rank, never
+   par, never a bar; those are the end screen's to reveal. */
+.running-score {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  animation: score-climb 300ms ease;
+}
+
+@keyframes score-climb {
+  from {
+    transform: translateY(0.3rem);
+    opacity: 0;
+  }
+}
+
 .day-label {
   color: var(--ghost);
   margin: 0.9rem 0 0;

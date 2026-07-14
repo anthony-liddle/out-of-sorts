@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { App } from '../../src/ui/App'
 import { EndScreen } from '../../src/ui/components/EndScreen'
+import { RANK_TIERS } from '../../src/game/rank'
 import { buildDictionaries } from '../../src/engine/dictionary'
 import { createEngine } from '../../src/engine/engine'
 import { memoryStorage } from '../../src/game/persistence'
@@ -271,6 +272,48 @@ describe('playing words', () => {
     await playWord('triangle')
     expect(screen.queryByTestId('eight-count')).toBeNull()
     expect(document.body.textContent).not.toMatch(/[0-9]+ eights/i)
+  })
+
+  it('shows a running score that equals the engine score after every play', async () => {
+    render(<App services={services()} />)
+    await ready()
+    const shown = () => {
+      const text = screen.getByTestId('running-score').textContent ?? ''
+      return Number(text.replace(/[^0-9]/g, ''))
+    }
+    // quiet, always visible, and it climbs: it starts at zero
+    expect(shown()).toBe(0)
+    let last = 0
+    for (const w of ['triangle', 'tearing', 'rating', 'grain']) {
+      await playWord(w)
+      // the engine's own arithmetic, surfaced: the total is exactly the
+      // sum of the per word scores in the stack gutter
+      const rows = screen.getAllByTestId('stack-row')
+      const sum = rows.reduce(
+        (total, row) =>
+          total + Number(row.querySelector('.stack-score')!.textContent),
+        0,
+      )
+      expect(shown()).toBe(sum)
+      expect(shown()).toBeGreaterThan(last)
+      last = shown()
+    }
+  })
+
+  it('leaks neither rank, nor par, nor a progress bar during play', async () => {
+    // Rank is a fraction of par, so showing it live would leak par, and
+    // par is the end screen's reveal. Score only, until the run ends.
+    render(<App services={services()} />)
+    await ready()
+    await playWord('triangle')
+    await playWord('tearing')
+    expect(document.body.textContent).not.toMatch(/\bpar\b/i)
+    expect(document.body.textContent).not.toMatch(/\bbest\b/i)
+    for (const tier of RANK_TIERS) {
+      expect(document.body.textContent).not.toContain(tier.name)
+    }
+    expect(document.querySelector('[role="progressbar"]')).toBeNull()
+    expect(document.querySelector('progress')).toBeNull()
   })
 })
 

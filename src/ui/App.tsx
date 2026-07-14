@@ -179,7 +179,20 @@ export function App({ services }: { services: GameServices }) {
               {game.streak} days
             </span>
           )}
-
+          {game.run && !game.result && (
+            /* The running total: quiet, always visible, and it climbs.
+               Score only. Rank and par stay the end screen's reveal,
+               because rank is a fraction of par. The key remounts the
+               number so each climb gets its small rise, which reduced
+               motion suppresses wholesale. */
+            <span
+              className="running-score"
+              data-testid="running-score"
+              key={game.run.score}
+            >
+              {game.run.score} points
+            </span>
+          )}
         </div>
       </header>
 
