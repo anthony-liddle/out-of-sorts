@@ -172,6 +172,8 @@ describe('the haunting', () => {
     '[data-testid="word-display"]',
     '[data-testid="control-row"]',
     '[data-testid="stack"]',
+    // the footer is furniture, not margin: the dead keep off the credits
+    '.footer',
   ];
 
   async function boxes(selector: string) {
