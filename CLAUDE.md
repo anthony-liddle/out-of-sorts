@@ -30,6 +30,20 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   optimum over the boundary exceeds par on 100.0 percent of racks, roughly
   doubling it. The boundary's job is generous acceptance during play; it is
   never the yardstick. The solver only ever receives the common index.
+- **The boundary ACCEPTS. The common pool DECIDES.** `isLegalPlay` reads
+  `valid` (the boundary), so an off-pool word is still playable and still
+  scores. `hasLegalPlay`, which sets `run.ended`, reads `common`. The run is
+  over when the player's vocabulary is spent, not when the last SCOWL 95
+  obscurity has been mined out of the pool. End detection was judged on the
+  boundary for six weeks while par, the gate, and Clean Descent were all
+  judged on the common pool, so 72 percent of real runs ended with the player
+  hitting Stop and being told "Rested early." The line the game is named for
+  was withheld from exactly the people who earned it. **Whenever two things
+  here reason about what words exist, check they are asking the same
+  dictionary.** End detection must also apply the endgame rule, not merely
+  formability: under `descent` nothing is legal at a pool of three, and a
+  formability-only check is correct under `mill` and silently wrong the
+  moment the flag flips.
 - **Bands are decoupled on purpose.** Rack seeds: SCOWL 35, length 8.
   Common pool: SCOWL 50. Seeding from band 35 guarantees every rack holds at
   least one findable eight letter word; the ladder stays generous at 50.

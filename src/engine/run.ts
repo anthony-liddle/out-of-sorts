@@ -3,12 +3,24 @@ import { removeSig, sigContains, toSignature } from './signature';
 import { MIN_WORD_LENGTH, type EndgameRule } from './types';
 import { wordScore } from './values';
 
-/** What a run needs to judge plays. A Puzzle satisfies this. */
+/** What a run needs to judge plays. A Puzzle satisfies this.
+ *
+ * TWO DICTIONARIES, TWO JOBS. The boundary ACCEPTS; the common pool DECIDES.
+ * They are not interchangeable, and confusing them is the bug that made a
+ * played-out run report itself as "Rested early" (GDD, "The solver and the
+ * run must play the same game"). */
 export interface RunContext {
   /** Rack signature (sorted letters). */
   rack: string;
-  /** Valid words formable from the rack (validation boundary, filtered). */
+  /** What you may PLAY: the validation boundary, filtered to the rack.
+   * Generous acceptance. An off-pool word still scores and is still a lovely
+   * surprise. */
   valid: ReadonlySet<string>;
+  /** What keeps you ALIVE: the common pool, filtered to the rack. The ladder
+   * dictionary, and the same one par, the gate, and Clean Descent are judged
+   * on. The run ends when this is spent, whatever obscurities the boundary
+   * still holds. */
+  common: ReadonlySet<string>;
   rule: EndgameRule;
 }
 
@@ -31,27 +43,38 @@ export interface RunState {
   played: readonly PlayedWord[];
   spent: readonly SpentLetter[];
   score: number;
-  /** True when no legal, unplayed, valid word can be formed. */
+  /** True when no legal, unplayed, COMMON-POOL word can be formed. Boundary
+   * obscurities left on the table do not keep a run alive. */
   ended: boolean;
 }
 
 export interface RunResult {
   score: number;
   words: readonly PlayedWord[];
-  /** clean-finish means the pool is genuinely dead; stopped means the
-   * player chose to end while plays remained. Different facts, and the end
-   * screen shows different things. */
+  /** clean-finish means the ladder is genuinely spent and earns the line the
+   * whole game is named for; stopped means the player walked away while
+   * words remained. Different facts, and the end screen says different
+   * things. */
   endReason: 'clean-finish' | 'stopped';
   finalPoolSize: number;
   isCleanDescent: boolean;
 }
 
+/** Is the ladder still standing? Judged on the COMMON pool, never the
+ * boundary: the run is over when the player's actual vocabulary is spent,
+ * not when the last SCOWL-95 obscurity has been mined out of it.
+ *
+ * It applies the endgame rule and not merely formability, and that matters:
+ * under `descent` nothing is legal at a pool of three, so the run must end
+ * there even though common three-letter words are formable in the abstract.
+ * Asking only "is a common word formable" is correct under `mill` and
+ * silently wrong the moment the flag flips. */
 function hasLegalPlay(
   ctx: RunContext,
   pool: string,
   played: ReadonlySet<string>,
 ): boolean {
-  for (const w of ctx.valid) {
+  for (const w of ctx.common) {
     if (played.has(w)) continue;
     if (!allowsPlay(ctx.rule, pool.length, w.length)) continue;
     if (sigContains(pool, toSignature(w))) return true;
