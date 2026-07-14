@@ -586,9 +586,26 @@ main {
   white-space: nowrap;
 }
 
+/* THE EIGHTS ARE MARKED BY A RING, AND THE FILL IS HELD CONSTANT. Same
+   grammar the tiles took three attempts to learn: the ring carries the
+   status, and the fill, the letter color and the height never move.
+
+   There were three mints on one screen doing one job (a solid fill here, a
+   dashed outline in the ghosted column, a pale chip in the reveal), which
+   asked the player to learn three ways of saying "eight". The stacks now say
+   it once. The reveal keeps its fill because it is a different kind of
+   object: a celebration chip, not a stack row.
+
+   An INSET ring, not an outline. An outline is painted outside the border
+   box, so a scroll container clips it (that is the bug this file already
+   carries a fix for), and the stack IS a scroll container during play. An
+   inset ring is painted inside the pill, follows its radius, cannot be cut
+   on any edge, and, being a shadow, never enters the width basis. Row width
+   stays a pure function of word length. */
 .stack-row[data-eight] .stack-pill {
-  background: var(--mint);
-  color: var(--mint-deep);
+  box-shadow:
+    0 2px 0 rgba(127, 119, 221, 0.28),
+    inset 0 0 0 2px var(--mint);
 }
 
 .stack-row[data-notch] {
@@ -618,10 +635,13 @@ main {
   box-shadow: none;
 }
 
+/* The same ring, in the ghosted columns. The fill already carries yours
+   versus possible; mint does not need to carry it too. The drop shadow is
+   the only thing the ghosted pill drops. */
 .stack[data-ghosted] .stack-row[data-eight] .stack-pill {
   background: var(--ghost-body);
   color: var(--ghost);
-  outline: 1.5px dashed var(--mint);
+  box-shadow: inset 0 0 0 2px var(--mint);
 }
 
 /* Ghosts: soft gray-violet, scalloped hem, two dot eyes. Each one is a
