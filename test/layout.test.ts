@@ -192,12 +192,168 @@ describe('the word display holds its size', () => {
   }, 30000);
 });
 
+describe('cold is at risk, not disabled', () => {
+  // This regression has come back twice. The cause was never the number of
+  // signals: it was that every signal was SUBTRACTIVE. Pale fill, gray
+  // letter, sunk position is the universal vocabulary of a disabled
+  // control, so the board only ever offered two readings, enabled and
+  // disabled, and there was no third one available. At risk must be marked
+  // by ADDITION. The outline carries the status; everything else is held
+  // constant, and this test pins that hard.
+  async function snapshot() {
+    return page.$$eval('[data-testid="pool-tile"]', (tiles) =>
+      tiles.map((t) => {
+        const cs = getComputedStyle(t);
+        // The status rings are pseudo elements that cross fade: a border
+        // cannot transition its own pattern without flickering.
+        const mint = getComputedStyle(t, '::before');
+        const ghost = getComputedStyle(t, '::after');
+        return {
+          state: (t as HTMLElement).dataset.state ?? 'available',
+          background: cs.backgroundColor,
+          color: cs.color,
+          transform: cs.transform,
+          top: Math.round(t.getBoundingClientRect().top),
+          label: t.getAttribute('aria-label') ?? '',
+          mint: {
+            opacity: mint.opacity,
+            style: mint.borderTopStyle,
+            color: mint.borderTopColor,
+            transition: mint.transitionProperty,
+          },
+          ghost: {
+            opacity: ghost.opacity,
+            style: ghost.borderTopStyle,
+            color: ghost.borderTopColor,
+            transition: ghost.transitionProperty,
+          },
+        };
+      }),
+    );
+  }
+
+  it('holds fill, letter color, and height constant across all three states', async () => {
+    // Below three letters there is no discard set, so available and used
+    // coexist; at three the preview fires and every unused tile goes cold.
+    // Both moments are captured, and every tile in both must share one fill,
+    // one letter color, and one height.
+    await fixedRack(375);
+    for (const letter of 'pe') await page.keyboard.press(letter);
+    await page.waitForTimeout(250);
+    const early = await snapshot();
+    await page.keyboard.press('n');
+    await page.waitForTimeout(250);
+    const late = await snapshot();
+
+    const states = new Set([...early, ...late].map((t) => t.state));
+    expect(states).toEqual(new Set(['available', 'used', 'cold']));
+
+    const tiles = [...early, ...late];
+    const fills = new Set(tiles.map((t) => t.background));
+    const letters = new Set(tiles.map((t) => t.color));
+    const tops = new Set(tiles.map((t) => t.top));
+    expect(fills.size, [...fills].join(' vs ')).toBe(1);
+    expect(letters.size, [...letters].join(' vs ')).toBe(1);
+    expect(tops.size, `tops: ${[...tops].join(',')}`).toBe(1);
+
+    // no vertical offset anywhere: an offset alone reads as disabled
+    for (const t of tiles) {
+      expect(t.transform === 'none' || t.transform.endsWith(', 0)')).toBe(true);
+    }
+  });
+
+  async function tileStyles() {
+    await fixedRack(375);
+    for (const letter of 'pen') await page.keyboard.press(letter);
+    await page.waitForTimeout(250);
+    return snapshot();
+  }
+
+  it('marks cold by addition: a ghost violet outline, and nothing removed', async () => {
+    const tiles = await tileStyles();
+    const cold = tiles.filter((t) => t.state === 'cold');
+    const used = tiles.filter((t) => t.state === 'used');
+    expect(cold.length).toBeGreaterThan(0);
+    expect(used.length).toBeGreaterThan(0);
+    // cold shows the ghost violet ring, rgb(169, 163, 201), and no mint
+    for (const t of cold) {
+      expect(t.ghost.color).toBe('rgb(169, 163, 201)');
+      expect(t.ghost.opacity).toBe('1');
+      expect(t.mint.opacity).toBe('0');
+    }
+    // used shows the mint ring, rgb(93, 202, 165), and no ghost
+    for (const t of used) {
+      expect(t.mint.color).toBe('rgb(93, 202, 165)');
+      expect(t.mint.opacity).toBe('1');
+      expect(t.ghost.opacity).toBe('0');
+    }
+  });
+
+  it('fades the rings in and out rather than flipping them', async () => {
+    // A border cannot transition its own pattern: crossfading a stroke that
+    // is changing from dashed to solid flickers. The rings are separate
+    // layers and only their opacity moves, so the state change is smooth.
+    const tiles = await tileStyles();
+    for (const t of tiles) {
+      expect(t.mint.transition).toContain('opacity');
+      expect(t.ghost.transition).toContain('opacity');
+    }
+    const tileTransition = await page.$eval(
+      '[data-testid="pool-tile"]',
+      (el) => getComputedStyle(el).transitionProperty,
+    );
+    expect(tileTransition).not.toContain('border');
+  });
+
+  it('does not convey cold by color alone', async () => {
+    const tiles = await tileStyles();
+    const cold = tiles.filter((t) => t.state === 'cold');
+    const used = tiles.filter((t) => t.state === 'used');
+    // a second, non color mark: the stroke pattern differs from used
+    for (const t of cold) expect(t.ghost.style).toBe('dashed');
+    for (const t of used) expect(t.mint.style).toBe('solid');
+    // and it is spoken, not merely drawn
+    for (const t of cold)
+      expect(t.label.toLowerCase()).toMatch(/lose|gone|risk/);
+  });
+});
+
+describe('the control row keeps its shape', () => {
+  it('fills the row with thumb sized buttons, matching the display width', async () => {
+    // A css splice ate the .entry rule and the buttons collapsed to their
+    // text. Nothing caught it, because nothing measured it.
+    await fixedRack(375);
+    const row = await page.$eval('[data-testid="control-row"]', (el) =>
+      Math.round(el.getBoundingClientRect().width),
+    );
+    const display = await page.$eval('[data-testid="word-display"]', (el) =>
+      Math.round(el.getBoundingClientRect().width),
+    );
+    expect(row).toBe(display);
+    const buttons = await page.$$eval(
+      '[data-testid="control-row"] button',
+      (b) =>
+        b.map((x) => ({
+          w: Math.round(x.getBoundingClientRect().width),
+          h: Math.round(x.getBoundingClientRect().height),
+        })),
+    );
+    expect(buttons).toHaveLength(4);
+    for (const b of buttons) {
+      expect(b.h).toBeGreaterThanOrEqual(44);
+      expect(b.w).toBeGreaterThanOrEqual(60);
+    }
+    // and together they span the row
+    const total = buttons.reduce((sum, b) => sum + b.w, 0);
+    expect(total).toBeGreaterThan(row * 0.9);
+  }, 30000);
+});
+
 describe('cold tiles at phone width', () => {
   it('keeps the tile silhouette: no ghost mask, uniform corners', async () => {
     // A ghost means the letter is gone; a cold tile means it is about to
     // be. The ghost silhouette is reserved for the drift, at every width.
-    // The fixed rack, never the daily: the daily rolls over at midnight and
-    // its letters change under the test.
+    // A ghost violet outline references the color, never the shape.
     await fixedRack(375);
     for (const letter of 'pen') await page.keyboard.press(letter);
     await page.waitForTimeout(300);

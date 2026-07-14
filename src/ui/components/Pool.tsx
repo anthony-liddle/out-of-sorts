@@ -60,6 +60,16 @@ function firstUnused(
   return -1
 }
 
+/** Cold is never conveyed by color alone: it carries a dashed stroke (the
+ * non color signal) and it is spoken. A cold tile is still yours to touch,
+ * and the label must not imply otherwise. */
+function label(letter: string, state?: string): string {
+  const l = letter.toUpperCase()
+  if (state === 'used') return `${l}, in your word`
+  if (state === 'cold') return `${l}, you will lose this letter`
+  return l
+}
+
 export function Pool({ letters, input, selection, onTileClick }: PoolProps) {
   const used = new Set(selection.filter((i) => i >= 0))
   const previewing = input.length >= MIN_WORD_LENGTH
@@ -80,11 +90,12 @@ export function Pool({ letters, input, selection, onTileClick }: PoolProps) {
             data-testid="pool-tile"
             data-state={state}
             aria-pressed={state === 'used'}
+            aria-label={label(letter, state)}
             onClick={() => {
               if (!used.has(i)) onTileClick(letter, i)
             }}
           >
-            {letter.toUpperCase()}
+            <span aria-hidden="true">{letter.toUpperCase()}</span>
           </button>
         )
       })}

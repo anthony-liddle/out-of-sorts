@@ -198,6 +198,29 @@ describe('tile selection with duplicate letters', () => {
 })
 
 describe('the cold tile preview', () => {
+  it('speaks the cold state, not just draws it', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('tea')
+    const cold = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.dataset.state === 'cold')
+    expect(cold.length).toBeGreaterThan(0)
+    for (const tile of cold) {
+      expect(tile.getAttribute('aria-label')?.toLowerCase()).toMatch(
+        /lose|gone|risk/,
+      )
+    }
+    // and a used tile says it is in the word, not that it is unavailable
+    const used = screen
+      .getAllByTestId('pool-tile')
+      .filter((t) => t.dataset.state === 'used')
+    for (const tile of used) {
+      expect(tile.getAttribute('aria-disabled')).not.toBe('true')
+      expect(tile.hasAttribute('disabled')).toBe(false)
+    }
+  })
+
   it('a cold tile is still tappable: tapping un-chills it and spends it', async () => {
     render(<App services={services()} />)
     await ready()

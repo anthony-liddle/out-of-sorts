@@ -143,9 +143,12 @@ body {
 }
 
 .tile {
+  position: relative;
   background: var(--tile);
   color: var(--ink);
-  border: none;
+  /* A transparent border in every state, so gaining an outline never
+     changes the tile's size or position. */
+  border: 2px solid transparent;
   border-radius: 0.9rem;
   box-shadow: 0 3px 0 rgba(60, 52, 137, 0.14);
   width: clamp(2rem, 10.2vw, 3rem);
@@ -155,34 +158,63 @@ body {
   font-weight: 700;
   font-family: var(--font-display);
   cursor: pointer;
-  transition:
-    background 250ms ease,
-    color 250ms ease,
-    transform 250ms ease,
-    border-radius 250ms ease,
-    box-shadow 250ms ease;
+  /* No transition on the border: its style flips between dashed and solid,
+     and crossfading a stroke that is changing pattern flickers. The state
+     change is instant and the tile is calm. */
+  transition: box-shadow 200ms ease;
 }
 
 /* Used: lifted, mint outline. Consumed: one tile, one letter, spent. */
-.pool-tile[data-state='used'] {
-  transform: translateY(-4px);
-  box-shadow:
-    0 0 0 2px var(--mint),
-    0 5px 0 rgba(60, 52, 137, 0.16);
-  cursor: default;
-}
+
 
 /* Cold: at risk, not gone. A ghost means the letter is gone; a cold tile
    means it is about to be, and they must never look the same: the ghost
-   silhouette is reserved for the drift, the way each accent color is
-   reserved for one job. So the cold tile stays a tile and carries two
-   signals only: a dim and a small sink. A shadow, not a cliff. It stays
-   tappable, and tapping it un-chills it. */
-.pool-tile[data-state='cold'] {
-  background: #efedf9;
-  color: #8d87c0;
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 rgba(60, 52, 137, 0.08);
+   silhouette /* Three states, one grammar. THE OUTLINE CARRIES THE STATUS, and
+   everything else is held constant: same white fill, same plum letter, same
+   height. At risk is marked by ADDITION, never by removal, because removal
+   (pale fill, gray letter, sunk position) is the universal vocabulary of a
+   DISABLED control. Twice the cold tile was built out of subtraction and
+   twice it read as switched off. Never reach back for the dim.
+
+   Used: SOLID mint outline. This letter is in your word.
+   Cold: DASHED ghost violet outline. This letter is about to become a
+   ghost. The stroke pattern is the second, non color signal, so cold is
+   never carried by hue alone. A ghost violet outline references the color
+   of loss; it never copies the ghost's shape, which belongs to the drift. */
+/* The rings are separate layers that cross fade. A border cannot transition
+   its own pattern: fading a stroke while it flips from dashed to solid
+   flickers, which is exactly what a deleted letter looked like. Only their
+   opacity moves, so the state change is smooth and the stroke is never
+   caught half way between two patterns. */
+.pool-tile::before,
+.pool-tile::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.pool-tile::before {
+  border: 2px solid var(--mint);
+}
+
+.pool-tile::after {
+  border: 2px dashed var(--ghost);
+}
+
+.pool-tile[data-state='used'] {
+  cursor: default;
+}
+
+.pool-tile[data-state='used']::before {
+  opacity: 1;
+}
+
+.pool-tile[data-state='cold']::after {
+  opacity: 1;
 }
 
 .entry {
@@ -191,7 +223,7 @@ body {
   gap: 0.55rem;
 }
 
-/* The control row: Peach's shape, thumb-sized targets. Stop lives
+/* The control row: Peach's shape, thumb sized targets. Stop lives
    elsewhere: it must never sit one fat finger from Spend. */
 .control-row {
   display: flex;
