@@ -38,6 +38,11 @@ export function Stack({
         const poolBefore = i === 0 ? rackSize : words[i - 1]!.length
         const notch = w.length < poolBefore - 1
         const landing = i > 0 && words[i - 1]!.length === w.length
+        // A landing is marked on both of its rows so the pair can fuse
+        // into one tier by shape: the head flattens its bottom corners,
+        // the landing row its top ones.
+        const landingHead =
+          i + 1 < words.length && words[i + 1]!.length === w.length
         return (
           <li
             key={`${w.word}-${i}`}
@@ -45,6 +50,7 @@ export function Stack({
             data-testid="stack-row"
             data-notch={notch || undefined}
             data-landing={landing || undefined}
+            data-landing-head={landingHead || undefined}
             data-eight={w.length === 8 || undefined}
           >
             {/* The pill is a LENGTH BAR and nothing else. It cannot also be

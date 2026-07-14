@@ -375,8 +375,12 @@ main {
   text-align: center;
 }
 
-/* The stack: descending, centered and nested so the silhouette reads.
-   The notch is a shape, not a color: the gap says it. */
+/* The stack: the score made visible, a descending monument, centered and
+   nested so the silhouette reads. The rhythm carries the story: a landing
+   (a mined anagram class) fuses into one tier, a notch stays a wider gap
+   and NOTHING else. No accent color may mark a notch, mint stays the
+   eights' and rose stays All Eights'. Spacing lives on the rows, not on a
+   flex gap, so each row can speak its own relationship to the one above. */
 .stack {
   --stack-width: 100%;
   list-style: none;
@@ -385,10 +389,29 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
   width: 100%;
   max-height: 46vh;
   overflow-y: auto;
+}
+
+.stack-row + .stack-row {
+  margin-top: 0.3rem;
+}
+
+/* The tier: a landing pair pulls together and its adjoining corners
+   flatten, so the class the player mined reads as one carved block. */
+.stack-row[data-landing] {
+  margin-top: 0.14rem;
+}
+
+.stack-row[data-landing] .stack-pill {
+  border-top-left-radius: 0.16rem;
+  border-top-right-radius: 0.16rem;
+}
+
+.stack-row[data-landing-head] .stack-pill {
+  border-bottom-left-radius: 0.16rem;
+  border-bottom-right-radius: 0.16rem;
 }
 
 /* A row is a pill plus a gutter. The pill is pure length; the score sits in
@@ -416,11 +439,14 @@ main {
   box-sizing: border-box;
   background: var(--tile);
   border-radius: 0.55rem;
-  padding: 0.28rem 0.3rem;
+  /* Vertical presence only. The horizontal padding must stay small:
+     width is a pure function of word length and every horizontal pixel
+     is stolen from the letters. */
+  padding: 0.34rem 0.3rem;
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: 0.08em;
-  box-shadow: 0 1px 0 rgba(60, 52, 137, 0.1);
+  box-shadow: 0 2px 0 rgba(127, 119, 221, 0.28);
 }
 
 .stack-word {
@@ -436,7 +462,9 @@ main {
 }
 
 .stack-row[data-notch] {
-  margin-top: 0.7rem;
+  /* The gap says it. The flex gap it used to ride on is gone, so the
+     notch carries the whole 1rem itself. */
+  margin-top: 1rem;
 }
 
 /* A notch gap marks a skip between rows; a stack's first row has nothing

@@ -368,6 +368,68 @@ describe('the haunting', () => {
   }, 40000);
 });
 
+describe('the stack is a monument', () => {
+  // A landing (a mined anagram class) fuses into one tier: tighter gap,
+  // flattened adjoining corners. A notch stays a gap and nothing else; no
+  // accent color may mark it, and width stays a pure function of length
+  // (pinned by 'the pill is only ever length' below).
+  async function rowByWord(word: string) {
+    return page.$$eval(
+      '[data-testid="stack"] [data-testid="stack-row"]',
+      (rows, target) => {
+        const row = rows.find(
+          (r) => r.querySelector('.stack-word')!.textContent!.trim() === target,
+        )!;
+        const pill = row.querySelector('.stack-pill')!;
+        const cs = getComputedStyle(pill);
+        const box = row.getBoundingClientRect();
+        return {
+          top: box.top,
+          bottom: box.bottom,
+          background: cs.backgroundColor,
+          radii: {
+            topLeft: parseFloat(cs.borderTopLeftRadius),
+            bottomLeft: parseFloat(cs.borderBottomLeftRadius),
+          },
+        };
+      },
+      word,
+    );
+  }
+
+  it('fuses a landing into one tier and leaves the notch a plain gap', async () => {
+    await fixedRack(375);
+    // PASTE lands as a notch (two letters dropped); APES then PEAS is a
+    // landing, the mined pair of the four letter class.
+    for (const w of ['petunias', 'panties', 'paste', 'apes', 'peas']) {
+      await play(w);
+    }
+    const petunias = await rowByWord('PETUNIAS');
+    const panties = await rowByWord('PANTIES');
+    const paste = await rowByWord('PASTE');
+    const apes = await rowByWord('APES');
+    const peas = await rowByWord('PEAS');
+
+    // the landing pair sits tighter than the default rhythm, and far
+    // tighter than the notch gap
+    const defaultGap = panties.top - petunias.bottom;
+    const notchGap = paste.top - panties.bottom;
+    const landingGap = peas.top - apes.bottom;
+    expect(landingGap).toBeLessThan(defaultGap);
+    expect(notchGap).toBeGreaterThan(defaultGap);
+
+    // the tier fuses by shape: adjoining corners flatten, outer corners stay
+    expect(apes.radii.bottomLeft).toBeLessThan(apes.radii.topLeft);
+    expect(peas.radii.topLeft).toBeLessThan(peas.radii.bottomLeft);
+    // rows outside a landing keep uniform corners
+    expect(panties.radii.topLeft).toBe(panties.radii.bottomLeft);
+
+    // the notch carries no accent: same fill as any plain row
+    expect(paste.background).toBe(panties.background);
+    expect(apes.background).toBe(paste.background);
+  }, 40000);
+});
+
 describe('a page, not a strip', () => {
   // The desktop was a phone layout stretched. On wide viewports the stack
   // moves beside the board, where the run's shape can be read at full

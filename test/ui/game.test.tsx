@@ -448,6 +448,24 @@ describe('voice and the vertical', () => {
     expect(oldest).toBeLessThan(newest)
   })
 
+  it('marks a landing on both of its rows, so the tier can fuse', async () => {
+    // Two rows of equal width are a mined anagram class. The row above
+    // carries data-landing-head and the row below data-landing, purely
+    // derived from word lengths the engine already recorded, so the CSS
+    // can fuse the pair into one tier by shape alone.
+    render(<App services={services()} />)
+    await ready()
+    for (const w of ['triangle', 'tearing', 'rating', 'grain', 'grin', 'ring']) {
+      await playWord(w)
+    }
+    const rows = screen.getAllByTestId('stack-row')
+    expect(rows[4]!.dataset.landingHead).toBeDefined()
+    expect(rows[5]!.dataset.landing).toBeDefined()
+    expect(rows[5]!.dataset.landingHead).toBeUndefined()
+    expect(rows[3]!.dataset.landing).toBeUndefined()
+    expect(rows[3]!.dataset.landingHead).toBeUndefined()
+  })
+
   it('marks no notch with an accent color, only the width gap', async () => {
     render(<App services={services()} />)
     await ready()
