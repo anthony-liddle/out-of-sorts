@@ -205,12 +205,52 @@ export function App({ services }: { services: GameServices }) {
             onNewEndless={game.mode === 'endless' ? game.newEndless : null}
           />
         ) : (
-          <>
-            <p className="day-label">{dayLabel}</p>
-            <div className="drift" data-testid="drift">
-              {(game.run?.spent.length ?? 0) === 0 && (
-                <p className="drift-empty">Nothing lost yet.</p>
+          /* The page, not a strip: on wide viewports the board keeps its
+             column and the stack moves beside it, where the run's shape
+             reads at full height. Below the breakpoint the wrappers are
+             display: contents, so the phone layout is the same layout. */
+          <div className="play-grid">
+            <div className="board-col">
+              <p className="day-label">{dayLabel}</p>
+              <div className="drift" data-testid="drift">
+                {(game.run?.spent.length ?? 0) === 0 && (
+                  <p className="drift-empty">Nothing lost yet.</p>
+                )}
+              </div>
+              {game.pool && (
+                <Pool
+                  letters={game.pool}
+                  input={input}
+                  selection={selection}
+                  onTileClick={(letter, index) =>
+                    setEntry(input + letter, [...selection, index])
+                  }
+                />
               )}
+              <div className="entry">
+                <WordDisplay word={input} error={game.error} />
+                <div className="control-row" data-testid="control-row">
+                  <button
+                    type="button"
+                    onClick={() => game.shuffle()}
+                  >
+                    Shuffle
+                  </button>
+                  <button type="button" onClick={clear}>
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Delete last letter"
+                    onClick={backspace}
+                  >
+                    ⌫
+                  </button>
+                  <button type="button" className="spend" onClick={submit}>
+                    Spend
+                  </button>
+                </div>
+              </div>
             </div>
             <Haunt
               spent={game.run?.spent ?? []}
@@ -218,56 +258,24 @@ export function App({ services }: { services: GameServices }) {
               reducedMotion={reducedMotion}
               births={births}
             />
-            {game.pool && (
-              <Pool
-                letters={game.pool}
-                input={input}
-                selection={selection}
-                onTileClick={(letter, index) =>
-                  setEntry(input + letter, [...selection, index])
-                }
-              />
-            )}
-            <div className="entry">
-              <WordDisplay word={input} error={game.error} />
-              <div className="control-row" data-testid="control-row">
+            <aside className="stack-col">
+              {game.run && game.entry && (
+                <Stack
+                  words={game.run.played}
+                  rackSize={game.entry.rack.length}
+                />
+              )}
+              <div className="rest-row">
                 <button
                   type="button"
-                  onClick={() => game.shuffle()}
+                  className="stop-button"
+                  onClick={game.stop}
                 >
-                  Shuffle
-                </button>
-                <button type="button" onClick={clear}>
-                  Clear
-                </button>
-                <button
-                  type="button"
-                  aria-label="Delete last letter"
-                  onClick={backspace}
-                >
-                  ⌫
-                </button>
-                <button type="button" className="spend" onClick={submit}>
-                  Spend
+                  Stop
                 </button>
               </div>
-            </div>
-            {game.run && game.entry && (
-              <Stack
-                words={game.run.played}
-                rackSize={game.entry.rack.length}
-              />
-            )}
-            <div className="rest-row">
-              <button
-                type="button"
-                className="stop-button"
-                onClick={game.stop}
-              >
-                Stop
-              </button>
-            </div>
-          </>
+            </aside>
+          </div>
         )}
         {copied && <p role="status">Copied.</p>}
       </main>

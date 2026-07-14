@@ -197,7 +197,7 @@ describe('the haunting', () => {
     await page.waitForTimeout(1600);
   }
 
-  for (const width of [320, 375, 1024]) {
+  for (const width of [320, 375, 768, 1440]) {
     it(`scatters a full run around the board, never on it, at ${width}px`, async () => {
       await fullHaunt(width);
       const ghosts = await boxes('[data-testid="ghost"]');
@@ -348,6 +348,65 @@ describe('the haunting', () => {
     await page.waitForTimeout(600);
     expect(await at()).toEqual(first);
   }, 40000);
+
+  it('places twins side by side: the I and N of one drop hang together', async () => {
+    await fullHaunt(375);
+    const twins = await page.$$eval(
+      '[data-testid="ghost"][data-play-index="2"]',
+      (els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        }),
+    );
+    expect(twins).toHaveLength(2);
+    const gap = Math.hypot(
+      twins[0]!.x - twins[1]!.x,
+      twins[0]!.y - twins[1]!.y,
+    );
+    expect(gap).toBeLessThanOrEqual(60);
+  }, 40000);
+});
+
+describe('a page, not a strip', () => {
+  // The desktop was a phone layout stretched. On wide viewports the stack
+  // moves beside the board, where the run's shape can be read at full
+  // height; below the breakpoint the single column that already works is
+  // byte for byte the same DOM, laid out as before.
+  async function box(selector: string) {
+    return page.$eval(selector, (e) => {
+      const r = e.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    });
+  }
+
+  it('renders the stack beside the board at 1440px', async () => {
+    await fixedRack(1440);
+    for (const w of FIXED.words.slice(0, 3)) await play(w);
+    const stack = await box('[data-testid="stack"]');
+    const controls = await box('[data-testid="control-row"]');
+    const pool = await box('[data-testid="pool"]');
+    // beside, not below: the stack starts right of the board column and
+    // overlaps it vertically
+    expect(stack.left).toBeGreaterThan(controls.right);
+    expect(stack.top).toBeLessThan(controls.bottom);
+    // and the board column still holds together
+    expect(pool.right).toBeLessThanOrEqual(controls.right + 2);
+  }, 40000);
+
+  for (const width of [375, 768]) {
+    it(`keeps the single column at ${width}px: stack below the controls`, async () => {
+      await fixedRack(width);
+      for (const w of FIXED.words.slice(0, 3)) await play(w);
+      const stack = await box('[data-testid="stack"]');
+      const controls = await box('[data-testid="control-row"]');
+      expect(stack.top).toBeGreaterThanOrEqual(controls.bottom);
+      // centered in the same column as the board
+      const stackMid = (stack.left + stack.right) / 2;
+      const controlsMid = (controls.left + controls.right) / 2;
+      expect(Math.abs(stackMid - controlsMid)).toBeLessThanOrEqual(2);
+    }, 40000);
+  }
 });
 
 describe('the word display holds its size', () => {

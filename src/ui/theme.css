@@ -145,6 +145,55 @@ main {
   z-index: -1;
 }
 
+/* The page, not a strip. On a phone the column wrappers dissolve
+   (display: contents) and the layout is byte for byte the one that already
+   works. From 64rem the stack takes its own column beside the board, where
+   the run's shape reads at full height, and the haunt re-measures the
+   union of both columns so the wings stay clear. */
+.board-col,
+.stack-col {
+  display: contents;
+}
+
+@media (min-width: 64rem) {
+  .app {
+    max-width: 68rem;
+  }
+
+  .play-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 30rem) minmax(15rem, 21rem);
+    column-gap: 4rem;
+    justify-content: center;
+    align-items: start;
+  }
+
+  .board-col,
+  .stack-col {
+    display: block;
+  }
+
+  /* The stack heads sit level with the pool, a monument beside the work. */
+  .stack-col {
+    padding-top: 7.6rem;
+  }
+
+  .stack-col .stack {
+    margin-top: 0;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* The end screen and the empty daily keep their measure; the wide app
+     column exists for the two column board, not for them. */
+  .end-screen,
+  .no-daily {
+    max-width: 30rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 /* The pool: the decision surface. Never waits on anything. */
 .pool {
   display: flex;
