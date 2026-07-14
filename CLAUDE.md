@@ -137,6 +137,27 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
   and the submit gate (`src/loader/submit-gate.ts`) queues any submit made
   before it is ready. Never reject a word because the dictionary was still
   loading, and never add a loading spinner that blocks play.
+- **That rule is for a FRESH rack. A RESTORED run is the opposite case.**
+  `run` needs `puzzle` needs `engine` needs the dictionary, so before it
+  lands the game cannot know a returning player already finished (it painted
+  a playable board, then flipped to the end screen) and a mid-run pool falls
+  back to the entry's rack (it showed eight letters the player no longer
+  owned, which is worse). The gate is exactly **restored words exist and
+  there is no run yet** (`restoring` in `src/ui/useGame.ts`), never the
+  dictionary in general. A fresh rack has nothing to restore, so nothing
+  about it is unknowable, so it still paints in 0 to 2ms with no loading
+  state at all. **If you find yourself blocking a fresh rack, the condition
+  is wrong.** Both modes carry their own saved run and gate independently.
+- **The restore says "Finding what you left." and it is never a spinner.**
+  A line of text, in the game's face, and the fade is delayed 250ms, so a
+  warm restore finishes before the line is ever painted and the player just
+  sees their run. Only a genuinely slow restore says anything.
+- **A mode switch cannot test the cold start.** By then the engine has
+  landed. The flash only exists on a cold load, so the regression test seeds
+  today's real daily from the committed calendar and watches with a
+  MutationObserver installed before first paint (`test/layout.test.ts`). A
+  version of that test written around a mode switch passed with the bug
+  still in place.
 - The built index is cached in IndexedDB keyed by the bake manifest version;
   see the data version rule above. The cache stores the dictionary index
   only; game progress is a later prompt.

@@ -136,7 +136,12 @@ export function App({ services }: { services: GameServices }) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [input, selection, game.pool, game.submit],
     ),
-    !game.result && !showingHow,
+    // Typing into a restore has nothing to type at: there is no pool on
+    // screen, and a queued word would land on top of the run being restored.
+    // The queued-submit path is untouched on a FRESH rack, which is the
+    // case it exists for: type before the dictionary lands and the word
+    // resolves when it does.
+    !game.result && !showingHow && !game.restoring,
   );
 
   const share = () => {
@@ -238,6 +243,20 @@ export function App({ services }: { services: GameServices }) {
             <button type="button" onClick={() => game.setMode('endless')}>
               Play Endless
             </button>
+          </section>
+        ) : game.restoring ? (
+          /* A returning player, and the engine is not here yet. Everything
+             on the board is derived from the run, so there is nothing true
+             to draw: not the pool, not the stack, not the drift, not the
+             score. Showing a playable board for a second and then yanking it
+             is worse than a short wait.
+
+             A LINE OF TEXT, NEVER A SPINNER. And it does not appear at once:
+             the fade is delayed, so a warm restore (the common case, the
+             index is cached) finishes before the line is ever painted, and
+             the player just sees their run. */
+          <section className="restoring" data-testid="restoring">
+            <p>Finding what you left.</p>
           </section>
         ) : game.result && game.puzzle && game.run ? (
           <EndScreen

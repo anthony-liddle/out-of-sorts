@@ -9,6 +9,32 @@
 import { chromium, type Browser, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { createEngine, type Engine } from '../src/engine/engine';
+import { loadDictionaries } from '../src/engine/load-node';
+import { rackForDate } from '../src/calendar/day';
+import { dailyRunKey } from '../src/calendar/epochs';
+import type { Calendar, CalendarEntry } from '../src/calendar/types';
+
+/** The real committed calendar and the real engine. Built once: the index
+ * takes a moment and every caller wants the same one. */
+let engineCache: Engine | undefined;
+function liveEngine(): Engine {
+  engineCache ??= createEngine(loadDictionaries());
+  return engineCache;
+}
+
+/** Today's actual daily, from the committed artifact. Never a synthetic
+ * date: a synthetic date cannot see a bad epoch, which is how every daily
+ * anyone ever saw was Day 1 for the life of the project. */
+function todaysDaily(): { entry: CalendarEntry } {
+  const calendar: Calendar = JSON.parse(
+    readFileSync('public/data/calendar.json', 'utf8'),
+  );
+  const entry = rackForDate(calendar, new Date());
+  if (!entry) throw new Error('no daily for today: the calendar epoch moved');
+  return { entry };
+}
 
 let server: ViteDevServer;
 let browser: Browser;
@@ -158,6 +184,71 @@ describe('cold start in a real browser', () => {
     const tiles = await page.$$('[data-testid="pool-tile"]');
     expect(tiles).toHaveLength(8);
     expect(await page.$('[role="progressbar"]')).toBeNull();
+    // A FRESH rack is never gated. It has nothing saved, so nothing about it
+    // is unknowable, so it owes the dictionary no wait at all. The restore
+    // line belongs to returning players and must never touch this path.
+    expect(await page.$('[data-testid="restoring"]')).toBeNull();
+    expect(await page.textContent('body')).not.toMatch(
+      /finding what you left/i,
+    );
+  }, 30000);
+
+  it('never paints a rack a returning mid-run player no longer owns', async () => {
+    // The worse half of the flash, measured on the path where it actually
+    // happens: a COLD LOAD of a restored daily, while the index is still
+    // building in its worker. A mode switch cannot test this, because by
+    // then the engine has already landed; a test written that way passes
+    // with the bug still in place.
+    //
+    // Against the committed calendar and today's real rack, because anything
+    // derived from a committed artifact must be tested against the committed
+    // artifact. The words come from the engine's own par path, so this holds
+    // on any day: take the opening eights (a hold keeps the pool at eight),
+    // then the first word that actually drops a letter.
+    const { entry } = todaysDaily();
+    const puzzle = liveEngine().createPuzzle(entry.rack);
+    const cut = puzzle.parPath.findIndex((w) => w.length < 8);
+    const words = puzzle.parPath.slice(0, cut + 1);
+    const restoredPool = words[words.length - 1]!.length;
+    expect(restoredPool).toBeLessThan(8);
+
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 900 },
+    });
+    page = await context.newPage();
+    await page.addInitScript(
+      (fixture) => {
+        localStorage.setItem(
+          `oos:${fixture.key}`,
+          JSON.stringify({
+            rack: fixture.rack,
+            words: fixture.words,
+            stopped: false,
+          }),
+        );
+        // A frame is easy to miss by polling, so record the most tiles that
+        // ever existed, from before the first paint.
+        const w = window as unknown as { __maxTiles: number };
+        w.__maxTiles = 0;
+        new MutationObserver(() => {
+          const n = document.querySelectorAll(
+            '[data-testid="pool-tile"]',
+          ).length;
+          if (n > w.__maxTiles) w.__maxTiles = n;
+        }).observe(document, { childList: true, subtree: true });
+      },
+      { key: dailyRunKey(new Date()), rack: entry.rack, words },
+    );
+    await page.goto(origin);
+    await page.waitForSelector('[data-testid="stack-row"]');
+    await page.waitForTimeout(300);
+
+    const maxTiles = await page.evaluate(
+      () => (window as unknown as { __maxTiles: number }).__maxTiles,
+    );
+    expect(maxTiles, 'the rack flashed before the restored pool').toBe(
+      restoredPool,
+    );
   }, 30000);
 });
 
