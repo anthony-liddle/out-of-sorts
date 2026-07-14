@@ -46,9 +46,20 @@ export function Stack({
             data-notch={notch || undefined}
             data-landing={landing || undefined}
             data-eight={w.length === 8 || undefined}
-            style={{ width: `calc(${w.length} * var(--stack-unit))` }}
           >
-            <span className="stack-word">{w.word.toUpperCase()}</span>
+            {/* The pill is a LENGTH BAR and nothing else. It cannot also be
+                a content container: a three letter pill has no room for a
+                word and a number, and widening it would lie about the word's
+                length, which is the silhouette the whole share graphic and
+                both comparison stacks rest on. */}
+            <span
+              className="stack-pill"
+              style={{ width: `calc(${w.length} * var(--stack-unit))` }}
+            >
+              <span className="stack-word">{w.word.toUpperCase()}</span>
+            </span>
+            {/* The score lives in a fixed gutter, at the same x on every
+                row whatever the pill does. */}
             <span className="stack-score">{w.score}</span>
           </li>
         )

@@ -461,8 +461,10 @@ describe('voice and the vertical', () => {
     // unit per letter, so the same word is the same width in every column.
     // The real pixel widths are measured in test/layout.test.ts, because
     // jsdom has no layout engine.
-    expect(notchRow!.style.width).toBe('calc(6 * var(--stack-unit))')
-    expect(rows[0]!.style.width).toBe('calc(8 * var(--stack-unit))')
+    const pill = (row: HTMLElement) =>
+      row.querySelector<HTMLElement>('.stack-pill')!
+    expect(pill(notchRow!).style.width).toBe('calc(6 * var(--stack-unit))')
+    expect(pill(rows[0]!).style.width).toBe('calc(8 * var(--stack-unit))')
   })
 
   it('hides the sound toggle while keeping audio behind its interface', async () => {
@@ -579,6 +581,64 @@ describe('you open the game and type', () => {
     expect(probe.value).toBe('tea')
     expect(screen.getByTestId('word-display').textContent).not.toContain('TEA')
     probe.remove()
+  })
+})
+
+describe('spend always leaves an honest board', () => {
+  it('clears the word and every tile light when the word is rejected', async () => {
+    // A rejected word used to leave its tiles lit as used, so the board was
+    // showing a committed state for a word that never committed.
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('tri{Enter}')
+    expect(screen.getByRole('alert').textContent).toMatch(
+      /not a word this pool can make/i,
+    )
+    expect(currentWord()).toBe('')
+    expect(
+      screen.getAllByTestId('pool-tile').every((t) => !t.dataset.state),
+    ).toBe(true)
+    expect(screen.queryAllByTestId('stack-row')).toHaveLength(0)
+    expect(screen.queryAllByTestId('ghost')).toHaveLength(0)
+  })
+
+  it('names the rejected word, and clears the message on the next keystroke', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('triangle{Enter}')
+    await userEvent.keyboard('triangle{Enter}')
+    expect(screen.getByRole('alert').textContent).toMatch(
+      /TRIANGLE is already on the stack/i,
+    )
+    await userEvent.keyboard('t')
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('keeps the new message when two words are rejected in a row', async () => {
+    // Spend clears the entry, and clearing the entry clears a stale error.
+    // A second rejection must not have its own message wiped by that clear.
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('tri{Enter}')
+    expect(screen.getByRole('alert').textContent).toMatch(/not a word/i)
+    await userEvent.keyboard('gil{Enter}')
+    expect(screen.getByRole('alert').textContent).toMatch(/GIL/i)
+  })
+
+  it('clears the word on a good spend, and only spent letters become ghosts', async () => {
+    render(<App services={services()} />)
+    await ready()
+    await userEvent.keyboard('triangle{Enter}')
+    expect(currentWord()).toBe('')
+    expect(screen.queryAllByTestId('ghost')).toHaveLength(0)
+    await userEvent.keyboard('tearing{Enter}')
+    expect(currentWord()).toBe('')
+    const ghosts = screen.getAllByTestId('ghost')
+    expect(ghosts).toHaveLength(1)
+    expect(ghosts[0]!.textContent).toContain('L')
+    expect(
+      screen.getAllByTestId('pool-tile').every((t) => !t.dataset.state),
+    ).toBe(true)
   })
 })
 
