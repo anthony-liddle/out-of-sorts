@@ -887,7 +887,13 @@ describe('reduced motion', () => {
     expect(screen.queryByRole('button', { name: /motion/i })).toBeNull()
   })
 
-  it('suppresses drift and decay while the spent row stays readable', async () => {
+  it('stills the ghosts while keeping the letter and its age readable', async () => {
+    // Reduced motion removes every animation, never the information: the
+    // ghost holds its final position and its aged opacity, because who
+    // died, in what order, how long ago must survive stillness. The fade
+    // stays decoration (the floor keeps every letter legible), so nothing
+    // the player needs is carried by motion. The full contract lives in
+    // test/ui/haunt.test.tsx.
     render(<App services={services({ reducedMotionDefault: true })} />)
     await ready()
     await playWord('triangle')
@@ -895,7 +901,8 @@ describe('reduced motion', () => {
     const ghost = screen.getAllByTestId('ghost')[0]!
     expect(ghost.dataset.motion).toBe('off')
     expect(ghost.textContent).toContain('L')
-    const opacity = ghost.style.opacity
-    expect(opacity === '' || Number(opacity) === 1).toBe(true)
+    const opacity = Number(ghost.style.opacity)
+    expect(opacity).toBeGreaterThan(0.1)
+    expect(opacity).toBeLessThanOrEqual(1)
   })
 })
