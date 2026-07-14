@@ -171,6 +171,27 @@ describe('the drift at phone width', () => {
   }, 30000);
 });
 
+describe('the word display holds its size', () => {
+  it('is exactly the same height empty and full', async () => {
+    // The board must not jump under the player's thumb as they type. The
+    // display had a min-height, but the display font's line box plus
+    // padding outgrew it the moment a letter appeared.
+    await fixedRack(375);
+    const height = () =>
+      page.$eval(
+        '[data-testid="word-display"]',
+        (el) => Math.round(el.getBoundingClientRect().height * 10) / 10,
+      );
+    const empty = await height();
+    for (const letter of 'petunias') {
+      await page.keyboard.press(letter);
+      expect(await height()).toBe(empty);
+    }
+    await page.keyboard.press('Escape');
+    expect(await height()).toBe(empty);
+  }, 30000);
+});
+
 describe('cold tiles at phone width', () => {
   it('keeps the tile silhouette: no ghost mask, uniform corners', async () => {
     // A ghost means the letter is gone; a cold tile means it is about to

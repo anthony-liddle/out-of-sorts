@@ -241,10 +241,16 @@ body {
    that exist so no OS keyboard is needed. */
 .word-display {
   margin: 0;
-  min-height: 3rem;
+  /* A fixed height, never a minimum: the board must not jump under the
+     player's thumb when the first letter lands. The display font's line box
+     outgrows a min-height the moment there is a word in it, so the height
+     is set outright and the line box is pinned. */
+  height: 3.3rem;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: 700;
@@ -261,6 +267,7 @@ body {
   font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 400;
+  line-height: 1;
   letter-spacing: 0.02em;
   color: var(--ghost);
   text-transform: none;
