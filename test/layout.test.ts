@@ -172,6 +172,8 @@ describe('the haunting', () => {
     '[data-testid="word-display"]',
     '[data-testid="control-row"]',
     '[data-testid="stack"]',
+    // the footer is furniture, not margin: the dead keep off the credits
+    '.footer',
   ];
 
   async function boxes(selector: string) {
@@ -197,7 +199,7 @@ describe('the haunting', () => {
     await page.waitForTimeout(1600);
   }
 
-  for (const width of [320, 375, 1024]) {
+  for (const width of [320, 375, 768, 1440]) {
     it(`scatters a full run around the board, never on it, at ${width}px`, async () => {
       await fullHaunt(width);
       const ghosts = await boxes('[data-testid="ghost"]');
@@ -348,6 +350,155 @@ describe('the haunting', () => {
     await page.waitForTimeout(600);
     expect(await at()).toEqual(first);
   }, 40000);
+
+  it('places twins side by side: the I and N of one drop hang together', async () => {
+    await fullHaunt(375);
+    const twins = await page.$$eval(
+      '[data-testid="ghost"][data-play-index="2"]',
+      (els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        }),
+    );
+    expect(twins).toHaveLength(2);
+    const gap = Math.hypot(
+      twins[0]!.x - twins[1]!.x,
+      twins[0]!.y - twins[1]!.y,
+    );
+    expect(gap).toBeLessThanOrEqual(60);
+  }, 40000);
+});
+
+describe('the trim', () => {
+  it('lifts the tiles on a violet under shadow and grains the ground', async () => {
+    await fixedRack(375);
+    // tiles are objects being lifted, not divs: the under shadow is the
+    // violet of the game, not a grey
+    const shadow = await page.$eval(
+      '[data-testid="pool-tile"]',
+      (el) => getComputedStyle(el).boxShadow,
+    );
+    expect(shadow).toContain('rgba(127, 119, 221');
+    // the ground carries a whisper of grain, inline and self contained
+    const ground = await page.evaluate(
+      () => getComputedStyle(document.body).backgroundImage,
+    );
+    expect(ground).toContain('data:image/svg+xml');
+    // and the marque sits above the title, a third register
+    const marqueTop = await page.$eval(
+      '[data-testid="marque"]',
+      (el) => el.getBoundingClientRect().top,
+    );
+    const titleTop = await page.$eval(
+      '.masthead h1',
+      (el) => el.getBoundingClientRect().top,
+    );
+    expect(marqueTop).toBeLessThan(titleTop);
+  }, 30000);
+});
+
+describe('the stack is a monument', () => {
+  // A landing (a mined anagram class) fuses into one tier: tighter gap,
+  // flattened adjoining corners. A notch stays a gap and nothing else; no
+  // accent color may mark it, and width stays a pure function of length
+  // (pinned by 'the pill is only ever length' below).
+  async function rowByWord(word: string) {
+    return page.$$eval(
+      '[data-testid="stack"] [data-testid="stack-row"]',
+      (rows, target) => {
+        const row = rows.find(
+          (r) => r.querySelector('.stack-word')!.textContent!.trim() === target,
+        )!;
+        const pill = row.querySelector('.stack-pill')!;
+        const cs = getComputedStyle(pill);
+        const box = row.getBoundingClientRect();
+        return {
+          top: box.top,
+          bottom: box.bottom,
+          background: cs.backgroundColor,
+          radii: {
+            topLeft: parseFloat(cs.borderTopLeftRadius),
+            bottomLeft: parseFloat(cs.borderBottomLeftRadius),
+          },
+        };
+      },
+      word,
+    );
+  }
+
+  it('fuses a landing into one tier and leaves the notch a plain gap', async () => {
+    await fixedRack(375);
+    // PASTE lands as a notch (two letters dropped); APES then PEAS is a
+    // landing, the mined pair of the four letter class.
+    for (const w of ['petunias', 'panties', 'paste', 'apes', 'peas']) {
+      await play(w);
+    }
+    const petunias = await rowByWord('PETUNIAS');
+    const panties = await rowByWord('PANTIES');
+    const paste = await rowByWord('PASTE');
+    const apes = await rowByWord('APES');
+    const peas = await rowByWord('PEAS');
+
+    // the landing pair sits tighter than the default rhythm, and far
+    // tighter than the notch gap
+    const defaultGap = panties.top - petunias.bottom;
+    const notchGap = paste.top - panties.bottom;
+    const landingGap = peas.top - apes.bottom;
+    expect(landingGap).toBeLessThan(defaultGap);
+    expect(notchGap).toBeGreaterThan(defaultGap);
+
+    // the tier fuses by shape: adjoining corners flatten, outer corners stay
+    expect(apes.radii.bottomLeft).toBeLessThan(apes.radii.topLeft);
+    expect(peas.radii.topLeft).toBeLessThan(peas.radii.bottomLeft);
+    // rows outside a landing keep uniform corners
+    expect(panties.radii.topLeft).toBe(panties.radii.bottomLeft);
+
+    // the notch carries no accent: same fill as any plain row
+    expect(paste.background).toBe(panties.background);
+    expect(apes.background).toBe(paste.background);
+  }, 40000);
+});
+
+describe('a page, not a strip', () => {
+  // The desktop was a phone layout stretched. On wide viewports the stack
+  // moves beside the board, where the run's shape can be read at full
+  // height; below the breakpoint the single column that already works is
+  // byte for byte the same DOM, laid out as before.
+  async function box(selector: string) {
+    return page.$eval(selector, (e) => {
+      const r = e.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    });
+  }
+
+  it('renders the stack beside the board at 1440px', async () => {
+    await fixedRack(1440);
+    for (const w of FIXED.words.slice(0, 3)) await play(w);
+    const stack = await box('[data-testid="stack"]');
+    const controls = await box('[data-testid="control-row"]');
+    const pool = await box('[data-testid="pool"]');
+    // beside, not below: the stack starts right of the board column and
+    // overlaps it vertically
+    expect(stack.left).toBeGreaterThan(controls.right);
+    expect(stack.top).toBeLessThan(controls.bottom);
+    // and the board column still holds together
+    expect(pool.right).toBeLessThanOrEqual(controls.right + 2);
+  }, 40000);
+
+  for (const width of [375, 768]) {
+    it(`keeps the single column at ${width}px: stack below the controls`, async () => {
+      await fixedRack(width);
+      for (const w of FIXED.words.slice(0, 3)) await play(w);
+      const stack = await box('[data-testid="stack"]');
+      const controls = await box('[data-testid="control-row"]');
+      expect(stack.top).toBeGreaterThanOrEqual(controls.bottom);
+      // centered in the same column as the board
+      const stackMid = (stack.left + stack.right) / 2;
+      const controlsMid = (controls.left + controls.right) / 2;
+      expect(Math.abs(stackMid - controlsMid)).toBeLessThanOrEqual(2);
+    }, 40000);
+  }
 });
 
 describe('the word display holds its size', () => {

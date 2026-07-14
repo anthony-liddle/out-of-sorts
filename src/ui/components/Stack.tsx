@@ -2,15 +2,15 @@
 // silhouette reads. Landings where a whole anagram class was mined; a notch
 // where two or more letters dropped at once. The notch is a shape, not a
 // color: the gap says it, and no accent color may mark it.
-import type React from 'react'
-import type { PlayedWord } from '../../engine/run'
+import type React from 'react';
+import type { PlayedWord } from '../../engine/run';
 
 export interface StackProps {
-  words: readonly PlayedWord[]
-  rackSize: number
+  words: readonly PlayedWord[];
+  rackSize: number;
   /** Ghosted rendering for the end screen's what-was-possible comparison. */
-  ghosted?: boolean
-  testId?: string
+  ghosted?: boolean;
+  testId?: string;
 }
 
 export function Stack({
@@ -35,9 +35,14 @@ export function Stack({
       aria-label={ghosted ? 'A possible run' : 'Words played'}
     >
       {words.map((w, i) => {
-        const poolBefore = i === 0 ? rackSize : words[i - 1]!.length
-        const notch = w.length < poolBefore - 1
-        const landing = i > 0 && words[i - 1]!.length === w.length
+        const poolBefore = i === 0 ? rackSize : words[i - 1]!.length;
+        const notch = w.length < poolBefore - 1;
+        const landing = i > 0 && words[i - 1]!.length === w.length;
+        // A landing is marked on both of its rows so the pair can fuse
+        // into one tier by shape: the head flattens its bottom corners,
+        // the landing row its top ones.
+        const landingHead =
+          i + 1 < words.length && words[i + 1]!.length === w.length;
         return (
           <li
             key={`${w.word}-${i}`}
@@ -45,6 +50,7 @@ export function Stack({
             data-testid="stack-row"
             data-notch={notch || undefined}
             data-landing={landing || undefined}
+            data-landing-head={landingHead || undefined}
             data-eight={w.length === 8 || undefined}
           >
             {/* The pill is a LENGTH BAR and nothing else. It cannot also be
@@ -62,8 +68,8 @@ export function Stack({
                 row whatever the pill does. */}
             <span className="stack-score">{w.score}</span>
           </li>
-        )
+        );
       })}
     </ol>
-  )
+  );
 }

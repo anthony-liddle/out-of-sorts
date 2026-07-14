@@ -10,14 +10,14 @@
 // - The cold preview waits for a playable length. Below three letters no
 //   legal word exists, so there is no discard set to preview, and chilling
 //   seven tiles on the first keystroke reads as the board deselecting.
-import { MIN_WORD_LENGTH } from '../../engine/types'
+import { MIN_WORD_LENGTH } from '../../engine/types';
 
 export interface PoolProps {
-  letters: string
-  input: string
+  letters: string;
+  input: string;
   /** Tile index per input letter; -1 for a typed letter with no tile. */
-  selection: readonly number[]
-  onTileClick(letter: string, index: number): void
+  selection: readonly number[];
+  onTileClick(letter: string, index: number): void;
 }
 
 /**
@@ -33,20 +33,20 @@ export function reconcileSelection(
   prevSelection: readonly number[],
 ): number[] {
   if (nextInput.startsWith(prevInput)) {
-    const selection = [...prevSelection.slice(0, prevInput.length)]
+    const selection = [...prevSelection.slice(0, prevInput.length)];
     for (const ch of nextInput.slice(prevInput.length).toLowerCase()) {
-      selection.push(firstUnused(letters, ch, selection))
+      selection.push(firstUnused(letters, ch, selection));
     }
-    return selection
+    return selection;
   }
   if (prevInput.startsWith(nextInput)) {
-    return [...prevSelection.slice(0, nextInput.length)]
+    return [...prevSelection.slice(0, nextInput.length)];
   }
-  const selection: number[] = []
+  const selection: number[] = [];
   for (const ch of nextInput.toLowerCase()) {
-    selection.push(firstUnused(letters, ch, selection))
+    selection.push(firstUnused(letters, ch, selection));
   }
-  return selection
+  return selection;
 }
 
 function firstUnused(
@@ -55,33 +55,34 @@ function firstUnused(
   taken: readonly number[],
 ): number {
   for (let i = 0; i < letters.length; i++) {
-    if (letters[i] === ch && !taken.includes(i)) return i
+    if (letters[i] === ch && !taken.includes(i)) return i;
   }
-  return -1
+  return -1;
 }
 
 /** Cold is never conveyed by color alone: it carries a dashed stroke (the
  * non color signal) and it is spoken. A cold tile is still yours to touch,
  * and the label must not imply otherwise. */
 function label(letter: string, state?: string): string {
-  const l = letter.toUpperCase()
-  if (state === 'used') return `${l}, in your word`
-  if (state === 'cold') return `${l}, you will lose this letter`
-  return l
+  const l = letter.toUpperCase();
+  if (state === 'used') return `${l}, in your word`;
+  if (state === 'cold') return `${l}, you will lose this letter`;
+  return l;
 }
 
 export function Pool({ letters, input, selection, onTileClick }: PoolProps) {
-  const used = new Set(selection.filter((i) => i >= 0))
-  const previewing = input.length >= MIN_WORD_LENGTH
-  const unmatched = selection.some((i) => i === -1)
+  const used = new Set(selection.filter((i) => i >= 0));
+  const previewing = input.length >= MIN_WORD_LENGTH;
+  const unmatched = selection.some((i) => i === -1);
   return (
-    <div className="pool" data-testid="pool" role="group" aria-label="Letter pool">
+    <div
+      className="pool"
+      data-testid="pool"
+      role="group"
+      aria-label="Letter pool"
+    >
       {[...letters].map((letter, i) => {
-        const state = used.has(i)
-          ? 'used'
-          : previewing
-            ? 'cold'
-            : undefined
+        const state = used.has(i) ? 'used' : previewing ? 'cold' : undefined;
         return (
           <button
             key={i}
@@ -92,12 +93,12 @@ export function Pool({ letters, input, selection, onTileClick }: PoolProps) {
             aria-pressed={state === 'used'}
             aria-label={label(letter, state)}
             onClick={() => {
-              if (!used.has(i)) onTileClick(letter, i)
+              if (!used.has(i)) onTileClick(letter, i);
             }}
           >
             <span aria-hidden="true">{letter.toUpperCase()}</span>
           </button>
-        )
+        );
       })}
       {input.length > 0 && unmatched && (
         <span className="visually-hidden" role="status">
@@ -105,5 +106,5 @@ export function Pool({ letters, input, selection, onTileClick }: PoolProps) {
         </span>
       )}
     </div>
-  )
+  );
 }

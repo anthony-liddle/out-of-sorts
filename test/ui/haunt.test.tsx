@@ -150,6 +150,23 @@ describe('the arrival belongs to the play, not the reload', () => {
   });
 });
 
+describe('twins read as twins', () => {
+  it('renders ghosts of one play at the same size and the same opacity', async () => {
+    render(<App services={services()} />);
+    await ready();
+    await playWord('triangle');
+    await playWord('rating'); // drops E and L together: twins
+    const twins = ghosts().filter((g) => g.dataset.playIndex === '1');
+    expect(twins).toHaveLength(2);
+    const [a, b] = twins;
+    expect(a!.style.opacity).toBe(b!.style.opacity);
+    const scaleOf = (el: HTMLElement) =>
+      el.style.transform.match(/scale\(([^)]+)\)/)?.[1];
+    expect(scaleOf(a!)).toBeDefined();
+    expect(scaleOf(a!)).toBe(scaleOf(b!));
+  });
+});
+
 describe('reduced motion keeps the facts', () => {
   it('holds every ghost still at its position and its aged opacity', async () => {
     render(<App services={services({ reducedMotionDefault: true })} />);

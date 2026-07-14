@@ -26,7 +26,11 @@
 
 body {
   margin: 0;
-  background: var(--ground);
+  background-color: var(--ground);
+  /* A whisper of grain, or the lilac reads as an untouched default. Inline
+     SVG noise, self contained, at most 5 percent alpha: texture, never a
+     pattern. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.31 0 0 0 0 0.27 0 0 0 0 0.62 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
   color: var(--ink);
   font-family: var(--font-body);
 }
@@ -67,6 +71,16 @@ body {
   margin: 0;
 }
 
+/* The marque's top register: caps, spaced, quiet. */
+.marque {
+  margin: 0 0 0.15rem;
+  color: var(--ghost);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+}
+
 .tagline {
   margin: 0.1rem 0 0;
   color: var(--ghost);
@@ -99,6 +113,23 @@ body {
 .streak {
   color: var(--violet);
   font-size: 0.85rem;
+}
+
+/* The running score: quiet, always there, climbing. Never rank, never
+   par, never a bar; those are the end screen's to reveal. */
+.running-score {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  animation: score-climb 300ms ease;
+}
+
+@keyframes score-climb {
+  from {
+    transform: translateY(0.3rem);
+    opacity: 0;
+  }
 }
 
 .day-label {
@@ -145,6 +176,55 @@ main {
   z-index: -1;
 }
 
+/* The page, not a strip. On a phone the column wrappers dissolve
+   (display: contents) and the layout is byte for byte the one that already
+   works. From 64rem the stack takes its own column beside the board, where
+   the run's shape reads at full height, and the haunt re-measures the
+   union of both columns so the wings stay clear. */
+.board-col,
+.stack-col {
+  display: contents;
+}
+
+@media (min-width: 64rem) {
+  .app {
+    max-width: 68rem;
+  }
+
+  .play-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 30rem) minmax(15rem, 21rem);
+    column-gap: 4rem;
+    justify-content: center;
+    align-items: start;
+  }
+
+  .board-col,
+  .stack-col {
+    display: block;
+  }
+
+  /* The stack heads sit level with the pool, a monument beside the work. */
+  .stack-col {
+    padding-top: 7.6rem;
+  }
+
+  .stack-col .stack {
+    margin-top: 0;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* The end screen and the empty daily keep their measure; the wide app
+     column exists for the two column board, not for them. */
+  .end-screen,
+  .no-daily {
+    max-width: 30rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 /* The pool: the decision surface. Never waits on anything. */
 .pool {
   display: flex;
@@ -164,7 +244,12 @@ main {
      changes the tile's size or position. */
   border: 2px solid transparent;
   border-radius: 0.9rem;
-  box-shadow: 0 3px 0 rgba(60, 52, 137, 0.14);
+  /* A violet under shadow, so the tile reads as an object being lifted
+     off the lilac rather than a div with a drop shadow. Depth belongs to
+     the tile itself: all three states carry it equally. */
+  box-shadow:
+    0 4px 0 rgba(127, 119, 221, 0.38),
+    0 6px 12px rgba(127, 119, 221, 0.16);
   width: clamp(2rem, 10.2vw, 3rem);
   height: clamp(2.5rem, 12vw, 3.4rem);
   font-size: clamp(1.05rem, 4.8vw, 1.5rem);
@@ -326,8 +411,12 @@ main {
   text-align: center;
 }
 
-/* The stack: descending, centered and nested so the silhouette reads.
-   The notch is a shape, not a color: the gap says it. */
+/* The stack: the score made visible, a descending monument, centered and
+   nested so the silhouette reads. The rhythm carries the story: a landing
+   (a mined anagram class) fuses into one tier, a notch stays a wider gap
+   and NOTHING else. No accent color may mark a notch, mint stays the
+   eights' and rose stays All Eights'. Spacing lives on the rows, not on a
+   flex gap, so each row can speak its own relationship to the one above. */
 .stack {
   --stack-width: 100%;
   list-style: none;
@@ -336,10 +425,29 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
   width: 100%;
   max-height: 46vh;
   overflow-y: auto;
+}
+
+.stack-row + .stack-row {
+  margin-top: 0.3rem;
+}
+
+/* The tier: a landing pair pulls together and its adjoining corners
+   flatten, so the class the player mined reads as one carved block. */
+.stack-row[data-landing] {
+  margin-top: 0.14rem;
+}
+
+.stack-row[data-landing] .stack-pill {
+  border-top-left-radius: 0.16rem;
+  border-top-right-radius: 0.16rem;
+}
+
+.stack-row[data-landing-head] .stack-pill {
+  border-bottom-left-radius: 0.16rem;
+  border-bottom-right-radius: 0.16rem;
 }
 
 /* A row is a pill plus a gutter. The pill is pure length; the score sits in
@@ -367,11 +475,14 @@ main {
   box-sizing: border-box;
   background: var(--tile);
   border-radius: 0.55rem;
-  padding: 0.28rem 0.3rem;
+  /* Vertical presence only. The horizontal padding must stay small:
+     width is a pure function of word length and every horizontal pixel
+     is stolen from the letters. */
+  padding: 0.34rem 0.3rem;
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: 0.08em;
-  box-shadow: 0 1px 0 rgba(60, 52, 137, 0.1);
+  box-shadow: 0 2px 0 rgba(127, 119, 221, 0.28);
 }
 
 .stack-word {
@@ -387,7 +498,9 @@ main {
 }
 
 .stack-row[data-notch] {
-  margin-top: 0.7rem;
+  /* The gap says it. The flex gap it used to ride on is gone, so the
+     notch carries the whole 1rem itself. */
+  margin-top: 1rem;
 }
 
 /* A notch gap marks a skip between rows; a stack's first row has nothing
@@ -730,6 +843,85 @@ main {
     width: calc((100% - 1rem) / 2);
     align-self: center;
   }
+}
+
+/* The footer: quiet, and there. Its absence read as unfinished. */
+.footer {
+  margin-top: 4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--ghost-body);
+  text-align: center;
+  color: var(--ghost);
+  font-size: 0.8rem;
+}
+
+.footer a {
+  color: var(--violet);
+  text-decoration: none;
+}
+
+.footer a:hover,
+.footer a:focus-visible {
+  text-decoration: underline;
+}
+
+.footer-nav {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+}
+
+.footer-credit {
+  margin: 0;
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dedication {
+  margin: 0.5rem 0 0;
+  font-style: italic;
+}
+
+/* How it works: the rules, told once, in the voice. */
+.how {
+  max-width: 26rem;
+  margin: 1.5rem auto 0;
+}
+
+.how h2 {
+  font-family: var(--font-display);
+  color: var(--violet);
+  font-size: 1.6rem;
+  margin: 0 0 0.8rem;
+}
+
+.how-rules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.how-daily {
+  color: var(--ghost);
+  font-size: 0.9rem;
+  margin: 1.2rem 0 1.6rem;
+}
+
+.how-back {
+  display: inline-block;
+  font-family: var(--font-display);
+  color: var(--violet);
+  text-decoration: none;
+  border: 1px solid var(--violet);
+  border-radius: 0.8rem;
+  padding: 0.5rem 1.1rem;
 }
 
 /* A daily that does not exist says so. It never renders a plausible board. */

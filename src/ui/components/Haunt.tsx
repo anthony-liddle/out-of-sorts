@@ -88,12 +88,19 @@ function measure(layer: HTMLElement): HauntGeometry {
           height: bottom - top,
         };
   const masthead = root.querySelector('.masthead')?.getBoundingClientRect();
+  // The masthead is the ceiling and the footer is the floor: the dead
+  // drift in the margins, never over the marque and never over the
+  // credits. Both are viewport relative, like the layer box.
+  const footer = root.querySelector('.footer')?.getBoundingClientRect();
+  const floor = footer
+    ? Math.min(window.innerHeight, footer.top - 4)
+    : window.innerHeight;
   return {
     bounds: {
       left: -layerBox.left,
       top: -layerBox.top,
       width: window.innerWidth,
-      height: window.innerHeight,
+      height: floor,
     },
     board,
     ceiling: masthead ? masthead.bottom - layerBox.top : -layerBox.top,
