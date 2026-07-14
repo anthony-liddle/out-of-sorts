@@ -94,13 +94,19 @@ async function tops(selector: string): Promise<number[]> {
 /** Width of the row for an exact word. Never a substring: ASIDES contains
  * SIDE, and measuring the wrong row makes a correct layout look broken. */
 async function rowWidth(stack: string, word: string): Promise<number> {
+  // The pill, not the row: the row spans the column (pill plus score
+  // gutter), and it is the pill that encodes word length.
   return page.$$eval(
     `[data-testid="${stack}"] [data-testid="stack-row"]`,
     (rows, target) => {
       const row = rows.find(
         (r) => r.querySelector('.stack-word')!.textContent!.trim() === target,
       );
-      return row ? Math.round(row.getBoundingClientRect().width) : -1;
+      return row
+        ? Math.round(
+            row.querySelector('.stack-pill')!.getBoundingClientRect().width,
+          )
+        : -1;
     },
     word,
   );
@@ -379,6 +385,90 @@ describe('cold tiles at phone width', () => {
       expect(new Set(t.radii).size).toBe(1);
     }
   }, 30000);
+});
+
+describe('the pill is only ever length', () => {
+  // The pill was being asked to be a length bar AND a content container. A
+  // three letter row cannot hold a word and a number, so the score moves
+  // out to a fixed gutter. Row width stays a pure function of word length,
+  // which is the rule the whole end screen rests on.
+  async function rows(stack: string) {
+    return page.$$eval(
+      `[data-testid="${stack}"] [data-testid="stack-row"]`,
+      (list) =>
+        list.map((row) => {
+          const pill = row.querySelector('.stack-pill')!;
+          const word = row.querySelector('.stack-word')!;
+          const score = row.querySelector('.stack-score')!;
+          const pillBox = pill.getBoundingClientRect();
+          const wordBox = word.getBoundingClientRect();
+          const scoreBox = score.getBoundingClientRect();
+          return {
+            word: word.textContent!.trim(),
+            pillWidth: Math.round(pillBox.width),
+            wordWidth: Math.round(wordBox.width),
+            wordScroll: word.scrollWidth,
+            wordClient: word.clientWidth,
+            font: getComputedStyle(word).fontSize,
+            wordFits:
+              wordBox.left >= pillBox.left - 0.5 &&
+              wordBox.right <= pillBox.right + 0.5,
+            wordOverflows: word.scrollWidth > word.clientWidth + 1,
+            scoreRight: Math.round(scoreBox.right),
+            scoreOverlapsPill: scoreBox.left < pillBox.right - 0.5,
+          };
+        }),
+    );
+  }
+
+  for (const width of [320, 375, 900]) {
+    it(`fits three letter rows and lines the scores up at ${width}px`, async () => {
+      await endedRun();
+      await page.setViewportSize({ width, height: 900 });
+      await page.waitForTimeout(200);
+      let shortRowsSeen = 0;
+      for (const stack of ['your-stack', 'par-stack', 'clean-stack']) {
+        const list = await rows(stack);
+        expect(list.length).toBeGreaterThan(0);
+        shortRowsSeen += list.filter((r) => r.word.length <= 3).length;
+
+        for (const row of list) {
+          expect(row.wordFits, `${row.word} spills its pill`).toBe(true);
+          expect(
+            row.wordOverflows,
+            `${row.word} clipped: pill ${row.pillWidth}, word ${row.wordWidth}, scroll ${row.wordScroll} vs client ${row.wordClient}, font ${row.font}`,
+          ).toBe(false);
+          expect(
+            row.scoreOverlapsPill,
+            `${row.word} score sits on the pill`,
+          ).toBe(false);
+        }
+
+        // the gutter: every score right aligned to the same x, whatever the
+        // pill width does
+        const gutter = new Set(list.map((r) => r.scoreRight));
+        expect(gutter.size, `${stack} scores at ${[...gutter].join(',')}`).toBe(
+          1,
+        );
+
+        // and the pill still encodes length, nothing else
+        const byLength = new Map<number, number>();
+        for (const row of list) {
+          const seen = byLength.get(row.word.length);
+          if (seen === undefined) byLength.set(row.word.length, row.pillWidth);
+          else expect(Math.abs(seen - row.pillWidth)).toBeLessThanOrEqual(1);
+        }
+        const lengths = [...byLength.keys()].sort((a, b) => a - b);
+        for (let i = 1; i < lengths.length; i++) {
+          expect(byLength.get(lengths[i]!)!).toBeGreaterThan(
+            byLength.get(lengths[i - 1]!)!,
+          );
+        }
+      }
+      // the three letter rows are the whole point of this test
+      expect(shortRowsSeen).toBeGreaterThan(0);
+    }, 40000);
+  }
 });
 
 describe('one scale across every stack', () => {

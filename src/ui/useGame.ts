@@ -290,6 +290,10 @@ export function useGame(services: GameServices) {
     [active, puzzle, run, result, mode, services],
   );
 
+  /** The rejection message is about the word you just tried. The moment you
+   * touch a letter, a tile, a rack, or a mode, it is stale: clear it. */
+  const clearError = useCallback(() => setError(null), []);
+
   const stop = useCallback(() => {
     if (!puzzle || !run || result) return;
     services.audio.play('end');
@@ -301,6 +305,7 @@ export function useGame(services: GameServices) {
   }, [puzzle, run, result, mode, services]);
 
   const newEndless = useCallback(() => {
+    setError(null);
     setProgress((prev) => ({
       ...prev,
       endless: {
@@ -312,9 +317,14 @@ export function useGame(services: GameServices) {
     }));
   }, []);
 
+  const switchMode = useCallback((next: Mode) => {
+    setError(null);
+    setMode(next);
+  }, []);
+
   return {
     mode,
-    setMode,
+    setMode: switchMode,
     entry: active?.entry ?? null,
     dayNumber: active?.dayNumber ?? null,
     /** True once the calendar has loaded, so a missing daily can be told
@@ -332,6 +342,7 @@ export function useGame(services: GameServices) {
     submit,
     stop,
     shuffle,
+    clearError,
     newEndless,
   };
 }

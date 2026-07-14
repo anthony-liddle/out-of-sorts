@@ -41,13 +41,29 @@ export function App({ services }: { services: GameServices }) {
   )
 
   const setEntry = (nextInput: string, nextIndexes: number[]) => {
+    // Any touch of a letter makes the last rejection stale.
+    if (game.error) game.clearError()
     setInput(nextInput)
     setSel({ pool: game.pool ?? '', indexes: nextIndexes })
   }
 
+  /**
+   * Spend always leaves a clean board, valid or not. A rejected word used to
+   * keep its letters lit as used, so the tiles were showing a committed
+   * state for a word that never committed: the pixels claiming something
+   * the state does not support. The error still names the word, so nothing
+   * informational is lost, and it clears on the next input.
+   *
+   * The accepted cost: an eight letter word rejected for a typo now costs
+   * eight taps to retype. A board that lies about itself is worse.
+   */
   const submit = () => {
-    const outcome = game.submit(input)
-    if (outcome !== 'rejected') setEntry('', [])
+    game.submit(input)
+    // Reset the entry WITHOUT the stale error clearing that setEntry does:
+    // this submit may have just set a fresh message, and it must not clear
+    // its own.
+    setInput('')
+    setSel({ pool: game.pool ?? '', indexes: [] })
   }
 
   const backspace = () =>
