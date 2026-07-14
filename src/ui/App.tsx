@@ -19,9 +19,9 @@ export function App({ services }: { services: GameServices }) {
     pool: '',
     indexes: [],
   })
-  const [reducedMotion, setReducedMotion] = useState(
-    services.reducedMotionDefault,
-  )
+  // Reduced motion follows the operating system, with no in game toggle:
+  // the OS setting is the one the player already made.
+  const reducedMotion = services.reducedMotionDefault
   const [copied, setCopied] = useState(false)
 
   const selection = useMemo(() => {
@@ -99,13 +99,7 @@ export function App({ services }: { services: GameServices }) {
               {game.streak} days
             </span>
           )}
-          <button
-            type="button"
-            aria-pressed={reducedMotion}
-            onClick={() => setReducedMotion(!reducedMotion)}
-          >
-            {reducedMotion ? 'Motion off' : 'Motion on'}
-          </button>
+
         </div>
       </header>
 

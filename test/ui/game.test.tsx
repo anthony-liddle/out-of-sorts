@@ -690,6 +690,12 @@ describe('the empty yours column', () => {
 })
 
 describe('reduced motion', () => {
+  it('follows the operating system, with no in game toggle', async () => {
+    render(<App services={services({ reducedMotionDefault: true })} />)
+    await ready()
+    expect(screen.queryByRole('button', { name: /motion/i })).toBeNull()
+  })
+
   it('suppresses drift and decay while the spent row stays readable', async () => {
     render(<App services={services({ reducedMotionDefault: true })} />)
     await ready()

@@ -2,6 +2,7 @@
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
+import { resolveOrigin } from './scripts/site-origin';
 import { defineConfig, type Connect } from 'vite';
 
 // Collects cold start timing reports POSTed by the instrumentation page,
@@ -34,8 +35,18 @@ export default defineConfig(({ mode }) => ({
   define: {
     __ANALYTICS__: JSON.stringify(mode !== 'fdroid'),
   },
+
   plugins: [
     react(),
+    {
+      // %SITE_ORIGIN% in index.html becomes the real origin at build time,
+      // so og:url and og:image are absolute and always agree. One source,
+      // resolved here, never hardcoded in the html.
+      name: 'site-origin',
+      transformIndexHtml(html) {
+        return resolveOrigin(html);
+      },
+    },
     {
       name: 'cold-start-report',
       configureServer(server) {
