@@ -1,7 +1,7 @@
 {
   "name": "Out of Sorts",
   "short_name": "Out of Sorts",
-  "description": "Make a word from eight letters. Every letter you don't use is gone forever. Keep going until you can't. A quiet daily word game about loss.",
+  "description": "Make a word from eight letters. Every letter you don't use is gone forever. Keep going until you can't. A daily word game about loss.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#F4F2FB",

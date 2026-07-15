@@ -233,6 +233,16 @@ live in `scratch/` and the numbers in `scratch/results_*.json`.
 
 - pnpm. TypeScript strict. Vite and Vitest. TDD: failing test first.
 - Conventional Commits. No em dashes anywhere: commits, comments, docs.
+- **Shipped prose must pass `../vault/Voice/AI Tells.md`.** In particular,
+  **"quiet" and its family of self-flattering mood adjectives are banned
+  outright** (gentle, thoughtful, lovingly, elegant, delightful, and
+  simple/small/considered/careful used as praise). They claim the feeling
+  the work should earn; if the thing is quiet the reader will find it quiet.
+  **Delete them, do not replace them.** "A daily word game about loss" is the
+  whole line. Pinned for the link preview by `test/meta-assets.test.ts`. Not
+  the tell: the word doing real descriptive work about something other than
+  the product's own merit (a code comment specifying a sound as quiet, a
+  dictionary word in the baked lists).
 - `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build` before commit
   (husky runs lint-staged and typecheck on commit).
 - The Python scripts in `scratch/` are the frozen reference, not shipping
