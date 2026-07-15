@@ -137,3 +137,59 @@ describe('favicon, manifest, and open graph', () => {
     expect(manifest.theme_color.toLowerCase()).toBe('#f4f2fb');
   });
 });
+
+// Shipped prose must pass ../vault/Voice/AI Tells.md. "Quiet" and its family
+// of self-flattering mood adjectives claim the feeling the work is supposed
+// to earn, and they had shipped in the link preview of two projects. Deleted,
+// never replaced, and this keeps them gone.
+describe('the voice: no self-flattering mood adjectives in shipped prose', () => {
+  const html = readFileSync('index.html', 'utf8');
+  const built = resolveOrigin(html);
+  const DESCRIPTION =
+    "Make a word from eight letters. Every letter you don't use is gone " +
+    "forever. Keep going until you can't. A daily word game about loss.";
+
+  it('the open graph and meta descriptions read exactly as specified', () => {
+    // The meta tags wrap across lines, so name and content are not adjacent.
+    const descriptions = [
+      ...html.matchAll(
+        /(?:name|property)="(?:og:)?description"\s+content="([^"]+)"/g,
+      ),
+    ].map((m) => m[1]);
+    // The page carries both the plain meta description and og:description.
+    expect(descriptions.length).toBeGreaterThanOrEqual(2);
+    for (const d of descriptions) expect(d).toBe(DESCRIPTION);
+
+    const manifest = JSON.parse(
+      readFileSync('public/manifest.webmanifest', 'utf8'),
+    );
+    expect(manifest.description).toBe(DESCRIPTION);
+  });
+
+  it('no banned adjective survives anywhere a reader or a link preview meets', () => {
+    // The word-praising-the-work tell. NOT the dictionary word lists, where
+    // these are legitimate playable words: touching those would break the
+    // bake pins and verify:sweep. NOT code comments, which are not shipped
+    // prose. This reads the built HTML, the manifest, the OG image source,
+    // and the two community docs a reader actually meets.
+    const surfaces: Record<string, string> = {
+      'index.html': built,
+      'public/manifest.webmanifest': readFileSync(
+        'public/manifest.webmanifest',
+        'utf8',
+      ),
+      'scripts/assets/og.html': readFileSync('scripts/assets/og.html', 'utf8'),
+      'README.md': readFileSync('README.md', 'utf8'),
+    };
+    const banned =
+      /\b(quiet|quietly|gently|thoughtful|thoughtfully|lovingly|delightful)\b/i;
+    // "gentle", "considered", "simple", "small", "careful", "elegant" all
+    // have honest non-praise uses (a Contributor Covenant "considered
+    // inappropriate", a rule that is genuinely simple). The unconditional
+    // members of the family are enough to pin the regression that happened.
+    for (const [name, text] of Object.entries(surfaces)) {
+      const hit = banned.exec(text);
+      expect(hit, `${name} carries a banned adjective: ${hit?.[0]}`).toBeNull();
+    }
+  });
+});
