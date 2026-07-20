@@ -167,13 +167,26 @@ body {
 
 .masthead .meta {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.6rem;
   align-items: center;
 }
 
 .streak {
   color: var(--violet);
   font-size: 0.85rem;
+}
+
+/* "Streak 3 0 points" read as one string. They are different kinds of
+   thing: the streak survives the day, the score belongs to this run. A
+   rendered edge says so; whitespace alone does not.
+
+   The edge belongs to the PAIR, never to the streak: the score needs a run
+   and a run needs the engine, so on a cold load the streak paints a frame
+   ahead of it, and a divider on the streak is a rule pointing at nothing
+   for exactly that frame. As a sibling rule it cannot exist without both. */
+.streak + .running-score {
+  border-left: 1px solid var(--ghost);
+  padding-left: 0.6rem;
 }
 
 /* The running score: quiet, always there, climbing. Never rank, never
@@ -221,12 +234,14 @@ body {
   opacity: 0.8;
 }
 
-/* The reserved column's voice, wide layout only. On a phone the column
-   does not exist and the drift's "Nothing lost yet." already carries the
-   fresh rack; a second empty line stacked under it would be clutter. */
+/* The reserved stack's voice, in both layouts. Beside the board on a wide
+   screen; on a phone the column does not exist, so the stack's space opens
+   up below Stop instead, and reserved space wants a voice rather than a
+   field of dead lilac. It is the same absence either way, so it says the
+   same thing. */
 .stack-waiting {
-  display: none;
-  margin: 0;
+  display: block;
+  margin: 2.5rem 0 0;
   color: var(--ghost);
   font-size: 0.9rem;
   text-align: center;
@@ -305,8 +320,9 @@ main {
     overflow-y: visible;
   }
 
+  /* Beside the board, the column already sets the top. */
   .stack-waiting {
-    display: block;
+    margin-top: 0;
   }
 
   /* The end screen and the empty daily keep their measure; the wide app
@@ -417,10 +433,20 @@ main {
 
 /* The control row: Peach's shape, thumb sized targets. Stop lives
    elsewhere: it must never sit one fat finger from Spend. */
+/* Two rows, and the split means something. The top row is everything that
+   undoes, clears, or rearranges; the bottom row commits. Spend is the only
+   irreversible control in the game (it destroys letters, and there is no
+   undo) and backspace is the most tapped, so the two never share a row: the
+   dangerous moment is a valid word typed, second thoughts, and a fast reach
+   for backspace. The row gap is the guard and it is wider than the column
+   gap on purpose. */
 .control-row {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  column-gap: 0.5rem;
+  row-gap: 0.75rem;
 }
+
 
 .control-row button {
   flex: 1;
@@ -434,9 +460,10 @@ main {
   cursor: pointer;
 }
 
+/* Full width, the largest target on the board, alone on its line. */
 .control-row button.spend,
 .control-row button[type='submit'] {
-  flex: 1.4;
+  flex: 1 0 100%;
   background: var(--violet);
   color: var(--tile);
   border: none;

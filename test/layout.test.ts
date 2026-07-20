@@ -734,15 +734,45 @@ describe('the empty table', () => {
     expect(line.display).not.toBe('none');
   }, 40000);
 
-  it('keeps the phone free of the reserved line', async () => {
-    // On the phone the column does not exist, and the drift already says
-    // "Nothing lost yet."; a second empty line stacked under it is clutter.
+  it('reserves the phone stack in voice too, below Stop', async () => {
+    // This line used to be desktop only, on the reasoning that a second
+    // empty line under the drift is clutter. That was about a line stacked
+    // at the TOP. On a phone the stack column does not exist, so its space
+    // opens up BELOW Stop as a field of dead lilac, and the space has to
+    // stay reserved or the board jumps when the first word lands. Reserved
+    // space wants a voice, and it is the stack's space, so it says what the
+    // desktop column says.
     await fixedRack(375);
-    const display = await page.$eval(
-      '[data-testid="stack-waiting"]',
-      (el) => getComputedStyle(el).display,
+    const line = await page.$eval('[data-testid="stack-waiting"]', (el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        text: el.textContent!.trim(),
+        display: getComputedStyle(el).display,
+        top: r.top,
+      };
+    });
+    expect(line.text).toBe('Nothing spent yet.');
+    expect(line.display).not.toBe('none');
+
+    const stop = await page.$eval(
+      '.stop-button',
+      (e) => e.getBoundingClientRect().bottom,
     );
-    expect(display).toBe('none');
+    expect(line.top).toBeGreaterThan(stop);
+  }, 40000);
+
+  it('does not move the phone board when the first word lands', async () => {
+    // The whole reason the space stays reserved. A board that slides up
+    // under the thumb on the first Spend is worse than a field of lilac.
+    await fixedRack(375);
+    const poolTop = () =>
+      page.$eval('[data-testid="pool"]', (e) =>
+        Math.round(e.getBoundingClientRect().top),
+      );
+    const before = await poolTop();
+    await play(FIXED.words[0]!);
+    await page.waitForSelector('[data-testid="stack-row"]');
+    expect(Math.abs((await poolTop()) - before)).toBeLessThanOrEqual(1);
   }, 40000);
 
   it('stop sits under the board, never alone in an empty region', async () => {
@@ -1428,4 +1458,311 @@ describe('the streak says what it is', () => {
     expect(streak).toMatch(/streak/i);
     expect(streak).toContain('3');
   }, 30000);
+
+  it('does not run into the score: a rendered boundary, not a space', async () => {
+    // "Streak 3 0 points" read as one string. They are different kinds of
+    // thing: the streak survives the day, the score belongs to this run.
+    // Whitespace alone does not say that, so the streak carries a border.
+    await dailyMidRun(375, 3);
+    const edge = await page.evaluate(() => {
+      const drawn = (el: Element, side: 'Left' | 'Right') => {
+        const cs = getComputedStyle(el);
+        const style = cs.getPropertyValue(`border-${side.toLowerCase()}-style`);
+        return (
+          parseFloat(
+            cs.getPropertyValue(`border-${side.toLowerCase()}-width`),
+          ) > 0 &&
+          style !== 'none' &&
+          style !== 'hidden'
+        );
+      };
+      const streak = document.querySelector('[data-testid="streak"]')!;
+      const score = document.querySelector('[data-testid="running-score"]')!;
+      // Whichever side of the boundary carries it, so long as one does.
+      return drawn(streak, 'Right') || drawn(score, 'Left');
+    });
+    expect(edge, 'nothing is drawn between the streak and the score').toBe(
+      true,
+    );
+
+    // and the two are not touching: real space either side of the boundary
+    const gap = await page.evaluate(() => {
+      const s = document
+        .querySelector('[data-testid="streak"]')!
+        .getBoundingClientRect();
+      const p = document
+        .querySelector('[data-testid="running-score"]')!
+        .getBoundingClientRect();
+      return p.left - s.right;
+    });
+    expect(gap).toBeGreaterThanOrEqual(8);
+  }, 40000);
+
+  it('does not dangle that edge when there is no score to divide from', async () => {
+    // A run has not started, so the streak stands alone in the header. A
+    // divider with nothing on the far side of it is a rule pointing at
+    // empty space. The boundary belongs to the PAIR, not to the streak.
+    // The score needs a run, and a run needs the engine. On a cold load the
+    // header paints the streak first and the score lands a frame later, so
+    // the frame is real and easy to miss by polling. Watched from before
+    // first paint, the way the rack flash is.
+    const dangled = await coldHeaderDangle(375, 3);
+    expect(dangled, 'the streak painted a divider with nothing after it').toBe(
+      false,
+    );
+  }, 40000);
+});
+
+/**
+ * Loads today's daily cold with a streak on the clock and reports whether
+ * the streak ever painted a side border while no running score existed.
+ */
+async function coldHeaderDangle(
+  width: number,
+  streak: number,
+): Promise<boolean> {
+  const context = await browser.newContext({
+    viewport: { width, height: 900 },
+  });
+  page = await context.newPage();
+  await page.addInitScript((length) => {
+    localStorage.setItem(
+      'oos:streak',
+      JSON.stringify({ length, lastDayIndex: 99999 }),
+    );
+    const w = window as unknown as { __dangled: boolean };
+    w.__dangled = false;
+    const look = () => {
+      const s = document.querySelector('[data-testid="streak"]');
+      if (!s) return;
+      if (document.querySelector('[data-testid="running-score"]')) return;
+      const cs = getComputedStyle(s);
+      if (
+        parseFloat(cs.borderRightWidth) > 0 ||
+        parseFloat(cs.borderLeftWidth) > 0
+      ) {
+        w.__dangled = true;
+      }
+    };
+    new MutationObserver(look).observe(document, {
+      childList: true,
+      subtree: true,
+    });
+  }, streak);
+  await page.goto(origin);
+  await page.waitForSelector('[data-ready="true"]');
+  await page.waitForTimeout(300);
+  return page.evaluate(
+    () => (window as unknown as { __dangled: boolean }).__dangled,
+  );
+}
+
+/**
+ * Today's real daily, mid run, with a streak on the clock: the only state
+ * where the streak and the running score are on screen together. Seeded
+ * from the committed calendar and the engine's own par path, so it holds on
+ * any day.
+ */
+async function dailyMidRun(width: number, streak: number) {
+  const { entry } = todaysDaily();
+  const puzzle = liveEngine().createPuzzle(entry.rack);
+  const words = puzzle.parPath.slice(0, 1);
+
+  const context = await browser.newContext({
+    viewport: { width, height: 900 },
+  });
+  page = await context.newPage();
+  await page.addInitScript(
+    (fixture) => {
+      localStorage.setItem(
+        `oos:${fixture.key}`,
+        JSON.stringify({
+          rack: fixture.rack,
+          words: fixture.words,
+          stopped: false,
+        }),
+      );
+      localStorage.setItem(
+        'oos:streak',
+        JSON.stringify({ length: fixture.streak, lastDayIndex: 99999 }),
+      );
+    },
+    {
+      key: dailyRunKey(new Date()),
+      rack: entry.rack,
+      words,
+      streak,
+    },
+  );
+  await page.goto(origin);
+  await page.waitForSelector('[data-ready="true"]');
+  await page.waitForSelector('[data-testid="running-score"]');
+}
+
+/**
+ * Every control button on the board, in rendered position. Rows are read
+ * off the geometry, not the DOM: what the thumb meets is where the buttons
+ * actually are.
+ */
+async function controlRows(): Promise<
+  { label: string; rect: DOMRectLike }[][]
+> {
+  const buttons = await page.$$eval('[data-testid="control-row"] button', (b) =>
+    b.map((x) => {
+      const r = x.getBoundingClientRect();
+      return {
+        label: (x.getAttribute('aria-label') ?? x.textContent ?? '').trim(),
+        rect: {
+          top: r.top,
+          bottom: r.bottom,
+          left: r.left,
+          right: r.right,
+          width: r.width,
+          height: r.height,
+        },
+      };
+    }),
+  );
+  // Same row means the boxes overlap vertically, which is what "shoulder to
+  // shoulder under a thumb" actually means.
+  const rows: { label: string; rect: DOMRectLike }[][] = [];
+  for (const b of [...buttons].sort((x, y) => x.rect.top - y.rect.top)) {
+    const row = rows.find((r) =>
+      r.some(
+        (o) => b.rect.top < o.rect.bottom - 1 && o.rect.top < b.rect.bottom - 1,
+      ),
+    );
+    if (row) row.push(b);
+    else rows.push([b]);
+  }
+  for (const r of rows) r.sort((a, b) => a.rect.left - b.rect.left);
+  return rows;
+}
+
+type DOMRectLike = {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  width: number;
+  height: number;
+};
+
+const SPEND = /^spend$/i;
+const BACKSPACE = /delete last letter/i;
+
+describe('the thumb never finds Spend by accident', () => {
+  // Spend is the only irreversible control in the game: it destroys letters
+  // and there is no undo. Backspace is the most tapped. The dangerous
+  // moment is specific: a valid word typed, second thoughts, a fast reach
+  // for backspace. The two must never sit shoulder to shoulder.
+  for (const width of [320, 375, 390]) {
+    it(`wraps to two rows with Spend alone on the second at ${width}px`, async () => {
+      await fixedRack(width);
+      const rows = await controlRows();
+      expect(rows).toHaveLength(2);
+      expect(rows[0]!.map((b) => b.label)).toEqual([
+        'Shuffle',
+        'Clear',
+        'Delete last letter',
+      ]);
+      expect(rows[1]!.map((b) => b.label)).toEqual(['Spend']);
+    }, 40000);
+
+    it(`gives Spend the widest target on the board at ${width}px`, async () => {
+      await fixedRack(width);
+      const rows = await controlRows();
+      const spend = rows[1]![0]!;
+      const row = await page.$eval('[data-testid="control-row"]', (el) =>
+        Math.round(el.getBoundingClientRect().width),
+      );
+      expect(Math.round(spend.rect.width)).toBeGreaterThanOrEqual(row - 2);
+      for (const b of rows[0]!) {
+        expect(spend.rect.width).toBeGreaterThan(b.rect.width);
+      }
+    }, 40000);
+  }
+
+  for (const width of [320, 375, 390, 768, 1024, 1440]) {
+    it(`never puts Spend beside backspace at ${width}px`, async () => {
+      // The invariant, and the point of the whole change. Adjacent means
+      // sharing a row: a full width Spend necessarily sits BELOW backspace,
+      // and that is the safe direction, guarded by the gap asserted next.
+      await fixedRack(width);
+      const rows = await controlRows();
+      for (const row of rows) {
+        const labels = row.map((b) => b.label);
+        const together =
+          labels.some((l) => SPEND.test(l)) &&
+          labels.some((l) => BACKSPACE.test(l));
+        expect(together, `Spend shares a row with backspace: ${labels}`).toBe(
+          false,
+        );
+      }
+    }, 40000);
+
+    it(`keeps real air above and below Spend at ${width}px`, async () => {
+      await fixedRack(width);
+      const rows = await controlRows();
+      const spend = rows.flat().find((b) => SPEND.test(b.label))!;
+      const above = rows
+        .flat()
+        .filter((b) => b.rect.bottom <= spend.rect.top + 1)
+        .map((b) => spend.rect.top - b.rect.bottom);
+      for (const gap of above) expect(gap).toBeGreaterThanOrEqual(8);
+
+      // Stop also ends the run, and it must not creep up to meet a Spend
+      // that just moved down the board.
+      const stop = await page.$eval('.stop-button', (e) => {
+        const r = e.getBoundingClientRect();
+        return { top: r.top, left: r.left, right: r.right };
+      });
+      expect(
+        stop.top - spend.rect.bottom,
+        'Stop crept up to meet Spend',
+      ).toBeGreaterThanOrEqual(24);
+    }, 40000);
+
+    it(`meets the 44 by 44 touch minimum on every control at ${width}px`, async () => {
+      await fixedRack(width);
+      const rows = await controlRows();
+      const controls = rows.flat();
+      expect(controls).toHaveLength(4);
+      for (const b of controls) {
+        expect(
+          Math.round(b.rect.width),
+          `${b.label} is ${b.rect.width}px wide`,
+        ).toBeGreaterThanOrEqual(44);
+        expect(
+          Math.round(b.rect.height),
+          `${b.label} is ${b.rect.height}px tall`,
+        ).toBeGreaterThanOrEqual(44);
+      }
+      const stop = await page.$eval('.stop-button', (e) => {
+        const r = e.getBoundingClientRect();
+        return { w: r.width, h: r.height };
+      });
+      expect(Math.round(stop.w)).toBeGreaterThanOrEqual(44);
+      expect(Math.round(stop.h)).toBeGreaterThanOrEqual(44);
+    }, 40000);
+  }
+
+  it('keeps Stop away from Spend in the DOM as well as on screen', async () => {
+    // Rendered distance is what the thumb meets; DOM order is what a
+    // keyboard and a screen reader meet. Both have to hold.
+    await fixedRack(375);
+    const between = await page.evaluate(() => {
+      const focusable = [
+        ...document.querySelectorAll('button, [tabindex]:not([tabindex="-1"])'),
+      ];
+      const spend = focusable.findIndex(
+        (e) => e.textContent!.trim().toLowerCase() === 'spend',
+      );
+      const stop = focusable.findIndex(
+        (e) => e.textContent!.trim().toLowerCase() === 'stop',
+      );
+      return stop - spend;
+    });
+    expect(between).toBeGreaterThanOrEqual(1);
+  }, 40000);
 });
