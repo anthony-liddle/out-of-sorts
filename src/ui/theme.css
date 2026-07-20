@@ -234,12 +234,14 @@ body {
   opacity: 0.8;
 }
 
-/* The reserved column's voice, wide layout only. On a phone the column
-   does not exist and the drift's "Nothing lost yet." already carries the
-   fresh rack; a second empty line stacked under it would be clutter. */
+/* The reserved stack's voice, in both layouts. Beside the board on a wide
+   screen; on a phone the column does not exist, so the stack's space opens
+   up below Stop instead, and reserved space wants a voice rather than a
+   field of dead lilac. It is the same absence either way, so it says the
+   same thing. */
 .stack-waiting {
-  display: none;
-  margin: 0;
+  display: block;
+  margin: 2.5rem 0 0;
   color: var(--ghost);
   font-size: 0.9rem;
   text-align: center;
@@ -318,8 +320,9 @@ main {
     overflow-y: visible;
   }
 
+  /* Beside the board, the column already sets the top. */
   .stack-waiting {
-    display: block;
+    margin-top: 0;
   }
 
   /* The end screen and the empty daily keep their measure; the wide app

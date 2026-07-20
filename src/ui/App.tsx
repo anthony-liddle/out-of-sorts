@@ -335,10 +335,11 @@ export function App({ services }: { services: GameServices }) {
             />
             <aside className="stack-col">
               {/* Reserved, not collapsed: the board never moves when the
-                  first word lands. Until then the column speaks, in voice,
-                  mirroring the drift's "Nothing lost yet." The line only
-                  shows where the column exists; on a phone the drift
-                  already carries the fresh rack. */}
+                  first word lands. Until then the stack speaks, in voice,
+                  mirroring the drift's "Nothing lost yet." It speaks in
+                  both layouts: beside the board on a wide screen, and on a
+                  phone in the space that opens below Stop, which is the
+                  same absence and so says the same thing. */}
               {game.run &&
                 game.entry &&
                 (game.run.played.length > 0 ? (

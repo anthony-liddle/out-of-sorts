@@ -734,15 +734,45 @@ describe('the empty table', () => {
     expect(line.display).not.toBe('none');
   }, 40000);
 
-  it('keeps the phone free of the reserved line', async () => {
-    // On the phone the column does not exist, and the drift already says
-    // "Nothing lost yet."; a second empty line stacked under it is clutter.
+  it('reserves the phone stack in voice too, below Stop', async () => {
+    // This line used to be desktop only, on the reasoning that a second
+    // empty line under the drift is clutter. That was about a line stacked
+    // at the TOP. On a phone the stack column does not exist, so its space
+    // opens up BELOW Stop as a field of dead lilac, and the space has to
+    // stay reserved or the board jumps when the first word lands. Reserved
+    // space wants a voice, and it is the stack's space, so it says what the
+    // desktop column says.
     await fixedRack(375);
-    const display = await page.$eval(
-      '[data-testid="stack-waiting"]',
-      (el) => getComputedStyle(el).display,
+    const line = await page.$eval('[data-testid="stack-waiting"]', (el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        text: el.textContent!.trim(),
+        display: getComputedStyle(el).display,
+        top: r.top,
+      };
+    });
+    expect(line.text).toBe('Nothing spent yet.');
+    expect(line.display).not.toBe('none');
+
+    const stop = await page.$eval(
+      '.stop-button',
+      (e) => e.getBoundingClientRect().bottom,
     );
-    expect(display).toBe('none');
+    expect(line.top).toBeGreaterThan(stop);
+  }, 40000);
+
+  it('does not move the phone board when the first word lands', async () => {
+    // The whole reason the space stays reserved. A board that slides up
+    // under the thumb on the first Spend is worse than a field of lilac.
+    await fixedRack(375);
+    const poolTop = () =>
+      page.$eval('[data-testid="pool"]', (e) =>
+        Math.round(e.getBoundingClientRect().top),
+      );
+    const before = await poolTop();
+    await play(FIXED.words[0]!);
+    await page.waitForSelector('[data-testid="stack-row"]');
+    expect(Math.abs((await poolTop()) - before)).toBeLessThanOrEqual(1);
   }, 40000);
 
   it('stop sits under the board, never alone in an empty region', async () => {
