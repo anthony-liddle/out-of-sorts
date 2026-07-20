@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { rankFor, RANK_TIERS } from '../src/game/rank';
-import { advanceStreak } from '../src/game/streak';
-import { buildShare } from '../src/game/share';
+import {
+  advanceStreak,
+  currentStreak,
+  streakSurvivesTo,
+} from '../src/game/streak';
+import { buildShare, formatShareDate } from '../src/game/share';
 import {
   loadRunSnapshot,
   saveRunSnapshot,
@@ -50,6 +54,124 @@ describe('streak', () => {
       lastDayIndex: 103,
       length: 1,
     });
+  });
+});
+
+describe('the displayed streak is derived, never read', () => {
+  // A stored record is not a live streak. It is a record of the last day
+  // played, and whether it is still alive is a question about TODAY.
+  const stored = { lastDayIndex: 100, length: 3 };
+
+  it('played today: alive, shows its length', () => {
+    expect(currentStreak(stored, 100)).toBe(3);
+  });
+
+  it('played yesterday: alive. The streak is not lost until the day is', () => {
+    expect(currentStreak(stored, 101)).toBe(3);
+  });
+
+  it('played two days ago: broken, shows nothing', () => {
+    expect(currentStreak(stored, 102)).toBe(0);
+  });
+
+  it('played five days ago: broken, shows nothing', () => {
+    expect(currentStreak(stored, 105)).toBe(0);
+  });
+
+  it('no record at all is zero, not a crash', () => {
+    expect(currentStreak(undefined, 100)).toBe(0);
+  });
+
+  /**
+   * THE BUG, PINNED HARDEST. The display read `.length` raw while
+   * advancement asked whether the streak had survived, so a dead streak
+   * printed its corpse until you played, and playing "reset" it. The game
+   * appeared to punish you for playing.
+   *
+   * Asserted on the derived value rather than the rendered header: the
+   * defect lives in the value, and a DOM assertion changes meaning when the
+   * display guard changes.
+   */
+  it('finishing a run never lowers the displayed streak', () => {
+    for (const gap of [2, 3, 5, 30, 365]) {
+      const today = stored.lastDayIndex + gap;
+      const before = currentStreak(stored, today);
+      const after = currentStreak(advanceStreak(stored, today), today);
+      expect(before).toBe(0);
+      expect(after).toBe(1);
+      expect(after).toBeGreaterThanOrEqual(before);
+    }
+  });
+
+  it('and it never lowers it on a live streak either', () => {
+    for (const gap of [0, 1]) {
+      const today = stored.lastDayIndex + gap;
+      const before = currentStreak(stored, today);
+      const after = currentStreak(advanceStreak(stored, today), today);
+      expect(after).toBeGreaterThanOrEqual(before);
+    }
+  });
+
+  /**
+   * The actual defect was two places reasoning about "is this streak alive"
+   * and only one of them doing it. Pin that they cannot drift apart again:
+   * over every gap, a streak the display calls dead must be one advancement
+   * restarts at 1, and a streak the display calls alive must be one
+   * advancement builds on.
+   */
+  it('display and advancement agree about aliveness at every gap', () => {
+    for (let gap = 0; gap <= 40; gap++) {
+      const today = stored.lastDayIndex + gap;
+      const displayedAlive = currentStreak(stored, today) > 0;
+      const advanced = advanceStreak(stored, today);
+      const advancementAlive = advanced.length > 1 || gap === 0;
+      expect(displayedAlive).toBe(advancementAlive);
+      expect(displayedAlive).toBe(streakSurvivesTo(stored, today));
+    }
+  });
+});
+
+describe('the share date', () => {
+  it('reads as a month and a day, with no year', () => {
+    expect(formatShareDate(new Date(2026, 6, 14))).toBe('July 14');
+  });
+
+  it('does not pad the day', () => {
+    expect(formatShareDate(new Date(2026, 0, 3))).toBe('January 3');
+  });
+
+  /**
+   * The rack is chosen from LOCAL year/month/day. A date formatted through
+   * UTC names a different day for anyone east or west of it near midnight,
+   * which is the share claiming a rack the player never saw.
+   */
+  it('is built from local components, not UTC', () => {
+    // 23:30 local on the 14th. Under any UTC-derived formatting in a
+    // timezone ahead of UTC this reads as the 14th; behind it, the 15th.
+    const lateEvening = new Date(2026, 6, 14, 23, 30);
+    expect(formatShareDate(lateEvening)).toBe('July 14');
+    const earlyMorning = new Date(2026, 6, 14, 0, 30);
+    expect(formatShareDate(earlyMorning)).toBe('July 14');
+  });
+
+  it('names every month', () => {
+    const names = Array.from({ length: 12 }, (_, m) =>
+      formatShareDate(new Date(2026, m, 1)),
+    );
+    expect(names).toEqual([
+      'January 1',
+      'February 1',
+      'March 1',
+      'April 1',
+      'May 1',
+      'June 1',
+      'July 1',
+      'August 1',
+      'September 1',
+      'October 1',
+      'November 1',
+      'December 1',
+    ]);
   });
 });
 

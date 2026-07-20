@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { createEngine, type Engine } from '../src/engine/engine';
 import { loadDictionaries } from '../src/engine/load-node';
 import { rackForDate } from '../src/calendar/day';
-import { dailyRunKey } from '../src/calendar/epochs';
+import { dailyRunKey, storageDayIndex } from '../src/calendar/epochs';
 import type { Calendar, CalendarEntry } from '../src/calendar/types';
 
 /** The real committed calendar and the real engine. Built once: the index
@@ -681,7 +681,6 @@ describe('the empty table', () => {
         title: mid('.masthead h1')!,
         pool: mid('[data-testid="pool"]')!,
         controls: mid('[data-testid="control-row"]')!,
-        dayLabel: mid('.day-label')!,
       };
     });
   }
@@ -698,10 +697,6 @@ describe('the empty table', () => {
         Math.abs(c.controls - c.title),
         `controls off by ${c.controls - c.title}`,
       ).toBeLessThanOrEqual(2);
-      expect(
-        Math.abs(c.dayLabel - c.title),
-        `day label off by ${c.dayLabel - c.title}`,
-      ).toBeLessThanOrEqual(2);
     }, 40000);
 
     it(`and keeps it with a full stack at ${width}px`, async () => {
@@ -710,7 +705,6 @@ describe('the empty table', () => {
       const c = await centers();
       expect(Math.abs(c.pool - c.title)).toBeLessThanOrEqual(2);
       expect(Math.abs(c.controls - c.title)).toBeLessThanOrEqual(2);
-      expect(Math.abs(c.dayLabel - c.title)).toBeLessThanOrEqual(2);
     }, 40000);
   }
 
@@ -1446,11 +1440,17 @@ describe('the streak says what it is', () => {
     await seededRack(375, TWO_EIGHTS);
     // A bare "3 days" says nothing about what the 3 counts. Peach says
     // "Streak 1", and it is legible in one glance.
-    await page.evaluate(() =>
-      localStorage.setItem(
-        'oos:streak',
-        JSON.stringify({ length: 3, lastDayIndex: 99999 }),
-      ),
+    // A LIVE streak, seeded against the real storage epoch. It used to say
+    // lastDayIndex 99999, which is neither today nor yesterday: the display
+    // read `.length` raw so it rendered anyway, and the fixture could never
+    // have caught a dead streak being displayed.
+    await page.evaluate(
+      (lastDayIndex) =>
+        localStorage.setItem(
+          'oos:streak',
+          JSON.stringify({ length: 3, lastDayIndex }),
+        ),
+      storageDayIndex(new Date()),
     );
     await page.reload();
     await page.waitForSelector('[data-ready="true"]');
@@ -1525,30 +1525,36 @@ async function coldHeaderDangle(
     viewport: { width, height: 900 },
   });
   page = await context.newPage();
-  await page.addInitScript((length) => {
-    localStorage.setItem(
-      'oos:streak',
-      JSON.stringify({ length, lastDayIndex: 99999 }),
-    );
-    const w = window as unknown as { __dangled: boolean };
-    w.__dangled = false;
-    const look = () => {
-      const s = document.querySelector('[data-testid="streak"]');
-      if (!s) return;
-      if (document.querySelector('[data-testid="running-score"]')) return;
-      const cs = getComputedStyle(s);
-      if (
-        parseFloat(cs.borderRightWidth) > 0 ||
-        parseFloat(cs.borderLeftWidth) > 0
-      ) {
-        w.__dangled = true;
-      }
-    };
-    new MutationObserver(look).observe(document, {
-      childList: true,
-      subtree: true,
-    });
-  }, streak);
+  await page.addInitScript(
+    (seed) => {
+      localStorage.setItem(
+        'oos:streak',
+        JSON.stringify({
+          length: seed.length,
+          lastDayIndex: seed.lastDayIndex,
+        }),
+      );
+      const w = window as unknown as { __dangled: boolean };
+      w.__dangled = false;
+      const look = () => {
+        const s = document.querySelector('[data-testid="streak"]');
+        if (!s) return;
+        if (document.querySelector('[data-testid="running-score"]')) return;
+        const cs = getComputedStyle(s);
+        if (
+          parseFloat(cs.borderRightWidth) > 0 ||
+          parseFloat(cs.borderLeftWidth) > 0
+        ) {
+          w.__dangled = true;
+        }
+      };
+      new MutationObserver(look).observe(document, {
+        childList: true,
+        subtree: true,
+      });
+    },
+    { length: streak, lastDayIndex: storageDayIndex(new Date()) },
+  );
   await page.goto(origin);
   await page.waitForSelector('[data-ready="true"]');
   await page.waitForTimeout(300);
@@ -1584,7 +1590,10 @@ async function dailyMidRun(width: number, streak: number) {
       );
       localStorage.setItem(
         'oos:streak',
-        JSON.stringify({ length: fixture.streak, lastDayIndex: 99999 }),
+        JSON.stringify({
+          length: fixture.streak,
+          lastDayIndex: fixture.lastDayIndex,
+        }),
       );
     },
     {
@@ -1592,6 +1601,7 @@ async function dailyMidRun(width: number, streak: number) {
       rack: entry.rack,
       words,
       streak,
+      lastDayIndex: storageDayIndex(new Date()),
     },
   );
   await page.goto(origin);
