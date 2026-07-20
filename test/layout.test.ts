@@ -1434,21 +1434,26 @@ describe('the streak says what it is', () => {
     // thing: the streak survives the day, the score belongs to this run.
     // Whitespace alone does not say that, so the streak carries a border.
     await dailyMidRun(375, 3);
-    const streak = await styleOf('[data-testid="streak"]', [
-      'border-right-width',
-      'border-right-style',
-      'border-left-width',
-      'border-left-style',
-      'border-top-width',
-    ]);
-    const drawn = (w: string, s: string) =>
-      parseFloat(w) > 0 && s !== 'none' && s !== 'hidden';
-    expect(
-      drawn(streak['border-right-width']!, streak['border-right-style']!) ||
-        drawn(streak['border-left-width']!, streak['border-left-style']!) ||
-        drawn(streak['border-top-width']!, streak['border-right-style']!),
-      'the streak has no rendered edge separating it from the score',
-    ).toBe(true);
+    const edge = await page.evaluate(() => {
+      const drawn = (el: Element, side: 'Left' | 'Right') => {
+        const cs = getComputedStyle(el);
+        const style = cs.getPropertyValue(`border-${side.toLowerCase()}-style`);
+        return (
+          parseFloat(
+            cs.getPropertyValue(`border-${side.toLowerCase()}-width`),
+          ) > 0 &&
+          style !== 'none' &&
+          style !== 'hidden'
+        );
+      };
+      const streak = document.querySelector('[data-testid="streak"]')!;
+      const score = document.querySelector('[data-testid="running-score"]')!;
+      // Whichever side of the boundary carries it, so long as one does.
+      return drawn(streak, 'Right') || drawn(score, 'Left');
+    });
+    expect(edge, 'nothing is drawn between the streak and the score').toBe(
+      true,
+    );
 
     // and the two are not touching: real space either side of the boundary
     const gap = await page.evaluate(() => {
@@ -1462,7 +1467,65 @@ describe('the streak says what it is', () => {
     });
     expect(gap).toBeGreaterThanOrEqual(8);
   }, 40000);
+
+  it('does not dangle that edge when there is no score to divide from', async () => {
+    // A run has not started, so the streak stands alone in the header. A
+    // divider with nothing on the far side of it is a rule pointing at
+    // empty space. The boundary belongs to the PAIR, not to the streak.
+    // The score needs a run, and a run needs the engine. On a cold load the
+    // header paints the streak first and the score lands a frame later, so
+    // the frame is real and easy to miss by polling. Watched from before
+    // first paint, the way the rack flash is.
+    const dangled = await coldHeaderDangle(375, 3);
+    expect(dangled, 'the streak painted a divider with nothing after it').toBe(
+      false,
+    );
+  }, 40000);
 });
+
+/**
+ * Loads today's daily cold with a streak on the clock and reports whether
+ * the streak ever painted a side border while no running score existed.
+ */
+async function coldHeaderDangle(
+  width: number,
+  streak: number,
+): Promise<boolean> {
+  const context = await browser.newContext({
+    viewport: { width, height: 900 },
+  });
+  page = await context.newPage();
+  await page.addInitScript((length) => {
+    localStorage.setItem(
+      'oos:streak',
+      JSON.stringify({ length, lastDayIndex: 99999 }),
+    );
+    const w = window as unknown as { __dangled: boolean };
+    w.__dangled = false;
+    const look = () => {
+      const s = document.querySelector('[data-testid="streak"]');
+      if (!s) return;
+      if (document.querySelector('[data-testid="running-score"]')) return;
+      const cs = getComputedStyle(s);
+      if (
+        parseFloat(cs.borderRightWidth) > 0 ||
+        parseFloat(cs.borderLeftWidth) > 0
+      ) {
+        w.__dangled = true;
+      }
+    };
+    new MutationObserver(look).observe(document, {
+      childList: true,
+      subtree: true,
+    });
+  }, streak);
+  await page.goto(origin);
+  await page.waitForSelector('[data-ready="true"]');
+  await page.waitForTimeout(300);
+  return page.evaluate(
+    () => (window as unknown as { __dangled: boolean }).__dangled,
+  );
+}
 
 /**
  * Today's real daily, mid run, with a streak on the clock: the only state

@@ -171,14 +171,22 @@ body {
   align-items: center;
 }
 
-/* "Streak 3 0 points" read as one string. They are different kinds of
-   thing: the streak survives the day, the score belongs to this run. A
-   rendered edge says so; whitespace alone does not. */
 .streak {
   color: var(--violet);
   font-size: 0.85rem;
-  border-right: 1px solid var(--ghost);
-  padding-right: 0.6rem;
+}
+
+/* "Streak 3 0 points" read as one string. They are different kinds of
+   thing: the streak survives the day, the score belongs to this run. A
+   rendered edge says so; whitespace alone does not.
+
+   The edge belongs to the PAIR, never to the streak: the score needs a run
+   and a run needs the engine, so on a cold load the streak paints a frame
+   ahead of it, and a divider on the streak is a rule pointing at nothing
+   for exactly that frame. As a sibling rule it cannot exist without both. */
+.streak + .running-score {
+  border-left: 1px solid var(--ghost);
+  padding-left: 0.6rem;
 }
 
 /* The running score: quiet, always there, climbing. Never rank, never
