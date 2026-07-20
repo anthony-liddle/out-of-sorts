@@ -52,7 +52,7 @@ function show(puzzle: Puzzle, played: readonly string[], onShare = () => {}) {
       puzzle={puzzle}
       result={result(played)}
       played={rows(played)}
-      dayLabel="Day 3"
+      label={null}
       onShare={onShare}
       onNewEndless={null}
     />,

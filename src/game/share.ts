@@ -6,6 +6,39 @@
 // rack had more than one eight; that is structure-spoilage, accepted
 // deliberately, because the taunt is the point.
 
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+/**
+ * The date names the puzzle. It is the canonical key: the rack IS
+ * `rackForDate(calendar, now)`, and "Day N" is that date re-encoded against
+ * a movable epoch, so every share issued before the epoch moved now points
+ * at a different rack.
+ *
+ * LOCAL COMPONENTS, NEVER UTC. `rackForDate` picks from local year, month
+ * and day, so a UTC-derived date names a different day near midnight for
+ * most of the world: the share would claim a rack the player never saw. The
+ * month table is literal rather than `toLocaleDateString` so the output does
+ * not shift with the host locale.
+ *
+ * No year: shares are consumed the day they are made.
+ */
+export function formatShareDate(date: Date): string {
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
+}
+
 export interface ShareInput {
   title: string;
   words: readonly { word: string; length: number; score: number }[];

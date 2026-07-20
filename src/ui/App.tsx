@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { rankFor } from '../game/rank';
-import { buildShare } from '../game/share';
+import { buildShare, formatShareDate } from '../game/share';
 import { GHOST_WIDTH } from './haunt-layout';
 import { Haunt, type HauntBirths } from './components/Haunt';
 import { EndScreen } from './components/EndScreen';
@@ -51,12 +51,38 @@ export function App({ services }: { services: GameServices }) {
     return reconcileSelection(game.pool, '', input, []);
   }, [game.pool, sel, input]);
 
-  const dayLabel = useMemo(
+  /**
+   * One string used to serve three jobs, so it had to be a compromise
+   * between them. It splits by job.
+   *
+   * The board label is null on daily: DAY N existed to be a shared
+   * reference, the share now names the date instead, and the row it
+   * occupied is vertical space that screen needs. Endless keeps its label,
+   * because `Endless 1` counts sessions rather than re-encoding an epoch,
+   * so it is not the thing being fixed.
+   */
+  const boardLabel = useMemo(
+    () => (game.mode === 'daily' ? null : `Endless ${game.endlessSeed + 1}`),
+    [game.mode, game.endlessSeed],
+  );
+
+  /**
+   * The share names the DATE. Day N is derived from the calendar epoch,
+   * which is movable and has already moved once, so every share issued
+   * before that move now points at a different rack. The date is the
+   * canonical key: the rack is literally rackForDate(calendar, date).
+   *
+   * And it is the date that SELECTED this rack, carried on the entry, not a
+   * fresh clock read at share time.
+   */
+  const shareTitle = useMemo(
     () =>
       game.mode === 'daily'
-        ? `Day ${game.dayNumber ?? ''}`
+        ? game.date
+          ? formatShareDate(game.date)
+          : null
         : `Endless ${game.endlessSeed + 1}`,
-    [game.mode, game.dayNumber, game.endlessSeed],
+    [game.mode, game.date, game.endlessSeed],
   );
 
   const setEntry = (nextInput: string, nextIndexes: number[]) => {
@@ -149,7 +175,7 @@ export function App({ services }: { services: GameServices }) {
     const eights = game.puzzle.holds.fullRackWords;
     const found = game.run.played.filter((p) => eights.includes(p.word)).length;
     const text = buildShare({
-      title: `Out of Sorts · ${dayLabel}`,
+      title: shareTitle ? `Out of Sorts · ${shareTitle}` : 'Out of Sorts',
       words: game.run.played,
       rackSize: game.entry.rack.length,
       spentCount: game.run.spent.length,
@@ -204,7 +230,7 @@ export function App({ services }: { services: GameServices }) {
             </button>
           </nav>
           <div className="meta">
-            {game.mode === 'daily' && game.streak > 1 && (
+            {game.mode === 'daily' && game.streak > 0 && (
               /* "3 days" is a number with no noun. Label it: the streak is
                  the only thing in the header that persists between runs, and
                  a bare count says nothing about what it counts. */
@@ -264,7 +290,7 @@ export function App({ services }: { services: GameServices }) {
             result={game.result}
             played={game.run.played}
             spent={game.run.spent}
-            dayLabel={dayLabel}
+            label={boardLabel}
             onShare={share}
             copied={copied}
             onNewEndless={game.mode === 'endless' ? game.newEndless : null}
@@ -277,7 +303,7 @@ export function App({ services }: { services: GameServices }) {
              display: contents, so the phone layout is the same layout. */
           <div className="play-grid">
             <div className="board-col">
-              <p className="day-label">{dayLabel}</p>
+              {boardLabel && <p className="day-label">{boardLabel}</p>}
               <div className="drift" data-testid="drift">
                 {(game.run?.spent.length ?? 0) === 0 && (
                   <p className="drift-empty">Nothing lost yet.</p>
