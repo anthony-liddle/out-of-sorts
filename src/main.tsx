@@ -6,10 +6,11 @@ import '@fontsource/nunito/700.css'
 import { createRoot } from 'react-dom/client'
 import { App } from './ui/App'
 import { browserServices } from './ui/services'
-import { initAnalytics } from './analytics'
-
-void initAnalytics()
+import { AnalyticsProvider } from './analytics'
 
 createRoot(document.getElementById('root')!).render(
-  <App services={browserServices()} />,
+  <>
+    <App services={browserServices()} />
+    <AnalyticsProvider />
+  </>,
 )
