@@ -122,7 +122,11 @@ describe('a fresh rack is never gated', () => {
         services={services({
           loadDictionaries,
           storage: seeded({
-            [DAILY_KEY]: { rack: 'aegilnrt', words: ['triangle'], stopped: false },
+            [DAILY_KEY]: {
+              rack: 'aegilnrt',
+              words: ['triangle'],
+              stopped: false,
+            },
           }),
         })}
       />,

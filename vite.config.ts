@@ -2,7 +2,7 @@
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
-import { resolveOrigin } from './scripts/site-origin';
+import { resolveOrigin } from './scripts/site-origin.ts';
 import { defineConfig, type Connect } from 'vite';
 
 // Collects cold start timing reports POSTed by the instrumentation page,

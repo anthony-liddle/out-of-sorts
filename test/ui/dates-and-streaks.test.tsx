@@ -149,7 +149,9 @@ describe('the share names the date', () => {
     render(<App services={services()} />);
     await ready();
     await userEvent.click(screen.getByRole('button', { name: /endless/i }));
-    await waitFor(() => expect(screen.getAllByTestId('pool-tile')).toHaveLength(8));
+    await waitFor(() =>
+      expect(screen.getAllByTestId('pool-tile')).toHaveLength(8),
+    );
     await userEvent.click(screen.getByRole('button', { name: /stop/i }));
     await screen.findByTestId('end-screen');
     await userEvent.click(screen.getByTestId('share-button'));
@@ -193,25 +195,33 @@ describe('the share names the date', () => {
 
 describe('the streak tells the truth on load', () => {
   it('a streak last played today is displayed', async () => {
-    render(<App services={services({ storage: storedStreak(3, 0, DAY_ONE) })} />);
+    render(
+      <App services={services({ storage: storedStreak(3, 0, DAY_ONE) })} />,
+    );
     await ready();
     expect(screen.getByTestId('streak').textContent).toContain('3');
   });
 
   it('a streak last played yesterday is displayed: the day is not over', async () => {
-    render(<App services={services({ storage: storedStreak(3, 1, DAY_ONE) })} />);
+    render(
+      <App services={services({ storage: storedStreak(3, 1, DAY_ONE) })} />,
+    );
     await ready();
     expect(screen.getByTestId('streak').textContent).toContain('3');
   });
 
   it('a streak last played two days ago is gone, not shown as 0', async () => {
-    render(<App services={services({ storage: storedStreak(3, 2, DAY_ONE) })} />);
+    render(
+      <App services={services({ storage: storedStreak(3, 2, DAY_ONE) })} />,
+    );
     await ready();
     expect(screen.queryByTestId('streak')).toBeNull();
   });
 
   it('a streak last played five days ago is gone', async () => {
-    render(<App services={services({ storage: storedStreak(3, 5, DAY_ONE) })} />);
+    render(
+      <App services={services({ storage: storedStreak(3, 5, DAY_ONE) })} />,
+    );
     await ready();
     expect(screen.queryByTestId('streak')).toBeNull();
   });
@@ -225,7 +235,9 @@ describe('the streak tells the truth on load', () => {
    * This one pins the rendered consequence: never 3 then 1.
    */
   it('finishing a run never lowers what the header shows', async () => {
-    render(<App services={services({ storage: storedStreak(3, 4, DAY_ONE) })} />);
+    render(
+      <App services={services({ storage: storedStreak(3, 4, DAY_ONE) })} />,
+    );
     await ready();
     expect(screen.queryByTestId('streak')).toBeNull();
 
@@ -242,7 +254,9 @@ describe('the streak tells the truth on load', () => {
   });
 
   it('a live streak climbs when the run ends, with no reload', async () => {
-    render(<App services={services({ storage: storedStreak(3, 1, DAY_ONE) })} />);
+    render(
+      <App services={services({ storage: storedStreak(3, 1, DAY_ONE) })} />,
+    );
     await ready();
     expect(screen.getByTestId('streak').textContent).toContain('3');
 

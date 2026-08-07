@@ -162,9 +162,11 @@ describe('the share button', () => {
   });
 
   it('a cancelled share sheet is not a failure, and does not silently copy', async () => {
-    const share = vi.fn().mockRejectedValue(
-      Object.assign(new Error('cancelled'), { name: 'AbortError' }),
-    );
+    const share = vi
+      .fn()
+      .mockRejectedValue(
+        Object.assign(new Error('cancelled'), { name: 'AbortError' }),
+      );
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { share, clipboard: { writeText } });
     expect(await deliverShare('hello')).toBe('cancelled');
