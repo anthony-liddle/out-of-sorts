@@ -35,7 +35,7 @@ import {
   saveJson,
   saveRunSnapshot,
 } from '../game/persistence';
-import { advanceStreak, type Streak } from '../game/streak';
+import { advanceStreak, currentStreak, type Streak } from '../game/streak';
 import type { GameServices } from './services';
 
 export type Mode = 'daily' | 'endless';
@@ -84,7 +84,7 @@ function entryFor(
   mode: Mode,
   now: Date,
   seed: number,
-): { entry: CalendarEntry; dayNumber: number | null } | null {
+): { entry: CalendarEntry; dayNumber: number | null; date: Date } | null {
   if (mode === 'daily') {
     const entry = rackForDate(calendar, now);
     if (!entry) {
@@ -98,9 +98,13 @@ function entryFor(
       return null;
     }
     const dayIndex = localDaysBetween(calendar.epoch, now);
-    return { entry, dayNumber: dayIndex + 1 };
+    // The date that SELECTED this rack, carried with it. The share names it
+    // rather than re-reading the clock: a run played at 23:58 and finished
+    // at 00:01 would otherwise be shared under a date whose rack the player
+    // never saw. One fact, one source.
+    return { entry, dayNumber: dayIndex + 1, date: now };
   }
-  return { entry: endlessEntry(calendar, seed), dayNumber: null };
+  return { entry: endlessEntry(calendar, seed), dayNumber: null, date: now };
 }
 
 /** Replay words through the engine. Illegal words (a changed dictionary,
@@ -125,6 +129,16 @@ export function useGame(services: GameServices) {
   const [error, setError] = useState<string | null>(null);
   const queueRef = useRef<{ mode: Mode; word: string }[]>([]);
   const endedKeysRef = useRef<Set<string>>(new Set());
+  /**
+   * The stored streak RECORD, held in state and read from storage exactly
+   * once. It used to be read in the render path, so when the end-of-run
+   * effect wrote a new value nothing re-rendered and the end screen could go
+   * on showing the pre-run streak until some unrelated interaction forced a
+   * paint. Storage is not a reactive source; state is.
+   */
+  const [streakRecord, setStreakRecord] = useState<Streak | undefined>(
+    () => loadJson<Streak>(services.storage, 'streak') ?? undefined,
+  );
 
   // External systems arrive through promise callbacks, never effect bodies.
   useEffect(() => {
@@ -259,11 +273,11 @@ export function useGame(services: GameServices) {
     const key = `daily-${active.entry.rack}`;
     if (endedKeysRef.current.has(key)) return;
     endedKeysRef.current.add(key);
-    const streak = advanceStreak(
-      loadJson<Streak>(services.storage, 'streak') ?? undefined,
-      storageDayIndex(services.now()),
-    );
-    saveJson(services.storage, 'streak', streak);
+    setStreakRecord((prev) => {
+      const next = advanceStreak(prev, storageDayIndex(services.now()));
+      saveJson(services.storage, 'streak', next);
+      return next;
+    });
   }, [result, mode, active, services]);
 
   const submit = useCallback(
@@ -349,6 +363,9 @@ export function useGame(services: GameServices) {
     setMode: switchMode,
     entry: active?.entry ?? null,
     dayNumber: active?.dayNumber ?? null,
+    /** The date that selected the rack on screen. The share names THIS, not
+     * a fresh clock read. */
+    date: active?.date ?? null,
     /** True once the calendar has loaded, so a missing daily can be told
      * apart from a calendar that has not arrived yet. */
     calendarReady: calendar !== null,
@@ -359,7 +376,11 @@ export function useGame(services: GameServices) {
     pool,
     restoring,
     ready: !!puzzle,
-    streak: loadJson<Streak>(services.storage, 'streak')?.length ?? 0,
+    /** DERIVED, never read raw. A stored record is the last day played, not
+     * a live count: `.length` alone prints a streak that died days ago, and
+     * then finishing a run "resets" it, so the game looks like it punishes
+     * you for playing. See currentStreak. */
+    streak: currentStreak(streakRecord, storageDayIndex(now)),
     announcement,
     error,
     submit,

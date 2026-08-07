@@ -346,7 +346,7 @@ describe('the all eights badge', () => {
         puzzle={puzzle}
         result={run}
         played={[{ word: 'angriest', score: 9, length: 8 }]}
-        dayLabel="Day 1"
+        label={null}
         onShare={() => {}}
         onNewEndless={null}
       />,
@@ -930,7 +930,7 @@ describe('face: the end screen explains the day', () => {
           isCleanDescent: false,
         }}
         played={[{ word: 'dissuade', score: 10, length: 8 }]}
-        dayLabel="Day 1"
+        label={null}
         onShare={() => {}}
         onNewEndless={null}
       />,
@@ -1025,7 +1025,7 @@ describe('the empty yours column', () => {
           isCleanDescent: false,
         }}
         played={[]}
-        dayLabel="Day 1"
+        label={null}
         onShare={() => {}}
         onNewEndless={null}
       />,

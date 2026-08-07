@@ -28,7 +28,11 @@ export interface EndScreenProps {
   /** The run's dead, for the ceremony to gather. At most five: every letter
    * spent is gone forever and a run ends at a pool of three. */
   spent?: readonly SpentLetter[];
-  dayLabel: string;
+  /** The run's identifier, or null when there is none to show. Daily has
+   * none: DAY N existed to be a shared reference and the share now names
+   * the date, so on your own end screen it only restated what you know.
+   * Endless keeps `Endless N`. */
+  label: string | null;
   onShare: () => void;
   /** True once the share text is on the clipboard. Never true for the native
    * sheet, which says so itself. */
@@ -105,7 +109,7 @@ export function EndScreen({
   result,
   played,
   spent = [],
-  dayLabel,
+  label,
   onShare,
   copied = false,
   onNewEndless,
@@ -143,7 +147,8 @@ export function EndScreen({
           : 'Rested early.'}
       </h2>
       <p className="end-sub" data-testid="end-sub">
-        {dayLabel} · {result.score} points · par {puzzle.par}
+        {label && `${label} · `}
+        {result.score} points · par {puzzle.par}
       </p>
 
       <ul className="badges">
