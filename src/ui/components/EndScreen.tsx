@@ -49,7 +49,9 @@ export interface EndScreenProps {
 function EightsReveal({ eights }: { eights: readonly string[] }) {
   return (
     <div className="eights-reveal" data-testid="eights-reveal">
-      <p className="eights-label">{eights.length === 1 ? 'The eight' : 'The eights'}</p>
+      <p className="eights-label">
+        {eights.length === 1 ? 'The eight' : 'The eights'}
+      </p>
       <p className="eights-words">
         {eights.map((word) => (
           <span className="eight-word" data-testid="eight-word" key={word}>
@@ -249,7 +251,11 @@ export function EndScreen({
           <span className="share-idle" data-testid="share-idle">
             Share
           </span>
-          <span className="share-done" data-testid="share-done" aria-hidden={!copied}>
+          <span
+            className="share-done"
+            data-testid="share-done"
+            aria-hidden={!copied}
+          >
             Copied.
           </span>
         </button>
